@@ -34,6 +34,7 @@ Platform Ports
    imx9
    s32g274a
    npcm845x
+   ma35d1
    nxp/index
    poplar
    qemu

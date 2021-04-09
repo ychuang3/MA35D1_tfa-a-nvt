@@ -1,0 +1,109 @@
+Nuvoton MA35D1
+=============
+
+MA35D1 is a Nuvoton SoC with one cluster of two Cortex-A35 cores.
+This port uses TF-A v2.15.0 and boots BL2 at EL3 without BL1::
+
+    Boot ROM -> BL2 -> BL31 -> OP-TEE (optional) -> BL33 (U-Boot)
+
+Migration provenance
+--------------------
+
+The first BSP commit ported from the TF-A v2.3-based Nuvoton repository is
+``92cdeb6acf1d4b35c51076ebbd7d63003f177768`` (``Add MA35D1 support``).
+The new repository baseline is official TF-A v2.15.0, upstream commit
+``da738d5eae93af342fdc4995dd3c05acb4c9d757``.
+Later BSP fixes and production-silicon changes must be ported separately.
+This initial port retains the original DDR tables and peripheral programming;
+it is an intermediate migration state requiring board validation.
+
+Memory layout
+-------------
+
+The initial BSP uses the following half-open address ranges. SRAM1 spans
+``0x28000000`` through ``0x2803ffff`` (MA35D1 TRM Rev 1.11, Table 6.4-1).
+The BL31 linker limit excludes the tail reserved by the BSP for the Boot ROM.
+
+========================= ======================= =======================
+Region                    Base                    Limit
+========================= ======================= =======================
+BL2                       ``0x28000000``          ``0x28023000``
+Preloaded platform DTB    ``0x28023000``          ``0x28025000``
+BL31                      ``0x28025000``          ``0x28038000``
+BL32 / OP-TEE             ``0x8f800000``          ``0x8fa00000``
+BL33 / U-Boot             ``0x85500000``          ``0x85700000``
+FIP read buffer           ``0x86000000``          ``0x86100000``
+========================= ======================= =======================
+
+The platform DTB is preloaded at the fixed address by the preceding boot
+flow. It is not a FW_CONFIG image loaded by TF-A. The default DTBs are
+``ma35d1xx7.dtb`` and ``ma35d1xx8.dtb``; select one matching the board and DDR.
+
+Build
+-----
+
+Provide an AArch64 GCC toolchain, a host C compiler, OpenSSL development
+headers, and a device tree compiler (``dtc``). For example::
+
+    export CROSS_COMPILE=aarch64-linux-gnu-
+    make PLAT=ma35d1 bl2 bl31 dtbs
+    make PLAT=ma35d1 DEBUG=1 bl2 bl31 dtbs
+
+Use ``DTC=/path/to/dtc`` if it is not in PATH. Build products are in
+``build/ma35d1/release`` or ``build/ma35d1/debug``. ``BUILD_BASE`` can select
+an external build directory. ``RESET_TO_BL2=1`` is selected by the platform;
+``BL2_AT_EL3`` is no longer used in TF-A v2.15.
+
+For OP-TEE, first build OP-TEE and U-Boot for the matching board, then run::
+
+    make PLAT=ma35d1 SPD=opteed \
+        BL32=/path/to/tee-header_v2.bin \
+        BL32_EXTRA1=/path/to/tee-pager_v2.bin \
+        BL33=/path/to/u-boot.bin all fip
+
+The initial BSP exposes only a 1 MiB FIP backend (``MA35D1_FIP_SIZE``).
+Check the complete ``fip.bin`` size against this limit before installation.
+Packaging itself does not enforce the backend size. The newer local U-Boot
+and OP-TEE inputs used for packaging checks produce an approximately
+1.39 MiB FIP, which cannot be loaded through this initial BSP backend.
+
+``SPD=opteed`` is the preferred dispatcher selection. The original BSP
+``NEED_BL32=yes`` invocation is also accepted. The command above uses the
+non-pageable OP-TEE packaging from the initial BSP; pageable OP-TEE loading
+is not validated at this migration step.
+
+For an OP-TEE debug build, also pass ``DEBUG=1 ENABLE_LTO=1`` to fit BL31
+inside the SRAM allocation. Without LTO this combination exceeds the
+linker limit; the linker rejects it rather than using the Boot ROM area.
+
+``DEBUG`` and ``LOG_LEVEL`` follow the upstream build options. Debugfs is
+disabled by default; enabling ``USE_DEBUGFS=1`` may exceed the BL31 SRAM
+budget, especially without link-time optimisation. Do not enlarge the
+linker limit into the Boot ROM reservation to accommodate it.
+
+Optional Trusted Board Boot
+---------------------------
+
+Initialise the exact Mbed TLS dependency recorded by TF-A v2.15.0::
+
+    git submodule update --init contrib/mbed-tls
+
+Add ``TRUSTED_BOARD_BOOT=1`` to the build command to enable the original
+software TBBR verification path. ``MBEDTLS_DIR`` defaults to
+``contrib/mbed-tls`` and may be overridden. The original default is ECDSA
+P-256 with SHA-256. The build generates a development root key and embeds
+its public-key hash into BL2. Preserve that key when regenerating the FIP.
+
+The initial BSP returns zero for non-volatile version counters, and its
+root hash is embedded in the image. This path does not establish an OTP
+root of trust or implement anti-rollback; those later BSP commits remain
+to be migrated. This first step only validates its build and packaging.
+
+Validation limits
+-----------------
+
+Cross-compilation and FIP inspection do not verify hardware behaviour.
+Board testing is still required for Boot ROM handoff, DDR initialisation,
+SD/NAND/SPI boot, OP-TEE entry, secondary CPU startup, suspend/resume, and
+reset. Use the board's existing image installation flow; do not treat this
+intermediate port as the final production BSP.
