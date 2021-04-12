@@ -107,3 +107,14 @@ Board testing is still required for Boot ROM handoff, DDR initialisation,
 SD/NAND/SPI boot, OP-TEE entry, secondary CPU startup, suspend/resume, and
 reset. Use the board's existing image installation flow; do not treat this
 intermediate port as the final production BSP.
+
+Migration findings
+------------------
+
+Findings from each ported commit and the deferred board-test follow-up are
+tracked in :doc:`ma35d1-porting-notes`.
+
+.. toctree::
+   :hidden:
+
+   ma35d1-porting-notes

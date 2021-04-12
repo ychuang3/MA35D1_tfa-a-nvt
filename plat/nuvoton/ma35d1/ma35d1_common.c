@@ -264,7 +264,8 @@ void plat_ma35d1_init(void)
 	if (node < 0) {
 		WARN("The compatible property `nuvoton,ma35d1-sspcc` not found\n");
 	}
-
+	/* Enable RTP clock */
+	outp32((void *)CLK_SYSCLK0, inp32((void *)CLK_SYSCLK0) | 0x2);
 	/* enable SSPCC/GPIO clock */
 	outp32((void *)CLK_APBCLK2, inp32((void *)CLK_APBCLK2) | 0x8);
 	outp32((void *)CLK_SYSCLK1, inp32((void *)CLK_SYSCLK1) | 0x3FFF0000);
