@@ -258,6 +258,15 @@ void plat_ma35d1_init(void)
 		outp32((void *)(TSI_CLK_BASE+0x04), (inp32((void *)(TSI_CLK_BASE+0x04)) | 0x5000));
 		/* initial trng clock */
 		outp32((void *)(TSI_CLK_BASE+0x0c), (inp32((void *)(TSI_CLK_BASE+0x0c)) | 0x2000000));
+
+		/* Init KeyStore: KS_CTL INIT[8] and START[0]. */
+		outp32((void *)(KS_BASE + 0x00), 0x101);
+		/* Poll the original INITDONE mask; see MA35-008 in porting notes. */
+		while ((inp32((void *)(KS_BASE + 0x08)) & 0x100) == 0)
+			;
+		/* Wait for KS_STS BUSY[2] to clear. */
+		while ((inp32((void *)(KS_BASE + 0x08)) & 0x4) != 0)
+			;
 	}
 
 	node = fdt_node_offset_by_compatible(fdt, -1, "nuvoton,ma35d1-sspcc");

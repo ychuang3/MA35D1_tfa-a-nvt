@@ -122,3 +122,43 @@ Final follow-up: trace later BSP clock/SMC changes to determine the final
 owner and whether the unconditional enable remains necessary. Read back
 RTPEN after BL31 startup, exercise the final RTP/M4 boot flow and clock
 controls, and verify the expected clock state through suspend/resume.
+
+MA35-008: KeyStore initialization syntax, completion mask and ownership
+---------------------------------------------------------------------
+
+Status: syntax adapted for compilation; known completion-mask fix pending
+its own source commit; hardware behaviour untested.
+Source BSP commit: ``4f4669331cf85682bb90a7d7da32e8af4b1dbbd3``.
+
+The source adds ``KS_BASE = 0x40340000``, writes ``0x101`` to KS_CTL and
+polls KS_STS for INITDONE and BUSY. This remains inside the original
+``(SYS_CHIPCFG & 0x100) == 0`` branch after the crypto/KeyStore clocks are
+enabled. It does not change the TBBR verification or provisioning flow.
+
+Both source ``inp32(void *)(...)`` expressions are invalid C. They are
+corrected to ``inp32((void *)(...))`` here so this port remains buildable.
+The next BSP commit ``cd0420a55310bcd891d4221514ddbcaa03f46dcc`` consists
+of those same syntax corrections. When processing that commit, record
+that its code effect was already needed here rather than skipping its
+provenance or introducing a duplicate runtime change.
+
+This step intentionally preserves the source INITDONE mask ``0x100``.
+The later BSP commit ``41c36c0329e8214b7b8f8031c90fff16ba6000e0`` corrects
+it to ``0x80`` (KS_STS bit 7); that semantic fix has not been ported yet.
+Consequently this intermediate version can hang in the INITDONE wait and
+is not ready to boot on the board. Both polling loops lack a timeout or
+error-status path. The source commit also states that OP-TEE initializes
+KeyStore, leaving initialization ownership to confirm in the final stack.
+TRM Rev 1.11 section 6.38 (page 2203) provides an overview and feature list,
+not the KS_CTL/KS_STS register definitions. The completion-bit correction
+above is evidenced by the later BSP fix, not independently by this TRM.
+
+Validation for this step: release and OP-TEE debug with LTO builds of BL2,
+BL31 and both DTBs pass. No hardware initialization was executed.
+
+Final follow-up: reconcile the next two source commits, trace all later
+KeyStore/TSI changes, confirm the final register address and bit definitions,
+clock/access permissions and completion sequence on each supported chip.
+Check normal and failed initialization, decide how a stuck engine should
+be handled, and verify that TF-A and OP-TEE initialization cooperate with
+the intended key lifetime. Run these checks after all BSP patches are ported.
