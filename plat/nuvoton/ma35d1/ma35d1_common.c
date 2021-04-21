@@ -261,8 +261,8 @@ void plat_ma35d1_init(void)
 
 		/* Init KeyStore: KS_CTL INIT[8] and START[0]. */
 		outp32((void *)(KS_BASE + 0x00), 0x101);
-		/* Poll the original INITDONE mask; see MA35-008 in porting notes. */
-		while ((inp32((void *)(KS_BASE + 0x08)) & 0x100) == 0)
+		/* Wait for KS_STS INITDONE[7] to be set. */
+		while ((inp32((void *)(KS_BASE + 0x08)) & 0x80) == 0)
 			;
 		/* Wait for KS_STS BUSY[2] to clear. */
 		while ((inp32((void *)(KS_BASE + 0x08)) & 0x4) != 0)
