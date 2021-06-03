@@ -47,7 +47,7 @@ headers, and a device tree compiler (``dtc``). For example::
 
     export CROSS_COMPILE=aarch64-linux-gnu-
     make PLAT=ma35d1 bl2 bl31 dtbs
-    make PLAT=ma35d1 DEBUG=1 bl2 bl31 dtbs
+    make PLAT=ma35d1 DEBUG=1 ENABLE_LTO=1 LOG_LEVEL=20 bl2 bl31 dtbs
 
 Use ``DTC=/path/to/dtc`` if it is not in PATH. Build products are in
 ``build/ma35d1/release`` or ``build/ma35d1/debug``. ``BUILD_BASE`` can select
@@ -72,9 +72,10 @@ and OP-TEE inputs used for packaging checks produce an approximately
 non-pageable OP-TEE packaging from the initial BSP; pageable OP-TEE loading
 is not validated at this migration step.
 
-For an OP-TEE debug build, also pass ``DEBUG=1 ENABLE_LTO=1`` to fit BL31
-inside the SRAM allocation. Without LTO this combination exceeds the
-linker limit; the linker rejects it rather than using the Boot ROM area.
+For an OP-TEE debug build, also pass
+``DEBUG=1 ENABLE_LTO=1 LOG_LEVEL=20`` to fit BL31 inside the SRAM
+allocation. More verbose logging or disabling LTO may exceed the linker
+limit. ``LOG_LEVEL=20`` retains NOTICE and higher-priority messages.
 
 ``DEBUG`` and ``LOG_LEVEL`` follow the upstream build options. Debugfs is
 disabled by default; enabling ``USE_DEBUGFS=1`` may exceed the BL31 SRAM

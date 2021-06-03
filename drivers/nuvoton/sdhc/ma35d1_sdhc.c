@@ -19,7 +19,7 @@
 #include <lib/mmio.h>
 #include <lib/utils_def.h>
 
-#include "ma35d1_sdhc.h"
+#include <drivers/nuvoton/ma35d1_sdhc.h>
 
 struct mmc_cmd {
 	unsigned short cmdidx;

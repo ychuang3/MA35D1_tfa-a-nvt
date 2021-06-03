@@ -19,7 +19,7 @@
 #include <lib/mmio.h>
 #include <lib/utils_def.h>
 
-#include "ma35d1_nand.h"
+#include <drivers/nuvoton/ma35d1_nand.h>
 
 
 struct ma35d1_nand_info {

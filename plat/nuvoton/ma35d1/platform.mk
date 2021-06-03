@@ -79,6 +79,7 @@ PLAT_BL_COMMON_SOURCES	:=	common/fdt_wrappers.c				\
 				plat/arm/common/arm_common.c			\
 				plat/nuvoton/ma35d1/ma35d1_common.c		\
 				plat/nuvoton/ma35d1/ma35d1_private.c		\
+				drivers/nuvoton/pmic/ma35d1_pmic.c		\
 #				plat/nuvoton/ma35d1/drivers/ma35d1_crypto.c	\
 #				plat/nuvoton/ma35d1/drivers/tsi_cmd.c	        \
 

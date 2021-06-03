@@ -19,7 +19,7 @@
 #include <lib/mmio.h>
 #include <lib/utils_def.h>
 
-#include "ma35d1_qspi.h"
+#include <drivers/nuvoton/ma35d1_qspi.h>
 
 
 struct ma35d1_qspi_info {

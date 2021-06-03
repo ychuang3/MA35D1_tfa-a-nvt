@@ -21,6 +21,7 @@
 #include <platform_def.h>
 #include <services/spm_mm_partition.h>
 #include <common/fdt_wrappers.h>
+#include <drivers/nuvoton/ma35d1_pmic.h>
 
 #include "ma35d1_private.h"
 
@@ -77,6 +78,9 @@ static console_t ma35d1_console = {
 	.flush = console_ma35d1_flush,
 };
 
+void ma35d1_i2c0_init(unsigned int sys_clk);
+int ma35d1_set_pmic(int type, int vol);
+
 /* CPU-PLL: 1000MHz 700MHz */
 static unsigned int CAPLL_MODE0[2][3] = {
 	{ 0x0000307D, 0x00000010, 0x00000000 },	/* 1000 MHz */
@@ -122,8 +126,15 @@ static void ma35d1_clock_setup(void)
 	clock = (pllfreq[0] < speed)? speed : pllfreq[0];
 	switch (clock) {
 		case 1000000000:
-			index = 0;
-			INFO("CA-PLL is %d Hz\n", clock);
+			/* set the voltage VDD_CPU first */
+			ma35d1_i2c0_init(pllfreq[1]);
+			if (ma35d1_set_pmic(VOL_CPU, VOL_1_29)) {
+				index = 0;
+				INFO("CA-PLL is %d Hz\n", clock);
+			} else {
+				index = 1;
+				WARN("Set 1GHz fail, try to set 700MHz.\n");
+			}
 			break;
 		case 700000000:
 			index = 1;
