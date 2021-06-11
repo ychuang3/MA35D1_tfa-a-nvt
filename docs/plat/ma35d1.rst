@@ -67,6 +67,12 @@ Packaging itself does not enforce the backend size. The newer local U-Boot
 and OP-TEE inputs used for packaging checks produce an approximately
 1.39 MiB FIP, which cannot be loaded through this initial BSP backend.
 
+``BL32_BASE`` can be passed to make; its default is ``0x8f800000``.
+It sets the initial BL32 load address, while the upper limit remains
+``0x8fa00000`` and the secure DDR mapping is unchanged. Keep the selected
+range within secure memory and consistent with the OP-TEE image layout;
+the pager address encoded in an OP-TEE header is handled by its parser.
+
 ``SPD=opteed`` is the preferred dispatcher selection. The original BSP
 ``NEED_BL32=yes`` invocation is also accepted. The command above uses the
 non-pageable OP-TEE packaging from the initial BSP; pageable OP-TEE loading
