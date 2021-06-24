@@ -20,7 +20,7 @@ it is an intermediate migration state requiring board validation.
 Memory layout
 -------------
 
-The initial BSP uses the following half-open address ranges. SRAM1 spans
+The default platform layout uses the following half-open ranges. SRAM1 spans
 ``0x28000000`` through ``0x2803ffff`` (MA35D1 TRM Rev 1.11, Table 6.4-1).
 The BL31 linker limit excludes the tail reserved by the BSP for the Boot ROM.
 
@@ -32,7 +32,7 @@ Preloaded platform DTB    ``0x28023000``          ``0x28025000``
 BL31                      ``0x28025000``          ``0x28038000``
 BL32 / OP-TEE             ``0x8f800000``          ``0x8fa00000``
 BL33 / U-Boot             ``0x85500000``          ``0x85700000``
-FIP read buffer           ``0x86000000``          ``0x86100000``
+FIP read buffer           ``0x86000000``          ``0x86200000``
 ========================= ======================= =======================
 
 The platform DTB is preloaded at the fixed address by the preceding boot
@@ -61,17 +61,28 @@ For OP-TEE, first build OP-TEE and U-Boot for the matching board, then run::
         BL32_EXTRA1=/path/to/tee-pager_v2.bin \
         BL33=/path/to/u-boot.bin all fip
 
-The initial BSP exposes only a 1 MiB FIP backend (``MA35D1_FIP_SIZE``).
-Check the complete ``fip.bin`` size against this limit before installation.
-Packaging itself does not enforce the backend size. The newer local U-Boot
-and OP-TEE inputs used for packaging checks produce an approximately
-1.39 MiB FIP, which cannot be loaded through this initial BSP backend.
+The FIP backend and read buffer are 2 MiB (``MA35D1_FIP_SIZE``). Keep
+``fip.bin`` within that limit and ensure the storage layout reserves enough
+space. Packaging itself does not enforce the backend size.
 
-``BL32_BASE`` can be passed to make; its default is ``0x8f800000``.
-It sets the initial BL32 load address, while the upper limit remains
-``0x8fa00000`` and the secure DDR mapping is unchanged. Keep the selected
-range within secure memory and consistent with the OP-TEE image layout;
-the pager address encoded in an OP-TEE header is handled by its parser.
+The following memory parameters can be supplied to make:
+
+===================== ===============
+Parameter             Default
+===================== ===============
+MA35D1_BL32_BASE       ``0x8f800000``
+MA35D1_DRAM_SIZE       ``0x0f800000``
+MA35D1_DDR_MAX_SIZE    ``0x10000000``
+MA35D1_DRAM_S_BASE     ``0x8f800000``
+===================== ===============
+
+Use ``MA35D1_BL32_BASE`` in place of the former ``BL32_BASE`` make option.
+``BL32_BASE`` is derived internally, and the BL32 upper limit follows the
+selected base plus 2 MiB. The secure DDR mapping remains 8 MiB, starting at
+``MA35D1_DRAM_S_BASE``. Set the parameters consistently with the actual DDR,
+secure-memory allocation and OP-TEE image layout. These options do not
+select a different DDR initialisation table or relocate BL33/FIP buffers.
+The pager address encoded in an OP-TEE header is checked by its parser.
 
 ``SPD=opteed`` is the preferred dispatcher selection. The original BSP
 ``NEED_BL32=yes`` invocation is also accepted. The command above uses the

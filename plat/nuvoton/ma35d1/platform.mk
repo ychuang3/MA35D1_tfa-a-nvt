@@ -29,6 +29,18 @@ $(eval $(call add_define,MA35D1_MAX_CPUS_PER_CLUSTER))
 $(eval $(call add_define,MA35D1_MAX_PE_PER_CPU))
 $(eval $(call add_define,MA35D1_INTERCONNECT_DRIVER))
 
+MA35D1_BL32_BASE ?= 0x8f800000
+$(eval $(call add_define,MA35D1_BL32_BASE))
+
+MA35D1_DRAM_SIZE ?= 0x0f800000
+$(eval $(call add_define,MA35D1_DRAM_SIZE))
+
+MA35D1_DDR_MAX_SIZE ?= 0x10000000
+$(eval $(call add_define,MA35D1_DDR_MAX_SIZE))
+
+MA35D1_DRAM_S_BASE ?= 0x8f800000
+$(eval $(call add_define,MA35D1_DRAM_S_BASE))
+
 # dump the state on crash console
 CRASH_REPORTING		:=	1
 $(eval $(call add_define,CRASH_REPORTING))
@@ -140,9 +152,6 @@ else ifneq ($(SPD),opteed)
 $(error MA35D1 currently supports only SPD=opteed)
 endif
 endif
-
-BL32_BASE ?= 0x8f800000
-$(eval $(call add_define,BL32_BASE))
 
 override BL1_SOURCES =
 
