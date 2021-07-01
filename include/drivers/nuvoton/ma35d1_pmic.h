@@ -39,7 +39,7 @@
 /*****************************************************************************
  * PMIC
  *****************************************************************************/
-#define VOL_CPU	0x01
+#define VOL_CPU 0x01
 #define VOL_SD  0x02
 
 enum {
@@ -54,5 +54,11 @@ enum {
 	VOL_3_30
 };
 
+static volatile int pmic_state[3] = { 0, VOL_1_20 /* CPU */, VOL_3_30 /* SD */ };
+static volatile int pmicIsInit;
+static volatile unsigned long pmic_clk;
+
+int ma35d1_set_pmic(int type, int vol);
+int ma35d1_get_pmic(int type);
 
 #endif /* MA35D1_PMIC_H */

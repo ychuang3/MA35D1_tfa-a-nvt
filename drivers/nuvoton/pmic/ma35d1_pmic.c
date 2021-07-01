@@ -256,6 +256,11 @@ int ma35d1_set_pmic(int type, int vol)
 	unsigned int reg = 0xff;
 	int ret = 0;
 
+	if (pmicIsInit == 0) {
+		ma35d1_i2c0_init(pmic_clk);
+		pmicIsInit = 1;
+	}
+
 	if (type == VOL_CPU) {
 		reg = 0xA4;
 	} else if (type == VOL_SD) {
@@ -293,6 +298,16 @@ int ma35d1_set_pmic(int type, int vol)
 		ret = ma35d1_write_pmic_data(reg, 0x00);
 	} else {
 		ERROR("Not support voltage!\n");
+		ret = -1;
 	}
+
+	if (ret >= 0)
+		pmic_state[type] = vol;
+
 	return ret;
+}
+
+int ma35d1_get_pmic(int type)
+{
+	return pmic_state[type];
 }

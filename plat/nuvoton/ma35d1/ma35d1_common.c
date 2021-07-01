@@ -79,7 +79,6 @@ static console_t ma35d1_console = {
 };
 
 void ma35d1_i2c0_init(unsigned int sys_clk);
-int ma35d1_set_pmic(int type, int vol);
 
 /* CPU-PLL: 1000MHz 700MHz */
 static unsigned int CAPLL_MODE0[2][3] = {
@@ -122,12 +121,13 @@ static void ma35d1_clock_setup(void)
 		}
 	}
 
+	pmic_clk = pllfreq[1]; /* I2C0 clock for PMIC */
+
 	/* CA-PLL */
 	clock = (pllfreq[0] < speed)? speed : pllfreq[0];
 	switch (clock) {
 		case 1000000000:
 			/* set the voltage VDD_CPU first */
-			ma35d1_i2c0_init(pllfreq[1]);
 			if (ma35d1_set_pmic(VOL_CPU, VOL_1_29)) {
 				index = 0;
 				INFO("CA-PLL is %d Hz\n", clock);

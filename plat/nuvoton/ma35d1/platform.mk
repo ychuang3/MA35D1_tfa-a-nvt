@@ -138,6 +138,7 @@ BL31_SOURCES		+=	drivers/arm/smmu/smmu_v3.c			\
 				plat/nuvoton/ma35d1/ma35d1_bl31_setup.c	\
 				plat/nuvoton/ma35d1/ma35d1_pm.c		\
 				plat/nuvoton/ma35d1/ma35d1_topology.c		\
+				plat/nuvoton/ma35d1/ma35d1_sip_svc.c		\
 				${MA35D1_GIC_SOURCES}				\
 				${MA35D1_SECURITY_SOURCES}			\
 
