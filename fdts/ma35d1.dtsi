@@ -122,6 +122,9 @@
 				<266000000>, <200000000>,
 				<500000000>, <150000000>;
 		clock-pll-mode = <0>, <0>, <1>, <0>, <0>, <0>;
+		lxt-enable = <0>;
+		/* rtc power control */
+		rtc-pwrctl-enable = <1>;
 		nuvoton,sys = <&sys>;
 	};
 
@@ -360,9 +363,8 @@
 			<HSUSBD_TZNS>,
 			<PDMA0_TZNS>,
 			<PDMA1_TZNS>,
+			<TIMER01_TZNS>,
 			<TRNG_TZNS>;
-
-		/* gpio_s = <PA0_S>, */
 
 		status = "okay";
 	};

@@ -52,6 +52,10 @@ $(eval $(call add_define,PLAT_LOG_LEVEL_ASSERT))
 
 # Keep debugfs opt-in via the common USE_DEBUGFS build option.
 
+# PSCI power-state statistics and PMF timestamps.
+ENABLE_PSCI_STAT		:=	1
+ENABLE_PMF			:=	1
+
 ifeq ($(NEED_BL32),yes)
 $(eval $(call add_define,MA35D1_LOAD_BL32))
 endif
@@ -91,6 +95,7 @@ PLAT_BL_COMMON_SOURCES	:=	common/fdt_wrappers.c				\
 				plat/arm/common/arm_common.c			\
 				plat/nuvoton/ma35d1/ma35d1_common.c		\
 				plat/nuvoton/ma35d1/ma35d1_private.c		\
+				plat/nuvoton/ma35d1/ma35d1_platform.c		\
 				drivers/nuvoton/pmic/ma35d1_pmic.c		\
 #				plat/nuvoton/ma35d1/drivers/ma35d1_crypto.c	\
 #				plat/nuvoton/ma35d1/drivers/tsi_cmd.c	        \
@@ -143,6 +148,10 @@ BL31_SOURCES		+=	drivers/arm/smmu/smmu_v3.c			\
 				${MA35D1_SECURITY_SOURCES}			\
 
 BL31_SOURCES		+=	plat/common/plat_psci_common.c
+
+ifeq ($(ENABLE_PMF),1)
+BL31_SOURCES		+=	lib/pmf/pmf_smc.c
+endif
 
 # Preserve NEED_BL32=yes compatibility; SPD=opteed is the standard interface.
 ifeq ($(NEED_BL32),yes)

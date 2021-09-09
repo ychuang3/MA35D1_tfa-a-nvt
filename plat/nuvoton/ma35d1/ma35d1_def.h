@@ -57,7 +57,7 @@
 #define MA35D1_DTB_SIZE			U(0x00002000)
 
 #define MA35D1_BL31_BASE		U(0x28025000)
-#define MA35D1_BL31_SIZE		U(0x00013000)	/* 0x28038000 is reserved to IBR */
+#define MA35D1_BL31_SIZE		U(0x00015000)	/* 0x2803C000 is reserved to IBR */
 
 #define MA35D1_BL32_SIZE		U(0x00200000)
 
@@ -192,6 +192,7 @@
 #define SYS_RLKTZNS	U(0x404601A4)
 
 /* clock registers */
+#define CLK_PWRCTL	U(0x40460200)
 #define CLK_SYSCLK0	U(0x40460204)
 #define CLK_SYSCLK1	U(0x40460208)
 #define CLK_APBCLK0	U(0x4046020C)

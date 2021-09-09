@@ -39,17 +39,6 @@
 arm_config_t arm_config;
 
 #if MA35D1_INTERCONNECT_DRIVER != MA35D1_CCN
-#if 0
-static const int ma35d1_cci400_map[] = {
-	PLAT_MA35D1_CCI400_CLUS0_SL_PORT,
-	PLAT_MA35D1_CCI400_CLUS1_SL_PORT,
-};
-
-static const int ma35d1_cci5xx_map[] = {
-	PLAT_MA35D1_CCI5XX_CLUS0_SL_PORT,
-	PLAT_MA35D1_CCI5XX_CLUS1_SL_PORT,
-};
-#endif
 
 static unsigned int get_interconnect_master(void)
 {
@@ -158,6 +147,18 @@ static void ma35d1_clock_setup(void)
 	}
 	/* set CA35 to CA-PLL */
 	outp32((void *)CLK_CLKSEL0, (inp32((void *)CLK_CLKSEL0) & ~0x3) | 0x1);
+
+	/* Enable LXT when requested by the device tree. */
+	if (fdt_read_uint32_default(fdt, node, "lxt-enable", 0) == 1) {
+		outp32((void *)CLK_PWRCTL, inp32((void *)CLK_PWRCTL) | 0x2);
+	}
+
+	if (fdt_read_uint32_default(fdt, node, "rtc-pwrctl-enable", 1) == 1)
+		outp32((void *)0x40410180,
+		       inp32((void *)0x40410180) | 0x5aa50040);
+	else
+		outp32((void *)(TSI_CLK_BASE + 0x40),
+		       (inp32((void *)0x40410180) & ~0xffff0040) | 0x5aa50000);
 
 }
 
