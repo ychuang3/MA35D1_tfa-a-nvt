@@ -329,7 +329,7 @@
 		status = "okay";
 
 		/* sdhc information */
-		mmc-image-offset = <0x100000>;
+		mmc-image-offset = <0xc0000>;
 	};
 
 	sdhci1: sdhci@40190000 {
@@ -347,7 +347,7 @@
 		status = "okay";
 
 		/* sdhc information */
-		mmc-image-offset = <0x100000>;
+		mmc-image-offset = <0xc0000>;
 	};
 
 	sspcc: sspcc@404F0000 {
