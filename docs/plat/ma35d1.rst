@@ -37,8 +37,9 @@ FIP read buffer           ``0x86000000``          ``0x86200000``
 
 The platform DTB is preloaded at the fixed address by the preceding boot
 flow. It is not a FW_CONFIG image loaded by TF-A. The default DTBs are
-``ma35d1xx7.dtb`` (DDR2 128 MiB), ``ma35d1xx8.dtb`` (DDR3 256 MiB) and
-``ma35d1xx0.dtb`` (DDR3 512 MiB). Select one matching the board and DDR with
+``ma35d1xx7.dtb`` (DDR2 128 MiB), ``ma35d1xx8.dtb`` (DDR3 256 MiB),
+``ma35d1xx0.dtb`` (DDR3 512 MiB) and ``ma35d1xx0-mt-1gb.dtb`` (MT DDR3 1 GiB).
+Select one matching the board and DDR with
 ``DTB_FILE_NAME``, for example ``DTB_FILE_NAME=ma35d1xx0.dtb``. Selecting a
 DTB does not change the memory-layout make parameters; configure those
 consistently with the board's DDR.
