@@ -76,25 +76,22 @@ void ma35d1_ddr_hw_pd(void)
 	int DDR_QCH_BPPORT6;
 	int DDR_QCH_BPPORT7;
 
-	//disable DDR CG bypass
+	/* Configure DDR clock gating. */
 	mmio_write_32(SYS_BASE + MISCFCR,
-					mmio_read_32(SYS_BASE + MISCFCR) & ~(1 << 23));
+		      mmio_read_32(SYS_BASE + MISCFCR) & ~(1 << 23));
 
 	//[11:8]= pg chain time period for voltage stable
-	mmio_write_32(SYS_BASE + PMUCR,
-					mmio_read_32(SYS_BASE + PMUCR) & 0xfffff0ff);
+	mmio_write_32(SYS_BASE + PMUCR, mmio_read_32(SYS_BASE + PMUCR) & 0xfffff0ff);
 
 	//[15:12]= pg chain timeout
 	mmio_write_32(SYS_BASE + PMUCR,
-				(mmio_read_32(SYS_BASE + PMUCR) & 0xfffff0ff) | (0x2 << 12));
+		      (mmio_read_32(SYS_BASE + PMUCR) & 0xffff0fff) | (0x2 << 12));
 
 	//[31:24]=DDR time out & delay
-	mmio_write_32(SYS_BASE + DDRCQCSR,
-					mmio_read_32(SYS_BASE + DDRCQCSR) & 0x00ffffff);
+	mmio_write_32(SYS_BASE + DDRCQCSR, mmio_read_32(SYS_BASE + DDRCQCSR) & 0x00ffffff);
 
 	//[16]=DDRCQBYPAS, disable ddrc qch bypass
-	mmio_write_32(SYS_BASE + DDRCQCSR,
-					mmio_read_32(SYS_BASE + DDRCQCSR) & ~(0x1 << 16));
+	mmio_write_32(SYS_BASE + DDRCQCSR, mmio_read_32(SYS_BASE + DDRCQCSR) & ~(0x1 << 16));
 
 //------------------------------------------------------------------------
 	//[7:0]=AXIQBYPAS,
@@ -221,14 +218,21 @@ static int ma35d1_pwr_domain_on(u_register_t mpidr)
 {
 	uint32_t loop;
 
-	for (loop = 0; loop < 100; loop++)
-	{
-		mmio_write_32(SYS_BASE + CA35WRBADR2, ma35d1_sec_entrypoint);
-		sev();
+	if (mpidr == 1) {
+		for (loop = 0; loop < 100; loop++) {
+			mmio_write_32(SYS_BASE + CA35WRBADR2,
+				      ma35d1_sec_entrypoint);
+			sev();
+		}
+	} else {
+		mmio_write_32(SYS_BASE + CA35WRBPAR1, 0x7761726D);
+		mmio_write_32(SYS_BASE + CA35WRBADR1,
+			      ma35d1_sec_entrypoint);
 	}
 
 	return PSCI_E_SUCCESS;
 }
+
 
 static void ma35d1_pwr_domain_off(const psci_power_state_t *target_state)
 {
@@ -239,25 +243,17 @@ static void ma35d1_pwr_domain_suspend(const psci_power_state_t *target_state)
 {
 	unsigned int reg;
 
-	if (MA35D1_CORE_PWR_STATE(target_state) != PLAT_MAX_OFF_STATE)
-		return;
-
 	disable_mmu_el3();
 
-	if(mmio_read_32(SYS_BASE+DDRCQCSR)&0x0002FF00) {
-		reg =mmio_read_32(SYS_BASE + DDRCQCSR);
-		mmio_write_32(SYS_BASE + DDRCQCSR,reg);
+	if (mmio_read_32(SYS_BASE + DDRCQCSR) & 0x0002FF00) {
+		reg = mmio_read_32(SYS_BASE + DDRCQCSR);
+		mmio_write_32(SYS_BASE + DDRCQCSR, reg);
 	}
 
-	if (MA35D1_SYSTEM_PWR_STATE(target_state) == PLAT_MAX_OFF_STATE) {
-		mmio_write_32(0x2803fd04, 0);
-		mmio_write_32(SYS_BASE + CA35WRBADR1, ma35d1_sec_entrypoint);
-		mmio_write_32(SYS_BASE + CA35WRBPAR1, 0x7761726D);
-		ma35d1_deep_power_down();
-	} else {
-
-		ma35d1_normal_power_down();
-	}
+	mmio_write_32(0x2803fd04, 0);
+	mmio_write_32(SYS_BASE + CA35WRBADR1, ma35d1_sec_entrypoint);
+	mmio_write_32(SYS_BASE + CA35WRBPAR1, 0x7761726D);
+	ma35d1_deep_power_down();
 
 }
 
@@ -268,6 +264,7 @@ static void ma35d1_pwr_domain_on_finish(const psci_power_state_t *target_state)
 	/* Enable the gic cpu interface */
 	gicv2_cpuif_enable();
 	gicv2_pcpu_distif_init();
+	mmio_write_32(SYS_BASE + CA35WRBPAR1, 0x0);
 }
 
 int ma35d1_validate_ns_entrypoint(uintptr_t ns_entrypoint)
@@ -280,7 +277,7 @@ static void ma35d1_pwr_domain_suspend_finish(const
 			psci_power_state_t * target_state)
 {
 	/* Clear poer down flag */
-	mmio_write_32(SYS_BASE + PMUSTS, (1 << 8));
+	mmio_write_32(SYS_BASE + PMUSTS, (1 << 8) | 0x1);
 
 	/* Clear Core 1 Warm-boot */
 	mmio_write_32(SYS_BASE + CA35WRBPAR1, 0);
@@ -382,16 +379,8 @@ void __dead2 ma35d1_pwr_domain_pwr_down(
 	/* dsb is good practice before using wfi to enter low power states */
 	dsb();
 
-	if (MA35D1_SYSTEM_PWR_STATE(target_state) == PLAT_MAX_OFF_STATE)
-		while(1)
-			wfi();
-	else {
-
-		while (1) {
-			wfi();
-			((void (*)(void))ma35d1_sec_entrypoint) ();
-		}
-	}
+	while (1)
+		wfi();
 }
 
 plat_psci_ops_t plat_arm_psci_pm_ops = {

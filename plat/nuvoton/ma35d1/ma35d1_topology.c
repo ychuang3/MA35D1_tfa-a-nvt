@@ -14,8 +14,9 @@
 #include <plat/arm/common/plat_arm.h>
 #include <plat/common/platform.h>
 
-/* One Cortex-A35 cluster with two cores, matching PLAT_MAX_PWR_LVL. */
+/* System, one Cortex-A35 cluster and two cores. */
 static const unsigned char ma35d1_power_domain_tree_desc[] = {
+	1,
 	PLATFORM_CLUSTER_COUNT,
 	PLATFORM_CLUSTER0_CORE_COUNT,
 };
