@@ -48,6 +48,10 @@
 /* PWRON[2] */
 #define PWRON_WDT_MSK       (0x00000004)
 
+/* PLL Setting */
+#define CPU_PLL_1G          (0x00001000)
+#define CPU_PLL_700         (0x00000700)
+#define CPU_PLL_500         (0x00000500)
 
 /*******************************************************************************
  * Function and variable prototypes
@@ -66,5 +70,6 @@ void ma35d1_io_setup(void);
 void configure_mmu(void);
 void ma35d1_ddr_init(void);
 void ma35d1_arch_security_setup(void);
+int32_t ma35d1_change_pll(int pll);
 
 #endif /* MA35D1_PRIVATE_H */

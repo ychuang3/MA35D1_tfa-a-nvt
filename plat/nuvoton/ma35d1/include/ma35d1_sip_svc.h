@@ -9,6 +9,7 @@
 
 /* SMC function IDs for SiP Service queries */
 #define SIP_SVC_PMIC		0xC2000008
+#define SIP_CPU_CLK		0xC2000009
 #define SIP_SVC_VERSION		0xC200000F
 
 /* MA35D1 SiP Service Calls version numbers */
