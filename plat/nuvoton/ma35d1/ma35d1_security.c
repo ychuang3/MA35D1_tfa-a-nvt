@@ -8,6 +8,10 @@
 #include <plat/arm/common/plat_arm.h>
 #include <common/debug.h>
 
+#define PLAT_ARM_TZC_NSNS_DEV_ACCESS (			\
+	TZC_REGION_ACCESS_RDWR(MA35D1_NSAID_TZNS) |	\
+	TZC_REGION_ACCESS_RDWR(MA35D1_NSAID_SUBM))
+
 /*
  * We assume that all security programming is done by the primary core.
  */
@@ -30,7 +34,7 @@ static void init_tzc400(void)
 				MA35D1_DDR_BASE +
 				(MA35D1_DDR_MAX_SIZE - 1U),
 				TZC_REGION_S_NONE,
-				TZC_REGION_ACCESS_RDWR(MA35D1_NSAID_TZNS));
+				PLAT_ARM_TZC_NSNS_DEV_ACCESS);
 
 	/* Raise an exception if a NS device tries to access secure memory */
 	tzc400_set_action(TZC_ACTION_ERR);
@@ -45,7 +49,7 @@ static void init_tzc400(void)
 				MA35D1_DDR_BASE +
 				(MA35D1_DDR_MAX_SIZE - 1U),
 				TZC_REGION_S_NONE,
-				TZC_REGION_ACCESS_RDWR(MA35D1_NSAID_TZNS));
+				PLAT_ARM_TZC_NSNS_DEV_ACCESS);
 
 	/* Raise an exception if a NS device tries to access secure memory */
 	tzc400_set_action(TZC_ACTION_ERR);
@@ -61,7 +65,7 @@ static void init_tzc400(void)
 				MA35D1_DDR_BASE +
 				(MA35D1_DDR_MAX_SIZE - 1U),
 				TZC_REGION_S_NONE,
-				TZC_REGION_ACCESS_RDWR(MA35D1_NSAID_TZNS));
+				PLAT_ARM_TZC_NSNS_DEV_ACCESS);
 
 	/* Raise an exception if a NS device tries to access secure memory */
 	tzc400_set_action(TZC_ACTION_ERR);
@@ -84,21 +88,21 @@ static void early_init_tzc400(void)
 
 	/* TZC1 */
 	tzc400_init(MA35D1_TZC1_BASE);
-	tzc400_configure_region0(TZC_REGION_S_RDWR, TZC_REGION_ACCESS_RDWR(MA35D1_NSAID_TZNS));
+	tzc400_configure_region0(TZC_REGION_S_RDWR, PLAT_ARM_TZC_NSNS_DEV_ACCESS);
 
 	/* Raise an exception if a NS device tries to access secure memory */
 	tzc400_set_action(TZC_ACTION_ERR);
 
 	/* TZC2 */
 	tzc400_init(MA35D1_TZC2_BASE);
-	tzc400_configure_region0(TZC_REGION_S_RDWR, TZC_REGION_ACCESS_RDWR(MA35D1_NSAID_TZNS));
+	tzc400_configure_region0(TZC_REGION_S_RDWR, PLAT_ARM_TZC_NSNS_DEV_ACCESS);
 
 	/* Raise an exception if a NS device tries to access secure memory */
 	tzc400_set_action(TZC_ACTION_ERR);
 
 	/* TZC0 */
 	tzc400_init(MA35D1_TZC0_BASE);
-	tzc400_configure_region0(TZC_REGION_S_RDWR, TZC_REGION_ACCESS_RDWR(MA35D1_NSAID_TZNS));
+	tzc400_configure_region0(TZC_REGION_S_RDWR, PLAT_ARM_TZC_NSNS_DEV_ACCESS);
 
 	/* Raise an exception if a NS device tries to access secure memory */
 	tzc400_set_action(TZC_ACTION_ERR);
