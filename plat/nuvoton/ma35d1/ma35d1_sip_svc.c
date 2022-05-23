@@ -17,8 +17,9 @@
 
 #pragma weak ma35d1_plat_sip_handler
 #define CPU_1000MHZ   1
-#define CPU_700MHZ    2
-#define CPU_500MHZ    3
+#define CPU_800MHZ    2
+#define CPU_700MHZ    3
+#define CPU_500MHZ    4
 
 uintptr_t ma35d1_plat_sip_handler(uint32_t smc_fid,
 				    u_register_t x1,
@@ -70,14 +71,17 @@ uintptr_t sip_smc_handler(uint32_t smc_fid,
 	case SIP_CPU_CLK:
 		if ((uint32_t)x1 == CPU_1000MHZ)
 			cpu_clk = CPU_PLL_1G;
+		else if ((uint32_t)x1 == CPU_800MHZ)
+			cpu_clk = CPU_PLL_800;
 		else if ((uint32_t)x1 == CPU_700MHZ)
 			cpu_clk = CPU_PLL_700;
 		else if ((uint32_t)x1 == CPU_500MHZ)
 			cpu_clk = CPU_PLL_500;
 
 		rev = ma35d1_change_pll(cpu_clk);
-		if (rev == 1)
+		if (rev == 1) {
 			WARN("Set CPU clock Fail !!\n");
+		}
 
 		SMC_RET1(handle, rev);
 

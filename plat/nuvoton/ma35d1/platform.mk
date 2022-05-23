@@ -70,12 +70,22 @@ PLAT_INCLUDES		:=	-Iplat/nuvoton/ma35d1/include		\
 				-Iinclude/plat/arm/common/aarch64
 
 # Device tree
-DTB_FILE_NAME		?=	ma35d1xx8.dtb \
-				ma35d1xx7.dtb \
-				ma35d1xx0.dtb \
-				ma35d1xx0-mt-1gb.dtb \
-				ma35d1xx0-issi-1gb.dtb \
-				ma35d1xx0-zentel-1gb.dtb
+DTB_FILE_NAME		?=	\
+				ma35d1-cpu1g-wb-256m.dtb \
+				ma35d1-cpu1g-wb-512m.dtb \
+				\
+				ma35d1-cpu1g-issi-1g.dtb \
+				ma35d1-cpu1g-mc-1g.dtb \
+				ma35d1-cpu1g-zt-1g.dtb \
+				\
+				ma35d1-cpu800-wb-128m.dtb \
+				ma35d1-cpu800-wb-256m.dtb \
+				ma35d1-cpu800-wb-512m.dtb \
+				\
+				ma35d1-cpu800-issi-1g.dtb \
+				ma35d1-cpu800-mc-1g.dtb \
+				ma35d1-cpu800-zt-1g.dtb
+
 FDT_SOURCES		:=	$(addprefix fdts/, $(patsubst %.dtb,%.dts,$(DTB_FILE_NAME)))
 DTC_FLAGS		+=	-Wno-unit_address_vs_reg
 

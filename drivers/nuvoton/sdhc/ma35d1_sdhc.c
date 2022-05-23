@@ -64,10 +64,8 @@ static void sdh_reset(struct mmc *mmc, unsigned char mask)
 	/* Wait max 100 ms */
 	timeout = 100;
 	mmio_write_8(mmc->base+SDH_SW_RESET, mask);
-	while (mmio_read_8(mmc->base+SDH_SW_RESET) & mask)
-	{
-		if (timeout == 0)
-		{
+	while (mmio_read_8(mmc->base+SDH_SW_RESET) & mask) {
+		if (timeout == 0) {
 			ERROR("SD Reset fail\n");
 			return;
 		}
@@ -82,10 +80,9 @@ static void sdh_set_clock(struct mmc *mmc, unsigned int clock)
 
 	/* Wait max 20 ms */
 	timeout = 200;
-	while (mmio_read_32(mmc->base+SDH_PRESENT_STATE) & 0x3) //(SDH_CMD_INHIBIT | SDH_DATA_INHIBIT))
-	{
-		if (timeout == 0)
-		{
+	while (mmio_read_32(mmc->base+SDH_PRESENT_STATE) &
+		   0x3) { //(SDH_CMD_INHIBIT | SDH_DATA_INHIBIT))
+		if (timeout == 0) {
 			ERROR("Timeout to wait cmd & data inhibit\n");
 			return;
 		}
@@ -104,10 +101,9 @@ static void sdh_set_clock(struct mmc *mmc, unsigned int clock)
 
 	/* Wait max 20 ms */
 	timeout = 20;
-	while (!((clk = mmio_read_16(mmc->base+SDH_CLOCK_CONTROL)) & 0x2)) // SDHCI_CLOCK_INT_STABLE))
-	{
-		if (timeout == 0)
-		{
+	while (!((clk = mmio_read_16(mmc->base +
+		   SDH_CLOCK_CONTROL)) & 0x2)) { // SDHCI_CLOCK_INT_STABLE))
+		if (timeout == 0) {
 			ERROR("Internal clock never stable\n");
 			return;
 		}
@@ -129,18 +125,17 @@ static void sdh_cmd_done(struct mmc *mmc, struct mmc_cmd *cmd)
 {
 	int i;
 
-	if (cmd->resp_type & MMC_RSP_136)
-	{
+	if (cmd->resp_type & MMC_RSP_136) {
 		/* CRC is stripped so we need to do some shifting. */
-		for (i = 0; i < 4; i++)
-		{
-			cmd->response[i] = mmio_read_32(mmc->base + SDH_RESPONSE + (3-i)*4) << 8;
+		for (i = 0; i < 4; i++) {
+			cmd->response[i] = mmio_read_32(mmc->base +
+					SDH_RESPONSE +
+					(3 - i) * 4) << 8;
 			if (i != 3)
-				cmd->response[i] |= mmio_read_8(mmc->base + SDH_RESPONSE + (3-i)*4-1);
+				cmd->response[i] |= mmio_read_8(mmc->base +
+					SDH_RESPONSE + (3 - i) * 4 - 1);
 		}
-	}
-	else
-	{
+	} else {
 		cmd->response[0] = mmio_read_32(mmc->base + SDH_RESPONSE);
 	}
 }
@@ -152,9 +147,9 @@ static int sdh_transfer_data(struct mmc *mmc, struct mmc_data *data)
 	unsigned long start_addr;
 
 	if (data->flags == MMC_DATA_READ)
-		start_addr=(unsigned long)data->dest;
+		start_addr = (unsigned long) data->dest;
 	else
-		start_addr=(unsigned long)data->src;
+		start_addr = (unsigned long) data->src;
 
 	timeout = 2000000;
 	//rdy = 0x30; /* SDHCI_INT_SPACE_AVAIL | SDHCI_INT_DATA_AVAIL */
@@ -164,12 +159,13 @@ static int sdh_transfer_data(struct mmc *mmc, struct mmc_data *data)
 		if (stat & 0x8000)   /* SDHCI_INT_ERROR */
 			return -1;
 
-		if (!transfer_done && (stat & (1<<3)))
-		{ /* SDHCI_INT_DMA_END */
-			mmio_write_32(mmc->base+SDH_INT_STATUS,(1<<3)); /* SDHCI_INT_DMA_END */
-			start_addr &=~(512*1024 - 1);
+		if (!transfer_done && (stat & (1<<3))) {
+			/* SDHCI_INT_DMA_END */
+			mmio_write_32(mmc->base + SDH_INT_STATUS,
+						(1<<3)); /* SDHCI_INT_DMA_END */
+			start_addr &= ~(512*1024 - 1);
 			start_addr += 512*1024;
-			mmio_write_32(mmc->base+SDH_DMA_ADDRESS,start_addr);
+			mmio_write_32(mmc->base + SDH_DMA_ADDRESS, start_addr);
 		}
 		if (timeout-- > 0)
 			udelay(10);
@@ -181,7 +177,9 @@ static int sdh_transfer_data(struct mmc *mmc, struct mmc_data *data)
 }
 
 
-static int sdh_send_command(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_data *data)
+static int sdh_send_command(struct mmc *mmc,
+						 struct mmc_cmd *cmd,
+						 struct mmc_data *data)
 {
 	unsigned int stat = 0;
 	int ret = 0;
@@ -192,27 +190,27 @@ static int sdh_send_command(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_dat
 
 	mask = 0x3; /* SDH_CMD_INHIBIT | SDH_DATA_INHIBIT */
 
-	/* We shouldn't wait for data inhibit for stop commands, even
-	   though they might use busy signaling */
+	/*
+	 * We shouldn't wait for data inhibit for stop commands, even
+	 * though they might use busy signaling
+	 */
 	if (cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION)
 		mask &= ~0x2;   /* SDH_DATA_INHIBIT */
 
-	while (mmio_read_32(mmc->base+SDH_PRESENT_STATE) & mask)
-	{
-		if (time >= cmd_timeout)
-		{
-			if (2 * cmd_timeout <= SDH_CMD_MAX_TIMEOUT)
-			{
+	while (mmio_read_32(mmc->base+SDH_PRESENT_STATE) & mask) {
+		if (time >= cmd_timeout) {
+			if (2 * cmd_timeout <= SDH_CMD_MAX_TIMEOUT) {
 				cmd_timeout += cmd_timeout;
-			}
-			else
+			} else {
 				return -3;
+			}
 		}
 		time++;
 		udelay(1000);
 	}
 
-	mmio_write_32(mmc->base+SDH_INT_STATUS, 0xffffffff);    /* SDHCI_INT_ALL_MASK */
+	mmio_write_32(mmc->base+SDH_INT_STATUS,
+				 0xffffffff);    /* SDHCI_INT_ALL_MASK */
 
 	mask = 0x1;     /* SDHCI_INT_RESPONSE */
 
@@ -220,14 +218,13 @@ static int sdh_send_command(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_dat
 		flags = SDH_CMD_RESP_NONE;
 	else if (cmd->resp_type & MMC_RSP_136)
 		flags = SDH_CMD_RESP_LONG;
-	else if (cmd->resp_type & MMC_RSP_BUSY)
-	{
+	else if (cmd->resp_type & MMC_RSP_BUSY) {
 		flags = SDH_CMD_RESP_SHORT_BUSY;
 		if (data)
 			mask |= 0x2;    /* SDHCI_INT_DATA_END */
-	}
-	else
+	} else {
 		flags = SDH_CMD_RESP_SHORT;
+	}
 
 	if (cmd->resp_type & MMC_RSP_CRC)
 		flags |= SDH_CMD_CRC;
@@ -237,59 +234,59 @@ static int sdh_send_command(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_dat
 		flags |= SDH_CMD_DATA;
 
 	/* Set Transfer mode regarding to data flag */
-	if (data)
-	{
+	if (data) {
 		mmio_write_8(mmc->base+SDH_TOUT_CONTROL, 0xe);
 		mode = 0x2; /* SDHCI_TRNS_BLK_CNT_EN */
 		if (data->blocks > 1)
 			mode |= 0x20;   /* SDHCI_TRNS_MULTI */
 
-		if (data->flags == MMC_DATA_READ)
-		{
+		if (data->flags == MMC_DATA_READ) {
 			mode |= 0x10;   /* SDHCI_TRNS_READ */
-			mmio_write_32(mmc->base+SDH_DMA_ADDRESS,(unsigned long)data->dest);
-		}
-		else
-		{
-			mmio_write_32(mmc->base+SDH_DMA_ADDRESS,(unsigned long)data->src);
+			mmio_write_32(mmc->base + SDH_DMA_ADDRESS,
+						(unsigned long) data->dest);
+		} else {
+			mmio_write_32(mmc->base +
+						SDH_DMA_ADDRESS,
+						(unsigned long) data->src);
 		}
 		mode |= 0x1; /* schung: SDH_DMA */
-		mmio_write_8(mmc->base+SDH_HOST_CONTROL,mmio_read_8(mmc->base+SDH_HOST_CONTROL)&(~0x18));
+		mmio_write_8(mmc->base + SDH_HOST_CONTROL,
+				       mmio_read_8(mmc->base +
+				       SDH_HOST_CONTROL) & (~0x18));
 
-		mmio_write_16(mmc->base+SDH_BLOCK_SIZE, 0x7000|(data->blocksize & 0xfff));
+		mmio_write_16(mmc->base +
+					 SDH_BLOCK_SIZE, 0x7000 |
+					 (data->blocksize & 0xfff));
 		mmio_write_16(mmc->base+SDH_BLOCK_COUNT, data->blocks);
 		mmio_write_16(mmc->base+SDH_XFER_MODE, mode);
-	}
-	else if (cmd->resp_type & MMC_RSP_BUSY)
-	{
+	} else if (cmd->resp_type & MMC_RSP_BUSY) {
 		mmio_write_8(mmc->base+SDH_TOUT_CONTROL, 0xe);
 	}
 
 	mmio_write_32(mmc->base+SDH_ARGUMENT, cmd->cmdarg);
-	mmio_write_16(mmc->base+SDH_COMMAND, (((cmd->cmdidx & 0xff) << 8) | (flags & 0xff)));
+	mmio_write_16(mmc->base+SDH_COMMAND,
+				(((cmd->cmdidx & 0xff) << 8) | (flags & 0xff)));
 
 	/* TODO: add timeout */
-	do
-	{
+	do {
 		stat = mmio_read_32(mmc->base+SDH_INT_STATUS);
 		if (stat & 0x8000) /* SDHCI_INT_ERROR */
 			break;
-	}
-	while ((stat & mask) != mask);
+	} while ((stat & mask) != mask);
 
-	if ((stat & (0x8000 | mask)) == mask)
-	{
+	if ((stat & (0x8000 | mask)) == mask) {
 		sdh_cmd_done(mmc, cmd);
 		mmio_write_32(mmc->base+SDH_INT_STATUS, mask);
-	}
-	else
+	} else {
 		ret = -4;
+	}
 
 	if (!ret && data)
 		ret = sdh_transfer_data(mmc, data);
 
 	stat = mmio_read_32(mmc->base+SDH_INT_STATUS);
-	mmio_write_32(mmc->base+SDH_INT_STATUS, 0xffffffff);    /* SDHCI_INT_ALL_MASK */
+	/* SDHCI_INT_ALL_MASK */
+	mmio_write_32(mmc->base+SDH_INT_STATUS, 0xffffffff);
 
 	if (ret == 0)
 		return 0;
@@ -312,8 +309,7 @@ int sdh_select_card(struct mmc *mmc)
 	cmd.cmdarg = mmc->rca;
 	sdh_send_command(mmc, &cmd, 0);
 
-	if (mmc->version != MMC_VERSION)    /* SD */
-	{
+	if (mmc->version != MMC_VERSION)  {   /* SD */
 		cmd.cmdidx = MMC_CMD_APP_CMD;
 		cmd.resp_type = MMC_RSP_R1;
 		cmd.cmdarg = mmc->rca;
@@ -325,23 +321,33 @@ int sdh_select_card(struct mmc *mmc)
 		sdh_send_command(mmc, &cmd, 0);
 
 		/* Set bus width */
-		mmio_write_8(mmc->base+SDH_HOST_CONTROL, mmio_read_8(mmc->base+SDH_HOST_CONTROL) | 0x2);  /* SDH_CTRL_4BITBUS */
-	}
-	else    /* eMMC */
-	{
+		mmio_write_8(mmc->base + SDH_HOST_CONTROL,
+				       mmio_read_8(mmc->base +
+				       /* SDH_CTRL_4BITBUS */
+				       SDH_HOST_CONTROL) | 0x2);
+	} else {  /* eMMC */
 		cmd.cmdidx = SD_CMD_SWITCH_FUNC;
 		cmd.resp_type = MMC_RSP_R1b;
-		if (mmc->bus_width == 4)
-		{
-			/* set CMD6 argument Access field to 3, Index to 183, Value to 1 (4-bit mode) */
+		if (mmc->bus_width == 4) {
+			/*
+			 * Set CMD6 argument Access field to 3,
+			 * Index to 183, Value to 1 (4-bit mode)
+			 */
 			cmd.cmdarg = (3ul << 24) | (183ul << 16) | (1ul << 8);
-			mmio_write_8(mmc->base+SDH_HOST_CONTROL, mmio_read_8(mmc->base+SDH_HOST_CONTROL) | 0x2);  /* SDH_CTRL_4BITBUS */
-		}
-		else /* 8-bit */
-		{
-			/* set CMD6 argument Access field to 3, Index to 183, Value to 2 (8-bit mode) */
+			mmio_write_8(mmc->base + SDH_HOST_CONTROL,
+					       mmio_read_8(mmc->base +
+					       /* SDH_CTRL_4BITBUS */
+					       SDH_HOST_CONTROL) | 0x2);
+		} else { /* 8-bit */
+			/*
+			 * set CMD6 argument Access field to 3, Index to
+			 * 183, Value to 2 (8-bit mode)
+			 */
 			cmd.cmdarg = (3ul << 24) | (183ul << 16) | (2ul << 8);
-			mmio_write_8(mmc->base+SDH_HOST_CONTROL, mmio_read_8(mmc->base+SDH_HOST_CONTROL) | 0x20); /* SDHCI_CTRL_8BITBUS */
+			mmio_write_8(mmc->base + SDH_HOST_CONTROL,
+					       mmio_read_8(mmc->base +
+					       /* SDHCI_CTRL_8BITBUS */
+					       SDH_HOST_CONTROL) | 0x20);
 		}
 		sdh_send_command(mmc, &cmd, 0);
 	}
@@ -355,7 +361,9 @@ int sdh_select_card(struct mmc *mmc)
 	return 0;
 }
 
-int sdh_read_blocks(struct mmc *mmc, unsigned int start, void *dst, unsigned int blkcnt)
+int sdh_read_blocks(struct mmc *mmc,
+				 unsigned int start, void *dst,
+				 unsigned int blkcnt)
 {
 	struct mmc_cmd cmd;
 	struct mmc_data data;
@@ -382,8 +390,7 @@ int sdh_read_blocks(struct mmc *mmc, unsigned int start, void *dst, unsigned int
 	if (err)
 		return err;
 
-	if (blkcnt > 1)
-	{
+	if (blkcnt > 1)	{
 		cmd.cmdidx = MMC_CMD_STOP_TRANSMISSION;
 		cmd.cmdarg = 0;
 		cmd.resp_type = MMC_RSP_R1b;
@@ -417,7 +424,9 @@ static int sd_set_clear_card_detect(struct mmc *mmc)
 	return 0;
 }
 
-static int sd_switch(struct mmc *mmc, int mode, int group, unsigned char value, unsigned char *resp)
+static int sd_switch(struct mmc *mmc, int mode,
+				 int group, unsigned char value,
+				 unsigned char *resp)
 {
 	struct mmc_cmd cmd;
 	struct mmc_data data;
@@ -442,21 +451,30 @@ static int ma35d1_sdhc_hw_init(struct mmc *mmc)
 {
 	struct mmc_cmd cmd;
 	int err;
-	int volatile timeout;
+
+	volatile int timeout;
 
 	sdh_reset(mmc, SDH_RESET_ALL);
 	sdh_set_power(mmc);
 
 	/* Enable only interrupts served by the SD controller */
-	mmio_write_32(mmc->base+SDH_INT_ENABLE, 0x027180FB);    /* SDHCI_INT_DATA_MASK | SDHCI_INT_CMD_MASK */
+	mmio_write_32(mmc->base +
+				 SDH_INT_ENABLE,
+				 /* SDHCI_INT_DATA_MASK | SDHCI_INT_CMD_MASK */
+				 0x027180FB);
 	/* Mask all sdhci interrupt sources */
 	mmio_write_32(mmc->base+SDH_SIGNAL_ENABLE, 0);
 
 	/* set initial state: 1-bit bus width, normal speed */
-	mmio_write_8(mmc->base+SDH_HOST_CONTROL, mmio_read_8(mmc->base+SDH_HOST_CONTROL) & ~0x6);
+	mmio_write_8(mmc->base + SDH_HOST_CONTROL,
+			       mmio_read_8(mmc->base +
+						     SDH_HOST_CONTROL) &
+						     ~0x6);
 
 	/* schung: set sd mode */
-	mmio_write_16(mmc->base+SDH_HOST_CONTROL2, mmio_read_16(mmc->base+SDH_HOST_CONTROL2)|2);
+	mmio_write_16(mmc->base + SDH_HOST_CONTROL2,
+				mmio_read_16(mmc->base +
+							SDH_HOST_CONTROL2) | 2);
 
 	/* Set clock : initial clock 200KHz */
 	/* SDH_CLOCK_CONTROL */
@@ -480,14 +498,12 @@ static int ma35d1_sdhc_hw_init(struct mmc *mmc)
 	cmd.resp_type = MMC_RSP_R7;
 	sdh_send_command(mmc, &cmd, 0);
 
-	if ((cmd.response[0] & 0xff) == 0xaa)
-	{
+	if ((cmd.response[0] & 0xff) == 0xaa) {
 		/* SD 2.0 */
 		mmc->version = SD_VERSION_2;
 
 		timeout = 1000;
-		while (1)
-		{
+		while (1)	{
 			cmd.cmdidx = MMC_CMD_APP_CMD;
 			cmd.resp_type = MMC_RSP_R1;
 			cmd.cmdarg = 0;
@@ -497,11 +513,10 @@ static int ma35d1_sdhc_hw_init(struct mmc *mmc)
 			cmd.resp_type = MMC_RSP_R3;
 			cmd.cmdarg = 0x40ff8000;
 			sdh_send_command(mmc, &cmd, 0);
-			if (cmd.response[0] & 0x80000000)   /* OCR_BUSY */
-				break;
+			if (cmd.response[0] & 0x80000000)
+				break; /* OCR_BUSY */
 
-			if (timeout-- <= 0)
-			{
+			if (timeout-- <= 0) {
 				ERROR("SD timeout\n");
 				return -ETIMEDOUT;
 			}
@@ -511,9 +526,7 @@ static int ma35d1_sdhc_hw_init(struct mmc *mmc)
 			mmc->high_capacity = 0x40000000;
 		else
 			mmc->high_capacity = 0;
-	}
-	else
-	{
+	} else {
 		/* SD 1.1 */
 		/* reset SD bus */
 		cmd.cmdidx = MMC_CMD_GO_IDLE_STATE;
@@ -527,8 +540,7 @@ static int ma35d1_sdhc_hw_init(struct mmc *mmc)
 		cmd.cmdidx = MMC_CMD_APP_CMD;
 		cmd.resp_type = MMC_RSP_R1;
 		cmd.cmdarg = 0;
-		if (sdh_send_command(mmc, &cmd, 0) < 0)
-		{
+		if (sdh_send_command(mmc, &cmd, 0) < 0) {
 			/* eMMC */
 			/* reset SD bus */
 			cmd.cmdidx = MMC_CMD_GO_IDLE_STATE;
@@ -540,16 +552,14 @@ static int ma35d1_sdhc_hw_init(struct mmc *mmc)
 			udelay(0x1000);
 
 			timeout = 1000;
-			while (1)
-			{
+			while (1) {
 				cmd.cmdidx = MMC_CMD_SEND_OP_COND;
 				cmd.resp_type = MMC_RSP_R3;
 				cmd.cmdarg = 0x40ff8080;
 				sdh_send_command(mmc, &cmd, 0);
-				if (cmd.response[0] & 0x80000000)   /* OCR_BUSY */
-					break;
-				if (timeout-- <= 0)
-				{
+				if (cmd.response[0] & 0x80000000)
+					break; /* OCR_BUSY */
+				if (timeout-- <= 0) {
 					ERROR("SD timeout\n");
 					return -ETIMEDOUT;
 				}
@@ -558,17 +568,14 @@ static int ma35d1_sdhc_hw_init(struct mmc *mmc)
 			mmc->high_capacity = 0x40000000;
 			mmc->version = MMC_VERSION;
 			mmc->rca = 0x10000;
-		}
-		else
-		{
+		} else {
 			cmd.cmdidx = SD_CMD_APP_SEND_OP_COND;
 			cmd.resp_type = MMC_RSP_R3;
 			cmd.cmdarg = 0x00ff8000;
 			sdh_send_command(mmc, &cmd, 0);
 
 			timeout = 1000;
-			while (1)
-			{
+			while (1) {
 				cmd.cmdidx = MMC_CMD_APP_CMD;
 				cmd.resp_type = MMC_RSP_R1;
 				cmd.cmdarg = 0;
@@ -578,11 +585,10 @@ static int ma35d1_sdhc_hw_init(struct mmc *mmc)
 				cmd.resp_type = MMC_RSP_R3;
 				cmd.cmdarg = 0x00ff8000;
 				sdh_send_command(mmc, &cmd, 0);
-				if (cmd.response[0] & 0x80000000)   /* OCR_BUSY */
-					break;
+				if (cmd.response[0] & 0x80000000)
+					break; /* OCR_BUSY */
 
-				if (timeout-- <= 0)
-				{
+				if (timeout-- <= 0) {
 					ERROR("SD timeout\n");
 					return -ETIMEDOUT;
 				}
@@ -609,13 +615,14 @@ static int ma35d1_sdhc_hw_init(struct mmc *mmc)
 		mmc->rca = cmd.response[0] & 0xffff0000;
 
 	sdh_select_card(mmc);
-	if (mmc->version == SD_VERSION_2)
-	{
+	if (mmc->version == SD_VERSION_2) {
 		sd_set_clear_card_detect(mmc);
 		{
 			unsigned char *switch_status[64];
-			err = sd_switch(mmc, 1, 0, 0, (unsigned char *)switch_status);
-			if (err){
+
+			err = sd_switch(mmc, 1, 0, 0,
+					(unsigned char *)switch_status);
+			if (err) {
 				ERROR("sd_switch failed\n");
 				return err;
 			}
@@ -642,12 +649,14 @@ static void ma35d1_sdhc_setup(struct mmc *mmc)
 	}
 
 	if (mmc->base == SDH0_BASE) {
-		node = fdt_node_offset_by_compatible(fdt, -1, "snps,dwcmshc-sdhci0");
+		node = fdt_node_offset_by_compatible(fdt, -1,
+			    "snps,dwcmshc-sdhci0");
 		if (node < 0) {
 			WARN("The compatible property `snps,dwcmshc-sdhci0` not found\n");
 		}
 	} else {
-		node = fdt_node_offset_by_compatible(fdt, -1, "snps,dwcmshc-sdhci1");
+		node = fdt_node_offset_by_compatible(fdt, -1,
+			    "snps,dwcmshc-sdhci1");
 		if (node < 0) {
 			WARN("The compatible property `snps,dwcmshc-sdhci1` not found\n");
 		}
@@ -679,18 +688,27 @@ static struct io_block_dev_spec sdhc_dev_spec = {
 	.block_size = 512,
 };
 
-int ma35d1_sdhc_init(struct io_block_dev_spec **block_dev_spec, long *offset, int sdhc)
+int ma35d1_sdhc_init(struct io_block_dev_spec **block_dev_spec,
+				   long *offset, int sdhc)
 {
 	if (sdhc == 0) {
-		mmio_write_32(CLK_CLKSEL0, mmio_read_32(CLK_CLKSEL0) | 0x30000); /* system pll */
-		mmio_write_32(CLK_SYSCLK0, mmio_read_32(CLK_SYSCLK0) | 0x10000); /* enable SD0 clock */
+		mmio_write_32(CLK_CLKSEL0,
+					mmio_read_32(CLK_CLKSEL0) &
+					~0x30000); /* system pll */
+		mmio_write_32(CLK_SYSCLK0,
+					mmio_read_32(CLK_SYSCLK0) |
+					0x10000); /* enable SD0 clock */
 		/* Set GPC for SD0 */
 		mmio_write_32(SYS_GPC_MFPL, 0x66666666);
 		mmio_write_32(SYS_GPC_MFPH, 0x00006666);
 		ma35d1_mmc.base = SDH0_BASE;
 	} else {
-		mmio_write_32(CLK_CLKSEL0, mmio_read_32(CLK_CLKSEL0) | 0xC0000); /* system pll */
-		mmio_write_32(CLK_SYSCLK0, mmio_read_32(CLK_SYSCLK0) | 0x20000); /* enable SD1 clock */
+		mmio_write_32(CLK_CLKSEL0,
+					mmio_read_32(CLK_CLKSEL0) &
+					~0xC0000); /* system pll */
+		mmio_write_32(CLK_SYSCLK0,
+					mmio_read_32(CLK_SYSCLK0) |
+					0x20000); /* enable SD1 clock */
 		/* Set GPJ for SD1 */
 		mmio_write_32(SYS_GPJ_MFPL, 0x66666666);
 		mmio_write_32(SYS_GPJ_MFPH, 0x00006666);

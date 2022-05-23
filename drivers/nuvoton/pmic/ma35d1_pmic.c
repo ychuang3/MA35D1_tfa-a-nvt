@@ -22,9 +22,9 @@
 #include <drivers/nuvoton/ma35d1_pmic.h>
 
 #define RETRY_COUNT 3
-/*---------------------------------------------------------------------------------------------------------*/
-/* Global variables                                                                                        */
-/*---------------------------------------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/* Global variables                                                          */
+/*---------------------------------------------------------------------------*/
 unsigned char g_u8DeviceAddr = 0xB0;
 unsigned char g_uPageNum;
 unsigned char g_u8RegAddr;
@@ -36,85 +36,102 @@ volatile unsigned char g_u8EndFlag = 0;
 
 void I2C_MasterRx(unsigned int u32Status)
 {
-	if (u32Status == 0x08)
-	{	/* START has been transmitted and prepare SLA+W */
-		mmio_write_32(REG_I2C0_DAT, g_u8DeviceAddr|(g_uPageNum << 1));
-		mmio_write_32(REG_I2C0_CTL, (mmio_read_32(REG_I2C0_CTL)& ~0x3c) | I2C_CTL_SI);
-	}
-	else if (u32Status == 0x18)
-	{	/* SLA+W has been transmitted and ACK has been received */
+	if (u32Status == 0x08) {
+		/* START has been transmitted and prepare SLA+W */
+		mmio_write_32(REG_I2C0_DAT,
+					g_u8DeviceAddr|(g_uPageNum << 1));
+		mmio_write_32(REG_I2C0_CTL,
+					(mmio_read_32(REG_I2C0_CTL) &
+					~0x3c) | I2C_CTL_SI);
+	} else if (u32Status == 0x18) {
+		/* SLA+W has been transmitted and ACK has been received */
 		mmio_write_32(REG_I2C0_DAT, g_u8RegAddr);
-		mmio_write_32(REG_I2C0_CTL, (mmio_read_32(REG_I2C0_CTL)& ~0x3c) | I2C_CTL_SI);
-	}
-	else if (u32Status == 0x20)
-	{	/* SLA+W has been transmitted and NACK has been received */
-		mmio_write_32(REG_I2C0_CTL, (mmio_read_32(REG_I2C0_CTL)& ~0x3c)|(I2C_CTL_STA|I2C_CTL_STO|I2C_CTL_SI));
-	}
-	else if (u32Status == 0x28)
-	{	/* DATA has been transmitted and ACK has been received */
-		mmio_write_32(REG_I2C0_CTL, (mmio_read_32(REG_I2C0_CTL)& ~0x3c)|(I2C_CTL_STA|I2C_CTL_SI)); // repeat start
-	}
-	else if (u32Status == 0x10)
-	{	/* Repeat START has been transmitted and prepare SLA+R */
-		mmio_write_32(REG_I2C0_DAT, (g_u8DeviceAddr|(g_uPageNum << 1))|0x01);
-		mmio_write_32(REG_I2C0_CTL, (mmio_read_32(REG_I2C0_CTL)& ~0x3c) | I2C_CTL_SI);
-	}
-	else if (u32Status == 0x40)
-	{	/* SLA+R has been transmitted and ACK has been received */
-		mmio_write_32(REG_I2C0_CTL, (mmio_read_32(REG_I2C0_CTL)& ~0x3c) | I2C_CTL_SI);
-	}
-	else if (u32Status == 0x58)
-	{	/* DATA has been received and NACK has been returned */
+		mmio_write_32(REG_I2C0_CTL,
+					(mmio_read_32(REG_I2C0_CTL) &
+					~0x3c) | I2C_CTL_SI);
+	} else if (u32Status == 0x20) {
+		/* SLA+W has been transmitted and NACK has been received */
+		mmio_write_32(REG_I2C0_CTL,
+					(mmio_read_32(REG_I2C0_CTL) &
+					~0x3c) | (I2C_CTL_STA |
+					I2C_CTL_STO | I2C_CTL_SI));
+	} else if (u32Status == 0x28) {
+		/* DATA has been transmitted and ACK has been received */
+		mmio_write_32(REG_I2C0_CTL,
+					(mmio_read_32(REG_I2C0_CTL) &
+					~0x3c) | (I2C_CTL_STA |
+					I2C_CTL_SI)); // repeat start
+	} else if (u32Status == 0x10) {
+		/* Repeat START has been transmitted and prepare SLA+R */
+		mmio_write_32(REG_I2C0_DAT,
+					(g_u8DeviceAddr|(g_uPageNum << 1)) |
+					0x01);
+		mmio_write_32(REG_I2C0_CTL,
+					(mmio_read_32(REG_I2C0_CTL) &
+					~0x3c) | I2C_CTL_SI);
+	} else if (u32Status == 0x40) {
+		/* SLA+R has been transmitted and ACK has been received */
+		mmio_write_32(REG_I2C0_CTL,
+					(mmio_read_32(REG_I2C0_CTL) &
+					~0x3c) | I2C_CTL_SI);
+	} else if (u32Status == 0x58) {
+		/* DATA has been received and NACK has been returned */
 		g_u8RxData = mmio_read_32(REG_I2C0_DAT);
-		mmio_write_32(REG_I2C0_CTL, (mmio_read_32(REG_I2C0_CTL)& ~0x3c)|(I2C_CTL_STO|I2C_CTL_SI));
+		mmio_write_32(REG_I2C0_CTL,
+					(mmio_read_32(REG_I2C0_CTL) &
+					~0x3c) | (I2C_CTL_STO | I2C_CTL_SI));
 		g_u8EndFlag = 1;
-	}
-	else
-	{
+	} else {
 		//ERROR("Status 0x%x is NOT processed\n", u32Status);
 	}
 }
 
 void I2C_MasterTx(unsigned int u32Status)
 {
-	if (u32Status == 0x08)
-	{	/* START has been transmitted */
-		mmio_write_32(REG_I2C0_DAT, g_u8DeviceAddr|(g_uPageNum << 1));  /* Write SLA+W to Register I2CDAT */
-		mmio_write_32(REG_I2C0_CTL, (mmio_read_32(REG_I2C0_CTL)& ~0x3c) | I2C_CTL_SI);
-	}
-	else if (u32Status == 0x18)
-	{	/* SLA+W has been transmitted and ACK has been received */
+	if (u32Status == 0x08) {
+		/* START has been transmitted */
+		 /* Write SLA+W to Register I2CDAT */
+		mmio_write_32(REG_I2C0_DAT,
+					g_u8DeviceAddr|(g_uPageNum << 1));
+		mmio_write_32(REG_I2C0_CTL,
+					(mmio_read_32(REG_I2C0_CTL) &
+					~0x3c) | I2C_CTL_SI);
+	} else if (u32Status == 0x18) {
+		/* SLA+W has been transmitted and ACK has been received */
 		mmio_write_32(REG_I2C0_DAT, g_u8RegAddr);
-		mmio_write_32(REG_I2C0_CTL, (mmio_read_32(REG_I2C0_CTL)& ~0x3c) | I2C_CTL_SI);
-	}
-	else if (u32Status == 0x20)
-	{	/* SLA+W has been transmitted and NACK has been received */
-		mmio_write_32(REG_I2C0_CTL, (mmio_read_32(REG_I2C0_CTL)& ~0x3c)|(I2C_CTL_STA|I2C_CTL_STO|I2C_CTL_SI));
-	}
-	else if (u32Status == 0x28)
-	{	/* DATA has been transmitted and ACK has been received */
-		if ((g_u8DataLen == 0) && (g_u8EndFlag == 0))
-		{
+		mmio_write_32(REG_I2C0_CTL,
+					(mmio_read_32(REG_I2C0_CTL) &
+					~0x3c) | I2C_CTL_SI);
+	} else if (u32Status == 0x20) {
+		/* SLA+W has been transmitted and NACK has been received */
+		mmio_write_32(REG_I2C0_CTL,
+					(mmio_read_32(REG_I2C0_CTL) &
+					~0x3c) | (I2C_CTL_STA | I2C_CTL_STO |
+					I2C_CTL_SI));
+	} else if (u32Status == 0x28) {
+		/* DATA has been transmitted and ACK has been received */
+		if ((g_u8DataLen == 0) && (g_u8EndFlag == 0)) {
 			mmio_write_32(REG_I2C0_DAT, g_u8WriteData);
-			mmio_write_32(REG_I2C0_CTL, (mmio_read_32(REG_I2C0_CTL)& ~0x3c) | I2C_CTL_SI);
+			mmio_write_32(REG_I2C0_CTL,
+						(mmio_read_32(REG_I2C0_CTL) &
+						~0x3c) | I2C_CTL_SI);
 			g_u8DataLen++;
-		}
-		else
-		{
+		} else {
 			g_u8DataLen = 0;
-			mmio_write_32(REG_I2C0_CTL, (mmio_read_32(REG_I2C0_CTL)& ~0x3c)|(I2C_CTL_STO|I2C_CTL_SI));
+			mmio_write_32(REG_I2C0_CTL,
+						(mmio_read_32(REG_I2C0_CTL) &
+						~0x3c) |
+						(I2C_CTL_STO | I2C_CTL_SI));
 			g_u8EndFlag = 1;
 		}
-	}
-	else
-	{
+	} else {
 		//ERROR("Status 0x%x is NOT processed\n", u32Status);
 	}
 }
 
 unsigned int ma35d1_write_i2c_data(unsigned int u32Addr, unsigned int u32Data)
 {
-	unsigned int I2C_TIME_OUT_COUNT = 0x20000;
+	unsigned int I2C_TIME_OUT_COUNT = 6000;
 	unsigned int u32Status;
 	unsigned int u32time_out = 0;
 
@@ -128,11 +145,11 @@ unsigned int ma35d1_write_i2c_data(unsigned int u32Addr, unsigned int u32Data)
 	g_u8WriteData   = u32Data;
 	g_u8EndFlag     = 0x0;
 
-	mmio_write_32(REG_I2C0_CTL, (mmio_read_32(REG_I2C0_CTL)& ~0x3c) | I2C_CTL_STA);
+	mmio_write_32(REG_I2C0_CTL, (mmio_read_32(REG_I2C0_CTL) &
+				~0x3c) | I2C_CTL_STA);
 
-	while(1) {
+	while (1) {
 		if (mmio_read_32(REG_I2C0_CTL) & I2C_CTL_SI) {
-			u32time_out = 0;
 			u32Status = mmio_read_32(REG_I2C0_STATUS);
 			I2C_MasterTx(u32Status);
 		}
@@ -142,16 +159,15 @@ unsigned int ma35d1_write_i2c_data(unsigned int u32Addr, unsigned int u32Data)
 		}
 		u32time_out++;
 		if (u32time_out > I2C_TIME_OUT_COUNT) {
-			ERROR("i2c Write Time Out!\n");
 			return 0; // error
 		}
 	}
 	return 1;
 }
 
-unsigned int ma35d1_read_i2c_data(unsigned int u32Addr, unsigned int* u32Data)
+unsigned int ma35d1_read_i2c_data(unsigned int u32Addr, unsigned int *u32Data)
 {
-	unsigned int I2C_TIME_OUT_COUNT = 0x200000;
+	unsigned int I2C_TIME_OUT_COUNT = 6000;
 	unsigned int u32Status;
 	unsigned int u32time_out = 0;
 
@@ -164,11 +180,11 @@ unsigned int ma35d1_read_i2c_data(unsigned int u32Addr, unsigned int* u32Data)
 	g_u8RegAddr     = u32Addr;
 	g_u8EndFlag     = 0x0;
 
-	mmio_write_32(REG_I2C0_CTL, (mmio_read_32(REG_I2C0_CTL)& ~0x3c) | I2C_CTL_STA);
+	mmio_write_32(REG_I2C0_CTL, (mmio_read_32(REG_I2C0_CTL) &
+				 ~0x3c) | I2C_CTL_STA);
 
-	while(1) {
+	while (1) {
 		if (mmio_read_32(REG_I2C0_CTL) & I2C_CTL_SI) {
-			u32time_out = 0;
 			u32Status = mmio_read_32(REG_I2C0_STATUS);
 			I2C_MasterRx(u32Status);
 		}
@@ -179,7 +195,6 @@ unsigned int ma35d1_read_i2c_data(unsigned int u32Addr, unsigned int* u32Data)
 
 		u32time_out++;
 		if (u32time_out > I2C_TIME_OUT_COUNT) {
-			ERROR("i2c Read Time Out!\n");
 			return 1; // error
 		}
 	}
@@ -188,18 +203,20 @@ unsigned int ma35d1_read_i2c_data(unsigned int u32Addr, unsigned int* u32Data)
 	return 2;
 }
 
-unsigned int ma35d1_read_pmic_data(unsigned int u32Addr, unsigned int* u32Data)
+unsigned int ma35d1_read_pmic_data(
+	unsigned int u32Addr,
+	unsigned int *u32Data)
 {
-	unsigned int j = RETRY_COUNT;
+	int j = RETRY_COUNT;
 
-	while(j-- > 0) {
+	while (j-- > 0) {
 		if (ma35d1_read_i2c_data(u32Addr, u32Data) == 2) {
 			break;
 		}
 	}
 
 	if (j <= 0) {
-		ERROR("\n READ ERROR! \n");
+		//WARN("\nREAD PMIC DATA ERROR!\n");
 		return 0;
 	}
 
@@ -208,7 +225,7 @@ unsigned int ma35d1_read_pmic_data(unsigned int u32Addr, unsigned int* u32Data)
 
 unsigned int ma35d1_write_pmic_data(unsigned int u32Addr, unsigned int u32Data)
 {
-	unsigned int j = RETRY_COUNT;
+	int j = RETRY_COUNT;
 
 	while (j-- > 0) {
 		if (ma35d1_write_i2c_data(u32Addr, u32Data) == 1) {
@@ -217,7 +234,7 @@ unsigned int ma35d1_write_pmic_data(unsigned int u32Addr, unsigned int u32Data)
 	}
 
 	if (j <= 0) {
-		ERROR("\n WRITE ERROR [%d]! \n", j);
+		/* WARN("\nWRITE PMIC DATA ERROR [%d]!\n", j); */
 		return 0;
 	}
 
@@ -229,11 +246,15 @@ void ma35d1_i2c0_init(unsigned int sys_clk)
 	unsigned long clk_rate;
 	unsigned int u32Div, speed;
 
-	outp32((void *)0X40460208, inp32((void *)0X40460208) | (0x3fff << 16)); // enable GPIO clock
-	outp32((void *)0X40460210, inp32((void *)0X40460210) | (0x1 << 0));  // I2C0 CLK
+	outp32((void *)0X40460208, inp32((void *)0X40460208) |
+		    (0x3fff << 16)); // enable GPIO clock
+	outp32((void *)0X40460210, inp32((void *)0X40460210) |
+		    (0x1 << 0));  // I2C0 CLK
 
-	outp32(0x40460098, ((inp32(0x40460098) & ~0x0f000000) | (0x6<<24))); // PD.6 I2C0_SDA
-	outp32(0x40460098, ((inp32(0x40460098) & ~0xf0000000) | (0x6<<28))); // PD.7 I2C0_CLK
+	outp32(0x40460098, ((inp32(0x40460098) & ~0x0f000000) |
+		    (0x6<<24))); // PD.6 I2C0_SDA
+	outp32(0x40460098, ((inp32(0x40460098) & ~0xf0000000) |
+		    (0x6<<28))); // PD.7 I2C0_CLK
 	outp32(0x400400F0, 0x5 << 12); // pull high
 
 	/* i2c_clk = 100KHz */
@@ -241,13 +262,17 @@ void ma35d1_i2c0_init(unsigned int sys_clk)
 	speed = 100*1000;
 
 	/* assume speed above 1000 are Hz-specified */
-	if (speed > 1000) speed = speed/1000;
-	if (speed > 400) speed = 400;
+	if (speed > 1000)
+		speed = speed / 1000;
+	if (speed > 400)
+		speed = 400;
 
-	u32Div = (unsigned int)(((clk_rate * 10U) / (speed * 4U) + 5U) / 10U - 1U);
+	u32Div = (unsigned int)(((clk_rate * 10U) /
+			(speed * 4U) + 5U) / 10U - 1U);
 
 	mmio_write_32(REG_I2C0_CLKDIV, u32Div);
-	mmio_write_32(REG_I2C0_CTL, mmio_read_32(REG_I2C0_CTL) | I2C_CTL_ENABLE); /* i2c enable */
+	mmio_write_32(REG_I2C0_CTL, mmio_read_32(REG_I2C0_CTL)  |
+				I2C_CTL_ENABLE); /* i2c enable */
 }
 
 

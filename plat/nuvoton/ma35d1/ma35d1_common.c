@@ -30,11 +30,11 @@
 #define MA35D1_GICV3		2
 
 /*******************************************************************************
- * arm_config holds the characteristics of the differences between the three MA35D1
- * platforms (Base, A53_A57 & Foundation). It will be populated during cold boot
- * at each boot stage by the primary before enabling the MMU (to allow
- * interconnect configuration) & used thereafter. Each BL will have its own copy
- * to allow independent operation.
+ * arm_config holds the characteristics of the differences between the
+ * three MA35D1 platforms (Base, A53_A57 & Foundation). It will be
+ * populated during cold boot at each boot stage by the primary before
+ * enabling the MMU (to allow interconnect configuration) & used thereafter.
+ * Each BL will have its own copy to allow independent operation.
  ******************************************************************************/
 arm_config_t arm_config;
 
@@ -54,14 +54,16 @@ static unsigned int get_interconnect_master(void)
 }
 #endif
 
-int console_ma35d1_register(uintptr_t baseaddr, uint32_t clock, uint32_t baud, console_t *console);
+int console_ma35d1_register(uintptr_t baseaddr, uint32_t clock,
+					uint32_t baud, console_t *console);
 int console_ma35d1_putc(int character, console_t *console);
 int console_ma35d1_getc(console_t *console);
 void console_ma35d1_flush(console_t *console);
 static console_t ma35d1_console;
 
 static console_t ma35d1_console = {
-	.flags = CONSOLE_FLAG_BOOT | CONSOLE_FLAG_RUNTIME | CONSOLE_FLAG_CRASH | CONSOLE_FLAG_TRANSLATE_CRLF,
+	.flags = CONSOLE_FLAG_BOOT | CONSOLE_FLAG_RUNTIME |
+			CONSOLE_FLAG_CRASH | CONSOLE_FLAG_TRANSLATE_CRLF,
 	.putc = console_ma35d1_putc,
 	.getc = console_ma35d1_getc,
 	.flush = console_ma35d1_flush,
@@ -70,10 +72,10 @@ static console_t ma35d1_console = {
 void ma35d1_i2c0_init(unsigned int sys_clk);
 
 /* CPU-PLL: 1000MHz 800MHz 700MHz */
-static unsigned int CAPLL_MODE0[3][3] = {
-	{ 0x0000307D, 0x00000010, 0x00000000 },	/* 1000 MHz */
-	{ 0x00003064, 0x00000010, 0x00000000 },	/* 800 MHz */
-	{ 0x000060AF, 0x00000010, 0x00000000 },	/* 700 MHz */
+static unsigned int CAPLL_MODE0[3] = {
+	0x000006FA,	/* 1000 MHz */
+	0x00000364,	/* 800 MHz */
+	0x000006AF,	/* 700 MHz */
 };
 
 static void *fdt = (void *)(uintptr_t)MA35D1_DTB_BASE;
@@ -82,7 +84,7 @@ static void ma35d1_clock_setup(void)
 {
 	unsigned int pllmode[6] = { 0, 0, 0, 0, 0, 0 };
 	unsigned int pllfreq[6] = { 0, 0, 0, 0, 0, 0 };
-	unsigned int speed=500000000;
+	unsigned int speed = 500000000;
 	unsigned int clock, index = 2;
 	int node;
 
@@ -105,7 +107,7 @@ static void ma35d1_clock_setup(void)
 		outp32((void *)CLK_PLL4CTL1, 0x00000020);
 		outp32((void *)CLK_PLL4CTL2, 0x0);
 		/* check PLL stable */
-		while(1) {
+		while (1) {
 			if ((inp32((void *)CLK_STATUS) & 0x200) == 0x200)
 				break;
 		}
@@ -114,56 +116,60 @@ static void ma35d1_clock_setup(void)
 	pmic_clk = pllfreq[1]; /* I2C0 clock for PMIC */
 
 	/* CA-PLL */
-	clock = (pllfreq[0] < speed)? speed : pllfreq[0];
+	clock = (pllfreq[0] < speed) ? speed : pllfreq[0];
 	switch (clock) {
-	case 1000000000:
-	case 800000000:
+	case 1000000000: /* 1.302V */
 		/* set the voltage VDD_CPU first */
-		if (ma35d1_set_pmic(VOL_CPU, VOL_1_29)) {
-			if (clock == 1000000000)
-				index = 0;
-			else
-				index = 1;
+		if (ma35d1_set_pmic(VOL_CPU, VOL_1_30))
 			INFO("CA-PLL is %d Hz\n", clock);
-		} else {
-			index = 2;
-			WARN("Set 1GHz fail, try to set 700MHz.\n");
-		}
+		else
+			WARN("CA-PLL is %d Hz without PSCI setting.\n",
+				clock);
+		index = 0;
 		break;
+	case 800000000: /* 1.248V */
+			/* set the voltage VDD_CPU first */
+			if (ma35d1_set_pmic(VOL_CPU, VOL_1_25))
+				INFO("CA-PLL is %d Hz\n", clock);
+			else
+				WARN("CA-PLL is %d Hz without PSCI setting.\n",
+					clock);
+			break;
 	case 700000000:
-		index = 2;
-		INFO("CA-PLL is %d Hz\n", clock);
-		break;
+			index = 2;
+			INFO("CA-PLL is %d Hz\n", clock);
+			break;
 	default:
-		INFO("CA-PLL is %d Hz\n", clock);
-		return;
+			INFO("CA-PLL is %d Hz\n", clock);
+			return;
 	};
 	/* set CA35 to E-PLL */
 	outp32((void *)CLK_CLKSEL0, (inp32((void *)CLK_CLKSEL0) & ~0x3) | 0x2);
 
-	outp32((void *)CLK_PLL0CTL0, CAPLL_MODE0[index][0]);
-	outp32((void *)CLK_PLL0CTL1, CAPLL_MODE0[index][1]);
-	outp32((void *)CLK_PLL0CTL2, CAPLL_MODE0[index][2]);
+	outp32((void *)CLK_PLL0CTL0, CAPLL_MODE0[index]);
 
 	/* check PLL stable */
-	while(1) {
+	while (1) {
 		if ((inp32((void *)CLK_STATUS) & 0x40) == 0x40)
 			break;
 	}
 	/* set CA35 to CA-PLL */
 	outp32((void *)CLK_CLKSEL0, (inp32((void *)CLK_CLKSEL0) & ~0x3) | 0x1);
 
-	/* Enable LXT when requested by the device tree. */
+	/* check LXT */
 	if (fdt_read_uint32_default(fdt, node, "lxt-enable", 0) == 1) {
 		outp32((void *)CLK_PWRCTL, inp32((void *)CLK_PWRCTL) | 0x2);
 	}
 
 	if (fdt_read_uint32_default(fdt, node, "rtc-pwrctl-enable", 1) == 1)
-		outp32((void *)0x40410180,
-		       inp32((void *)0x40410180) | 0x5aa50040);
-	else
-		outp32((void *)(TSI_CLK_BASE + 0x40),
-		       (inp32((void *)0x40410180) & ~0xffff0040) | 0x5aa50000);
+		outp32((void *)(0x40410180),
+			inp32((void *)(0x40410180)) |
+			0x5aa50040);  /* power control enable */
+	else	/* power control disable */
+		outp32((void *)(TSI_CLK_BASE+0x40),
+			(inp32((void *)(0x40410180)) & ~0xffff0040) |
+			0x5aa50000);
+
 
 }
 
@@ -186,9 +192,13 @@ void __init ma35d1_config_setup(void)
 	outp32((void *)CLK_CLKSEL2, inp32((void *)CLK_CLKSEL2) & ~(3 << 16));
 	outp32((void *)CLK_CLKDIV1, inp32((void *)CLK_CLKDIV1) & ~(0xf << 16));
 	/* UART0 multi-function */
-	outp32((void *)SYS_GPE_MFPH, (inp32((void *)SYS_GPE_MFPH) & ~0xff000000) | 0x11000000);
+	outp32((void *)SYS_GPE_MFPH, (inp32((void *)SYS_GPE_MFPH) &
+			~0xff000000) | 0x11000000);
 
-	console_ma35d1_register(PLAT_ARM_CRASH_UART_BASE, PLAT_ARM_CRASH_UART_CLK_IN_HZ, ARM_CONSOLE_BAUDRATE, &ma35d1_console);
+	console_ma35d1_register(PLAT_ARM_CRASH_UART_BASE,
+				PLAT_ARM_CRASH_UART_CLK_IN_HZ,
+				ARM_CONSOLE_BAUDRATE,
+				&ma35d1_console);
 
 	INFO("ma35d1 config setup\n");
 
@@ -236,7 +246,7 @@ void ma35d1_timer_init(void)
 
 void plat_ma35d1_init(void)
 {
-	int value_len=0, i, count=0;
+	int value_len = 0, i, count = 0;
 	int node;
 	unsigned int cells[70 * 3];
 	unsigned int reg;
@@ -252,38 +262,45 @@ void plat_ma35d1_init(void)
 	}
 
 	/* enable CRYPTO */
-	if ((inp32((void *)SYS_CHIPCFG) & 0x100) == 0x0) {
+	if ((inp32((void *)SYS_CHIPCFG) & 0x100) == 0x100) {
 		/* un-lock */
 		do {
 			outp32((void *)(TSI_SYS_BASE+0x100), 0x59);
 			outp32((void *)(TSI_SYS_BASE+0x100), 0x16);
 			outp32((void *)(TSI_SYS_BASE+0x100), 0x88);
-		} while(inp32((void *)(TSI_SYS_BASE+0x100)) == 0UL);
+		} while (inp32((void *)(TSI_SYS_BASE+0x100)) == 0UL);
 
 		/* set TSI-PLL to HIRC */
 		if ((inp32((void *)(TSI_CLK_BASE+0x10)) & 0x7) == 0x2) {
-			outp32((void *)(TSI_CLK_BASE+0x10), inp32((void *)(TSI_CLK_BASE+0x10)) & ~0x7);
+			outp32((void *)(TSI_CLK_BASE+0x10),
+				inp32((void *)(TSI_CLK_BASE+0x10)) & ~0x7);
 		}
-		outp32((void *)(TSI_CLK_BASE+0x40), 0x808cc8);  /* PLL to 200 MHz */
+		/* PLL to 200 MHz */
+		outp32((void *)(TSI_CLK_BASE+0x40), 0x808cc8);
 		while (1) {
-			if ((inp32((void *)(TSI_CLK_BASE+0x50)) & 0x4) == 0x4) {
-				outp32((void *)(TSI_CLK_BASE+0x10), (inp32((void *)(TSI_CLK_BASE+0x10)) & ~0x7) | 0x2);
+			if ((inp32((void *)(TSI_CLK_BASE+0x50))
+				& 0x4) == 0x4) {
+				outp32((void *)(TSI_CLK_BASE+0x10),
+					(inp32((void *)(TSI_CLK_BASE+0x10)) &
+					~0x7) | 0x2);
 				break;
 			}
 		}
 		/* initial crypto engine and ks clock */
-		outp32((void *)(TSI_CLK_BASE+0x04), (inp32((void *)(TSI_CLK_BASE+0x04)) | 0x5000));
+		outp32((void *)(TSI_CLK_BASE+0x04),
+			    (inp32((void *)(TSI_CLK_BASE+0x04)) | 0x5000));
 		/* initial trng clock */
-		outp32((void *)(TSI_CLK_BASE+0x0c), (inp32((void *)(TSI_CLK_BASE+0x0c)) | 0x2000000));
+		outp32((void *)(TSI_CLK_BASE+0x0c),
+			    (inp32((void *)(TSI_CLK_BASE+0x0c)) |
+			    0x2000000));
 
-		/* Init KeyStore: KS_CTL INIT[8] and START[0]. */
-		outp32((void *)(KS_BASE + 0x00), 0x101);
-		/* Wait for KS_STS INITDONE[7] to be set. */
-		while ((inp32((void *)(KS_BASE + 0x08)) & 0x80) == 0)
-			;
-		/* Wait for KS_STS BUSY[2] to clear. */
-		while ((inp32((void *)(KS_BASE + 0x08)) & 0x4) != 0)
-			;
+		/* Init KeyStore */
+		/* KS INIT(KS_CTL[8]) + START(KS_CTL[0]) */
+		outp32((void *)(KS_BASE+0x00), 0x101);
+		while ((inp32((void *)(KS_BASE+0x08)) & 0x80) == 0)
+			;   /* wait for INITDONE(KS_STS[7]) set */
+		while (inp32((void *)(KS_BASE+0x08)) & 0x4)
+			;      /* wait for BUSY(KS_STS[2]) cleared */
 	}
 
 	node = fdt_node_offset_by_compatible(fdt, -1, "nuvoton,ma35d1-sspcc");
@@ -296,7 +313,7 @@ void plat_ma35d1_init(void)
 	outp32((void *)CLK_APBCLK2, inp32((void *)CLK_APBCLK2) | 0x8);
 	outp32((void *)CLK_SYSCLK1, inp32((void *)CLK_SYSCLK1) | 0x3FFF0000);
 	/* set GPIO to TZNS */
-	for (i=0; i<0x38; i+=4)
+	for (i = 0; i < 0x38; i += 4)
 		outp32(SSPCC_BASE+0x60+i, 0x55555555);
 
 	/* get peripheral attribution from DTB */
@@ -304,9 +321,11 @@ void plat_ma35d1_init(void)
 		count = value_len / 4;
 		fdt_read_uint32_array(fdt, node, "config", count, cells);
 
-		for (i=0; i<count; i+=3) {
-			reg = inp32(SSPCC_BASE+cells[i]) & ~(0x3 << cells[i+1]);
-			outp32(SSPCC_BASE+cells[i],  reg | cells[i+2] << cells[i+1]);
+		for (i = 0; i < count; i += 3) {
+			reg = inp32(SSPCC_BASE+cells[i]) &
+					    ~(0x3 << cells[i+1]);
+			outp32(SSPCC_BASE+cells[i], reg |
+				    cells[i+2] << cells[i+1]);
 		}
 	}
 
@@ -314,14 +333,19 @@ void plat_ma35d1_init(void)
 		count = value_len / 4;
 		fdt_read_uint32_array(fdt, node, "gpio_s", count, cells);
 
-		for (i=0; i<count; i+=3) {
-			reg = inp32(SSPCC_BASE+cells[i]) & ~(0x3 << cells[i+1]);
-			outp32(SSPCC_BASE+cells[i],  reg | cells[i+2] << cells[i+1]);
+		for (i = 0; i < count; i += 3) {
+			reg = inp32(SSPCC_BASE+cells[i]) &
+					    ~(0x3 << cells[i+1]);
+			outp32(SSPCC_BASE+cells[i],  reg | cells[i+2] <<
+				    cells[i+1]);
 		}
 	}
 
 	/* enable WDT1/WDT2 reset */
 	outp32((void *)(SYS_BA+14), 0x70000);
+
+	/* Disable M4 Core reset*/
+	outp32((void *)(SYS_BA+20), inp32((void *)(SYS_BA+20)) & ~0x8);
 
 	/* lock */
 	outp32((void *)SYS_RLKTZS, 0);

@@ -23,11 +23,12 @@ int32_t plat_get_soc_revision(void)
 	return (int32_t)(mmio_read_32(SYS_BA));
 }
 
-/* CPU-PLL: 1000 MHz, 700 MHz and 500 MHz. */
-static unsigned int CAPLL_MODE[3][3] = {
-	{ 0x0000307D, 0x00000010, 0x00000000 },	/* 1000 MHz */
-	{ 0x000060AF, 0x00000010, 0x00000000 },	/* 700 MHz */
-	{ 0x0000307D, 0x00000020, 0x00000000 },	/* 500 MHz */
+/* CPU-PLL: 1000 MHz, 800 MHz, 700 MHz and 500 MHz. */
+static unsigned int CAPLL_MODE[4] = {
+	0x000006FA,	/* 1000 MHz */
+	0x00000364,	/* 800 MHz */
+	0x000006AF,	/* 700 MHz */
+	0x0000137D,	/* 500 MHz */
 };
 
 /*
@@ -40,22 +41,32 @@ int32_t ma35d1_change_pll(int pll)
 
 	/* CA-PLL */
 	switch (pll) {
-	case CPU_PLL_1G:
+	case CPU_PLL_1G:	/* 1.302V */
 		/* set the voltage VDD_CPU first */
-		if (ma35d1_set_pmic(VOL_CPU, VOL_1_29)) {
+		if (ma35d1_set_pmic(VOL_CPU, VOL_1_30)) {
 			index = 0;
 			INFO("CA-PLL is 1000 MHz\n");
 		} else {
-			index = 1;
+			index = 2;
 			WARN("Set 1GHz fail, try to set 700 MHz.\n");
 		}
 		break;
+	case CPU_PLL_800: /* 1.248V */
+		/* set the voltage VDD_CPU first */
+		if (ma35d1_set_pmic(VOL_CPU, VOL_1_25)) {
+			index = 1;
+			INFO("CA-PLL is 800 MHz\n");
+		} else {
+			index = 2;
+			WARN("Set 800MHz fail, try to set 700 MHz.\n");
+		}
+		break;
 	case CPU_PLL_700:
-		index = 1;
+		index = 2;
 		INFO("CA-PLL is 700 MHz\n");
 		break;
 	case CPU_PLL_500:
-		index = 2;
+		index = 3;
 		INFO("CA-PLL is 500 MHz\n");
 		break;
 	default:
@@ -65,9 +76,7 @@ int32_t ma35d1_change_pll(int pll)
 	/* set CA35 to E-PLL */
 	outp32((void *)CLK_CLKSEL0, (inp32((void *)CLK_CLKSEL0) & ~0x3) | 0x2);
 
-	outp32((void *)CLK_PLL0CTL0, CAPLL_MODE[index][0]);
-	outp32((void *)CLK_PLL0CTL1, CAPLL_MODE[index][1]);
-	outp32((void *)CLK_PLL0CTL2, CAPLL_MODE[index][2]);
+	outp32((void *)CLK_PLL0CTL0, CAPLL_MODE[index]);
 
 	timeout = timeout_init_us(12000);	/* 12 ms */
 	/* check PLL stable */

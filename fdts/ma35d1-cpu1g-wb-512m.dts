@@ -19,13 +19,14 @@
 		compatible = "wb-ddr3-512mb";
 	};
 
-	memory {
-		device_type = "memory";
-		reg = <0x00000000 0x80000000 0 0x1e000000>;
-	};
-
 };
 
-&uart0 {
-	status = "okay";
+&clk {
+	assigned-clocks = <&clk capll>, <&clk syspll>,
+				<&clk ddrpll>, <&clk apll>,
+				<&clk epll>, <&clk vpll>;
+	assigned-clock-rates =<1000000000>, <180000000>,
+				<266000000>, <200000000>,
+				<500000000>, <150000000>;
+	clock-pll-mode = <0>, <0>, <1>, <0>, <0>, <0>;
 };
