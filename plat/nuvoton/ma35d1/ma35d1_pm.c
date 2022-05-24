@@ -23,6 +23,8 @@
 #include <lib/utils.h>
 #include "ma35d1_private.h"
 
+#define MA35D1_DDR_HW_POWER_DOWN	1
+
 /* Macros to read the rk power domain state */
 #define MA35D1_CORE_PWR_STATE(state) \
     ((state)->pwr_domain_state[MPIDR_AFFLVL0])
@@ -64,6 +66,7 @@ static __inline void ma35d1_LockReg(void)
 	mmio_write_32(0x404601A0, 0);
 }
 
+#if MA35D1_DDR_HW_POWER_DOWN
 // Q ch
 void ma35d1_ddr_hw_pd(void)
 {
@@ -74,11 +77,9 @@ void ma35d1_ddr_hw_pd(void)
 	int DDR_QCH_BPPORT4;
 	int DDR_QCH_BPPORT5;
 	int DDR_QCH_BPPORT6;
-	int DDR_QCH_BPPORT7;
 
 	/* Configure DDR clock gating. */
-	mmio_write_32(SYS_BASE + MISCFCR,
-		      mmio_read_32(SYS_BASE + MISCFCR) & ~(1 << 23));
+	mmio_write_32(SYS_BASE + MISCFCR, mmio_read_32(SYS_BASE + MISCFCR) & ~(1 << 23));
 
 	//[11:8]= pg chain time period for voltage stable
 	mmio_write_32(SYS_BASE + PMUCR, mmio_read_32(SYS_BASE + PMUCR) & 0xfffff0ff);
@@ -88,7 +89,7 @@ void ma35d1_ddr_hw_pd(void)
 		      (mmio_read_32(SYS_BASE + PMUCR) & 0xffff0fff) | (0x2 << 12));
 
 	//[31:24]=DDR time out & delay
-	mmio_write_32(SYS_BASE + DDRCQCSR, mmio_read_32(SYS_BASE + DDRCQCSR) & 0x00ffffff);
+	mmio_write_32(SYS_BASE + DDRCQCSR, mmio_read_32(SYS_BASE + DDRCQCSR) & 0x00ff7f7f);
 
 	//[16]=DDRCQBYPAS, disable ddrc qch bypass
 	mmio_write_32(SYS_BASE + DDRCQCSR, mmio_read_32(SYS_BASE + DDRCQCSR) & ~(0x1 << 16));
@@ -102,7 +103,6 @@ void ma35d1_ddr_hw_pd(void)
 	DDR_QCH_BPPORT4 = 1;
 	DDR_QCH_BPPORT5 = 1;
 	DDR_QCH_BPPORT6 = 1;
-	DDR_QCH_BPPORT7 = 1;
 
 	if ((mmio_read_32((0x404d0000 + 0x490)) & 0x1) &
 		((mmio_read_32((0x40460000 + 0x204)) >> 4) & 0x1))
@@ -129,15 +129,14 @@ void ma35d1_ddr_hw_pd(void)
 		DDR_QCH_BPPORT6 = 0;	//system
 
 	mmio_write_32(SYS_BASE + DDRCQCSR,
-			(mmio_read_32(SYS_BASE + DDRCQCSR) & ~0xFF) |
+			(mmio_read_32(SYS_BASE + DDRCQCSR) & ~0x7F) |
 			(DDR_QCH_BPPORT0 << 0) |
 			(DDR_QCH_BPPORT1 << 1) |
 			(DDR_QCH_BPPORT2 << 2) |
 			(DDR_QCH_BPPORT3 << 3) |
 			(DDR_QCH_BPPORT4 << 4) |
 			(DDR_QCH_BPPORT5 << 5) |
-			(DDR_QCH_BPPORT6 << 6) |
-			(DDR_QCH_BPPORT7 << 7));//disable ddr 8 ports qch bypass
+			(DDR_QCH_BPPORT6 << 6));//disable ddr 7 ports qch bypass
 
 	//L2 auto-flush
 	mmio_write_32(SYS_BASE + PMUCR,
@@ -160,39 +159,156 @@ void ma35d1_deep_power_down(void)
 
 	//[16]=PMUIEN, Enable PD
 	mmio_write_32(SYS_BASE + PMUIEN,
-			mmio_read_32(SYS_BASE + PMUIEN) | (1 << 0) | (1 << 8));
+			mmio_read_32(SYS_BASE + PMUIEN) | (1 << 8));
 
 	ma35d1_LockReg();
 }
+#else
 
-void ma35d1_normal_power_down(void)
+void ma35d1_ddr_pd(void)
+{
+	/* Set ddrc core clock gating circuit bypass */
+	mmio_write_32(SYS_BASE + MISCFCR, mmio_read_32(SYS_BASE + MISCFCR) | (1 << 23));
+
+	/* disable powerdown_en and selfref_en */
+	mmio_write_32(UMCTL2_BA + 0x30, mmio_read_32((UMCTL2_BA + 0x30)) & ~(0x3));
+
+	/* enable static registers write enable */
+	mmio_write_32((UMCTL2_BA + 0x328), 0x00000001);
+
+	/* set value of dfi_lp_wakeup_sr */
+	mmio_write_32((UMCTL2_BA + 0x198),
+		      ((mmio_read_32((UMCTL2_BA + 0x198))) & ~(0x0000f000)) | 0x0000f000);
+
+	/* disable static registers write enable */
+	mmio_write_32((UMCTL2_BA + 0x328), 0x00000000);
+
+	/* enable static registers write enable */
+	mmio_write_32((UMCTL2_BA + 0x328), 0x00000001);
+
+	/* enable dfi_lp_en_sr */
+	mmio_write_32((UMCTL2_BA + 0x198),
+		      ((mmio_read_32((UMCTL2_BA + 0x198))) & ~(0x00000100)) | 0x00000100);
+
+	/* disable static registers write enable */
+	mmio_write_32((UMCTL2_BA + 0x328), 0x00000000);
+
+	/* wait DDR AXI port0 idle */
+	while ((mmio_read_32((UMCTL2_BA + 0x3fc)) & 0x00010001) != 0x00000000)
+		;
+	/* disable DDR AXI port0 ~ DDR AXI port6 */
+	mmio_write_32((UMCTL2_BA + 0x490), 0x00000000); /* AXI port0 */
+	mmio_write_32((UMCTL2_BA + 0x540), 0x00000000); /* AXI port1 */
+	mmio_write_32((UMCTL2_BA + 0x5f0), 0x00000000); /* AXI port2 */
+	mmio_write_32((UMCTL2_BA + 0x6a0), 0x00000000); /* AXI port3 */
+	mmio_write_32((UMCTL2_BA + 0x750), 0x00000000); /* AXI port4 */
+	mmio_write_32((UMCTL2_BA + 0x800), 0x00000000); /* AXI port5 */
+	mmio_write_32((UMCTL2_BA + 0x8b0), 0x00000000); /* AXI port6 */
+
+	/* wait DDR AXI port0 ~ DDR AXI port6 idle */
+	while ((mmio_read_32((UMCTL2_BA + 0x3fc)) & 0x003f003f) != 0x00000000)
+		;
+	/* enter DDR software self-refresh mode */
+	mmio_write_32((UMCTL2_BA + 0x30), mmio_read_32((UMCTL2_BA + 0x30)) | 0x20);
+
+	/* wait DDR enter software self-refresh mode */
+	while ((mmio_read_32((UMCTL2_BA + 0x04)) & 0x30) != 0x20)
+		;
+	/* disable DDR AXI port0 clock ~ DDR AXI port5 clock */
+	mmio_write_32(0x40460204, (mmio_read_32(0x40460204) & ~(0x7f000030)));
+
+	/* disable DDR core clock */
+	mmio_write_32(0x4046020C, mmio_read_32(0x4046020C) & ~(0x40000000));
+
+	/* disable DDR PLL clock */
+	mmio_write_32(0x40460284, mmio_read_32(0x40460284) | 0x1);
+}
+
+void ma35d1_ddr_wk(void)
 {
 	ma35d1_UnlockReg();
 
-	mmio_write_32(CLK_BASE + PWRCTL,
-			mmio_read_32(CLK_BASE + PWRCTL) | (1 << 21));
+	/* enable DDR AXI port0 clock and DDR AXI port5 clock */
+	mmio_write_32(0x40460204, mmio_read_32(0x40460204) | 0x7f000034);
 
-	ma35d1_ddr_hw_pd();
+	/* Set ddrc core clock gating circuit bypass */
+	mmio_write_32(0x40460070, mmio_read_32(0x40460070) | 0x00800000);
 
-	// Disable L2 flush by PMU
-	mmio_write_32(SYS_BASE + PMUCR,
-			mmio_read_32(SYS_BASE + PMUCR) | (1 << 4));
+	/* enable DDR PLL clock */
+	mmio_write_32(0x40460284, mmio_read_32(0x40460284) & ~(0x1));
 
-	//[0]=pg_eanble, Disable clock gating
-	mmio_write_32(SYS_BASE + PMUCR,
-			mmio_read_32(SYS_BASE + PMUCR) & ~(1 << 0));
+	/* enable DDR core clock */
+	mmio_write_32(0x4046020c, mmio_read_32(0x4046020c) | 0x40000000);
 
-	//[16]=pd_eanble, Enable Power down
-	mmio_write_32(SYS_BASE + PMUCR,
-			mmio_read_32(SYS_BASE + PMUCR) | (1 << 16));
+	/* polling DDR-PLL stable */
+	while ((mmio_read_32(0x40460250) & 0x00000100) != 0x00000100)
+		;
 
-	//[16]=PMUIEN,
-	mmio_write_32(SYS_BASE + PMUIEN,
-			mmio_read_32(SYS_BASE + PMUIEN) | (1 << 0) | (1 << 8));
+	/* exit DDR software self-refresh mode */
+	mmio_write_32((UMCTL2_BA + 0x30), mmio_read_32(UMCTL2_BA + 0x30) & ~(0x00000020));
+
+	/* wait DDR exit software self-refresh mode */
+	while ((mmio_read_32((UMCTL2_BA + 0x04)) & 0x30) != 0x00)
+		;
+
+	/* enable DDR AXI port0, DDR AXI port5, and DDR AXI port6 */
+	mmio_write_32((UMCTL2_BA + 0x490), 0x00000001); /* AXI port0 */
+	mmio_write_32((UMCTL2_BA + 0x540), 0x00000001); /* AXI port1 */
+	mmio_write_32((UMCTL2_BA + 0x5f0), 0x00000001); /* AXI port2 */
+	mmio_write_32((UMCTL2_BA + 0x6a0), 0x00000001); /* AXI port3 */
+	mmio_write_32((UMCTL2_BA + 0x750), 0x00000001); /* AXI port4 */
+	mmio_write_32((UMCTL2_BA + 0x800), 0x00000001); /* AXI port5 */
+	mmio_write_32((UMCTL2_BA + 0x8b0), 0x00000001); /* AXI port6 */
+
+	/* enable static registers write enable */
+	mmio_write_32((UMCTL2_BA + 0x328), 0x00000001);
+
+	/* disable dfi_lp_en_sr */
+	mmio_write_32((UMCTL2_BA + 0x198), mmio_read_32((UMCTL2_BA + 0x198)) & ~(0x00000100));
+
+	/* disable static registers write enable */
+	mmio_write_32((UMCTL2_BA + 0x328), 0x00000000);
+
+	/* enable powerdown_en and selfref_en */
+	mmio_write_32((UMCTL2_BA + 0x30), mmio_read_32((UMCTL2_BA + 0x30)) | 0x3);
+
+	/* Set ddrc core clock gating circuit enable */
+	mmio_write_32((0x40460070), mmio_read_32(0x40460070) & ~(0x00800000));
+
 	ma35d1_LockReg();
 }
 
+void ma35d1_deep_power_down_sw(void)
+{
+	ma35d1_UnlockReg();
 
+	/* [31:24]=DDR time out & delay */
+	mmio_write_32(SYS_BASE + DDRCQCSR, mmio_read_32(SYS_BASE + DDRCQCSR) | 0x1007f);
+
+	/* Disable L2 flush by PMU */
+	mmio_write_32(SYS_BASE + PMUCR,
+			mmio_read_32(SYS_BASE + PMUCR) | (1 << 4));
+
+	ma35d1_ddr_pd();
+
+	/* [0]=pg_eanble, Enable clock gating */
+	mmio_write_32(SYS_BASE + PMUCR,
+			mmio_read_32(SYS_BASE + PMUCR) | (1 << 0));
+
+	/* [16]=pd_eanble, Enable PD */
+	mmio_write_32(SYS_BASE + PMUCR,
+			mmio_read_32(SYS_BASE + PMUCR) | (1 << 16));
+
+	/* [16]=PMUIEN, Enable PD */
+	mmio_write_32(SYS_BASE + PMUIEN,
+			mmio_read_32(SYS_BASE + PMUIEN) | (1 << 8));
+
+	/* Turn on auto-off bits. */
+	mmio_write_32(CLK_PWRCTL, mmio_read_32(CLK_PWRCTL) | 0x00E0F800);
+
+	ma35d1_LockReg();
+}
+#endif
 static void ma35d1_cpu_standby(plat_local_state_t cpu_state)
 {
 
@@ -216,14 +332,10 @@ static void ma35d1_cpu_standby(plat_local_state_t cpu_state)
 
 static int ma35d1_pwr_domain_on(u_register_t mpidr)
 {
-	uint32_t loop;
-
 	if (mpidr == 1) {
-		for (loop = 0; loop < 100; loop++) {
-			mmio_write_32(SYS_BASE + CA35WRBADR2,
-				      ma35d1_sec_entrypoint);
-			sev();
-		}
+		mmio_write_32(SYS_BASE + CA35WRBADR2,
+			      ma35d1_sec_entrypoint);
+		sev();
 	} else {
 		mmio_write_32(SYS_BASE + CA35WRBPAR1, 0x7761726D);
 		mmio_write_32(SYS_BASE + CA35WRBADR1,
@@ -250,11 +362,14 @@ static void ma35d1_pwr_domain_suspend(const psci_power_state_t *target_state)
 		mmio_write_32(SYS_BASE + DDRCQCSR, reg);
 	}
 
-	mmio_write_32(0x2803fd04, 0);
+	//mmio_write_32(0x2803fd04, 0);
 	mmio_write_32(SYS_BASE + CA35WRBADR1, ma35d1_sec_entrypoint);
 	mmio_write_32(SYS_BASE + CA35WRBPAR1, 0x7761726D);
+#if MA35D1_DDR_HW_POWER_DOWN
 	ma35d1_deep_power_down();
-
+#else
+	ma35d1_deep_power_down_sw();
+#endif
 }
 
 static void ma35d1_pwr_domain_on_finish(const psci_power_state_t *target_state)
@@ -276,6 +391,9 @@ int ma35d1_validate_ns_entrypoint(uintptr_t ns_entrypoint)
 static void ma35d1_pwr_domain_suspend_finish(const
 			psci_power_state_t * target_state)
 {
+#if !MA35D1_DDR_HW_POWER_DOWN
+	ma35d1_ddr_wk();
+#endif
 	/* Clear poer down flag */
 	mmio_write_32(SYS_BASE + PMUSTS, (1 << 8) | 0x1);
 
