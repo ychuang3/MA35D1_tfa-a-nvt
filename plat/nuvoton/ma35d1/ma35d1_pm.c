@@ -23,7 +23,7 @@
 #include <lib/utils.h>
 #include "ma35d1_private.h"
 
-#define MA35D1_DDR_HW_POWER_DOWN	1
+#define MA35D1_DDR_HW_POWER_DOWN	0
 
 /* Macros to read the rk power domain state */
 #define MA35D1_CORE_PWR_STATE(state) \
