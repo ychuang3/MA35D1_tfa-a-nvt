@@ -344,8 +344,8 @@ void plat_ma35d1_init(void)
 	/* enable WDT1/WDT2 reset */
 	outp32((void *)(SYS_BA+14), 0x70000);
 
-	/* Disable M4 Core reset*/
-	outp32((void *)(SYS_BA+20), inp32((void *)(SYS_BA+20)) & ~0x8);
+	/* Release Cortex-M4 core reset. */
+	outp32((void *)SYS_IPRST0, inp32((void *)SYS_IPRST0) & ~0x8);
 
 	/* lock */
 	outp32((void *)SYS_RLKTZS, 0);
