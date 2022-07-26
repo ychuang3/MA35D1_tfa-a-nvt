@@ -94,6 +94,9 @@ static void init_tzc400(void)
 #endif
 	outp32((void *)0x40460204, (inp32((void *)0x40460204) &
 			~0x7f7f0000) | reg);
+
+	/* Enable Cortex-M4 DDR access. */
+	outp32((void *)0x40460070, inp32((void *)0x40460070) | 0x4);
 }
 
 
@@ -129,6 +132,9 @@ static void early_init_tzc400(void)
 
 	outp32((void *)0x40460204, (inp32((void *)0x40460204) &
 			~0x7f7f0000) | reg);
+
+	/* Enable Cortex-M4 DDR access. */
+	outp32((void *)0x40460070, inp32((void *)0x40460070) | 0x4);
 }
 
 
