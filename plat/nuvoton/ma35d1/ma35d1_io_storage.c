@@ -63,9 +63,17 @@ static const io_uuid_spec_t bl33_uuid_spec = {
 	.uuid = UUID_NON_TRUSTED_FIRMWARE_BL33,
 };
 
+static const io_uuid_spec_t scp_bl2_uuid_spec = {
+	.uuid = UUID_SCP_FIRMWARE_SCP_BL2,
+};
+
 #if TRUSTED_BOARD_BOOT
 static const io_uuid_spec_t trusted_key_cert_spec = {
 	.uuid = UUID_TRUSTED_KEY_CERT,
+};
+
+static const io_uuid_spec_t scp_fw_key_cert_uuid_spec = {
+	.uuid = UUID_SCP_FW_KEY_CERT,
 };
 
 static const io_uuid_spec_t soc_fw_key_cert_spec = {
@@ -86,6 +94,10 @@ static const io_uuid_spec_t tos_fw_cert_uuid_spec = {
 
 static const io_uuid_spec_t nt_fw_key_cert_uuid_spec = {
 	.uuid = UUID_NON_TRUSTED_FW_KEY_CERT,
+};
+
+static const io_uuid_spec_t scp_fw_cert_uuid_spec = {
+	.uuid = UUID_SCP_FW_CONTENT_CERT,
 };
 
 static const io_uuid_spec_t nt_fw_cert_uuid_spec = {
@@ -111,6 +123,11 @@ static const struct plat_io_policy policies[] = {
 		.image_spec = (uintptr_t)&fip_block_spec,
 	},
 #endif
+	[SCP_BL2_IMAGE_ID] = {
+		.dev_handle = &fip_dev_handle,
+		.image_spec = (uintptr_t)&scp_bl2_uuid_spec,
+		.init_params = FIP_IMAGE_ID,
+	},
 	[BL31_IMAGE_ID] = {
 		.dev_handle = &fip_dev_handle,
 		.image_spec = (uintptr_t)&bl31_uuid_spec,
@@ -137,6 +154,11 @@ static const struct plat_io_policy policies[] = {
 		.image_spec = (uintptr_t)&trusted_key_cert_spec,
 		.init_params = FIP_IMAGE_ID,
 	},
+	[SCP_FW_KEY_CERT_ID] = {
+		.dev_handle = &fip_dev_handle,
+		.image_spec = (uintptr_t)&scp_fw_key_cert_uuid_spec,
+		.init_params = FIP_IMAGE_ID,
+	},
 	[SOC_FW_KEY_CERT_ID] = {
 		.dev_handle = &fip_dev_handle,
 		.image_spec = (uintptr_t)&soc_fw_key_cert_spec,
@@ -150,6 +172,11 @@ static const struct plat_io_policy policies[] = {
 	[NON_TRUSTED_FW_KEY_CERT_ID] = {
 		.dev_handle = &fip_dev_handle,
 		.image_spec = (uintptr_t)&nt_fw_key_cert_uuid_spec,
+		.init_params = FIP_IMAGE_ID,
+	},
+	[SCP_FW_CONTENT_CERT_ID] = {
+		.dev_handle = &fip_dev_handle,
+		.image_spec = (uintptr_t)&scp_fw_cert_uuid_spec,
 		.init_params = FIP_IMAGE_ID,
 	},
 	[SOC_FW_CONTENT_CERT_ID] = {

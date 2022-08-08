@@ -19,6 +19,22 @@
  * the next executable image id.
  ******************************************************************************/
 static bl_mem_params_node_t bl2_mem_params_descs[] = {
+#ifdef MA35D1_LOAD_SCP_BL2
+	{
+		.image_id = SCP_BL2_IMAGE_ID,
+
+		SET_STATIC_PARAM_HEAD(ep_info, PARAM_IMAGE_BINARY,
+				      VERSION_2, entry_point_info_t,
+				      NON_SECURE | NON_EXECUTABLE),
+
+		SET_STATIC_PARAM_HEAD(image_info, PARAM_IMAGE_BINARY,
+				      VERSION_2, image_info_t, 0),
+		.image_info.image_base = SCP_BL2_BASE,
+		.image_info.image_max_size = SCP_BL2_SIZE,
+
+		.next_handoff_image_id = INVALID_IMAGE_ID,
+	},
+#endif
 	{
 		.image_id = BL31_IMAGE_ID,
 

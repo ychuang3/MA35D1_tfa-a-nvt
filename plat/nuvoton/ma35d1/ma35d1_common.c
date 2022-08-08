@@ -341,6 +341,9 @@ void plat_ma35d1_init(void)
 		}
 	}
 
+	/* Disable SSPCC/GPIO clocks after configuring attribution. */
+	outp32((void *)CLK_SYSCLK1, inp32((void *)CLK_SYSCLK1) & ~0x3FFF0000);
+
 	/* enable WDT1/WDT2 reset */
 	outp32((void *)(SYS_BA+0x14), 0x70000);
 

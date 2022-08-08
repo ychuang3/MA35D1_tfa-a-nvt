@@ -32,6 +32,8 @@ Preloaded platform DTB    ``0x28023000``          ``0x28025000``
 BL31                      ``0x28025000``          ``0x2803a000``
 BL32 / OP-TEE             ``0x8f800000``          ``0x8fa00000``
 BL33 / U-Boot             ``0x85500000``          ``0x85700000``
+SCP_BL2 staging           ``0x85000000``          ``0x85080000``
+M4 SRAM0                  ``0x24000000``          ``0x24020000``
 FIP read buffer           ``0x86000000``          ``0x86200000``
 ========================= ======================= =======================
 
@@ -75,6 +77,20 @@ For OP-TEE, first build OP-TEE and U-Boot for the matching board, then run::
         BL32=/path/to/tee-header_v2.bin \
         BL32_EXTRA1=/path/to/tee-pager_v2.bin \
         BL33=/path/to/u-boot.bin all fip
+
+To include and start a Cortex-M4 image, add ``NEED_SCP_BL2=yes`` and
+``SCP_BL2=/path/to/cm4.bin``. For example::
+
+    make PLAT=ma35d1 SPD=opteed NEED_SCP_BL2=yes \
+        SCP_BL2=/path/to/cm4.bin \
+        BL32=/path/to/tee-header_v2.bin \
+        BL32_EXTRA1=/path/to/tee-pager_v2.bin \
+        BL33=/path/to/u-boot.bin all fip
+
+BL2 stages SCP_BL2 at ``0x85000000`` and copies up to 128 KiB to SRAM0
+at ``0x24000000``. Any remaining bytes go to DDR at ``0x80020000``;
+the total image limit is 512 KiB. Link the M4 image for this split layout
+and reserve its memory in the other firmware and operating system images.
 
 The FIP backend and read buffer are 2 MiB (``MA35D1_FIP_SIZE``). Keep
 ``fip.bin`` within that limit and ensure the storage layout reserves enough

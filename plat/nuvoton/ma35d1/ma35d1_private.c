@@ -11,7 +11,13 @@
 
 #include "ma35d1_private.h"
 
-#define MAP_SEC_SYSRAM	MAP_REGION_FLAT(MA35D1_SRAM1_BASE, \
+#define MAP_SEC_SYSRAM0	MAP_REGION_FLAT(MA35D1_SRAM0_BASE, \
+					MA35D1_SRAM0_SIZE, \
+					MT_MEMORY | \
+					MT_RW | \
+					MT_NS)
+
+#define MAP_SEC_SYSRAM1	MAP_REGION_FLAT(MA35D1_SRAM1_BASE, \
 					MA35D1_SRAM1_SIZE, \
 					MT_MEMORY | \
 					MT_RW | \
@@ -36,7 +42,8 @@
 					MT_SECURE)
 
 const mmap_region_t ma35d1_mmap[] = {
-	MAP_SEC_SYSRAM,
+	MAP_SEC_SYSRAM0,
+	MAP_SEC_SYSRAM1,
 	MAP_DEVICE1,
 	MAP_DEVICE2,
 	MAP_DEVICE3,
