@@ -97,6 +97,7 @@
 			<PDMA0_TZNS>,
 			<PDMA1_TZNS>,
 			<TIMER01_TZNS>,
+			<UART16_SUBM>,
 			<TRNG_TZNS>;
 	};
 };

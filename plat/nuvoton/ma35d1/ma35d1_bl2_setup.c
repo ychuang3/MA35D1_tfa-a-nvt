@@ -52,7 +52,7 @@ void bl2_plat_arch_setup(void)
 	ma35d1_io_setup();
 }
 
-/* Load the M4 image into SRAM0 and, if needed, DDR before releasing reset. */
+/* Load the M4 image into SRAM0 and, if needed, DDR while holding reset. */
 int plat_ma35d1_bl2_handle_scp_bl2(image_info_t *scp_bl2_image_info)
 {
 	if (scp_bl2_image_info->image_size > 0x80000) {	/* 512KB */
@@ -81,16 +81,15 @@ int plat_ma35d1_bl2_handle_scp_bl2(image_info_t *scp_bl2_image_info)
 		       scp_bl2_image_info->image_size - 0x20000);
 	}
 
+	flush_dcache_range(0x24000000, scp_bl2_image_info->image_size);
+
 	/* Enable RTP clock */
 	outp32((void *)CLK_SYSCLK0, inp32((void *)CLK_SYSCLK0) | 0x2);
-
-	/* Let MCU running - Disable M4 Core reset */
-	outp32((void *)SYS_IPRST0, inp32((void *)SYS_IPRST0) & ~0x8);
 
 	/* lock */
 	outp32((void *)SYS_RLKTZS, 0);
 
-	INFO("MCU running\n");
+	INFO("Load RTP M4\n");
 
 	return 0;
 }

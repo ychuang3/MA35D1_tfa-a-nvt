@@ -347,7 +347,7 @@ void plat_ma35d1_init(void)
 	/* enable WDT1/WDT2 reset */
 	outp32((void *)(SYS_BA+0x14), 0x70000);
 
-	/* Release Cortex-M4 core reset. */
+	/* Start M4 after configuring peripheral attribution. */
 	outp32((void *)SYS_IPRST0, inp32((void *)SYS_IPRST0) & ~0x8);
 
 	/* lock */
