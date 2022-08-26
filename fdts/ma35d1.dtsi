@@ -30,7 +30,7 @@
 				<266000000>, <200000000>,
 				<500000000>, <150000000>;
 		clock-pll-mode = <0>, <0>, <1>, <0>, <0>, <0>;
-		lxt-enable = <0>;
+		lxt-enable = <1>;
 		/* rtc power control */
 		rtc-pwrctl-enable = <1>;
 	};
