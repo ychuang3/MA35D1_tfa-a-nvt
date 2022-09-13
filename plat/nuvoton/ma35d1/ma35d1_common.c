@@ -166,7 +166,7 @@ static void ma35d1_clock_setup(void)
 			inp32((void *)(0x40410180)) |
 			0x5aa50040);  /* power control enable */
 	else	/* power control disable */
-		outp32((void *)(TSI_CLK_BASE+0x40),
+		outp32((void *)(0x40410180),
 			(inp32((void *)(0x40410180)) & ~0xffff0040) |
 			0x5aa50000);
 
