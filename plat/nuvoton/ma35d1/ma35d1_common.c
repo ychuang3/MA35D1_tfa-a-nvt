@@ -161,6 +161,8 @@ static void ma35d1_clock_setup(void)
 		outp32((void *)CLK_PWRCTL, inp32((void *)CLK_PWRCTL) | 0x2);
 	}
 
+	/* Enable RTC clock */
+	outp32((void *)CLK_APBCLK0, inp32((void *)CLK_APBCLK0) | (0x1 << 29));
 	if (fdt_read_uint32_default(fdt, node, "rtc-pwrctl-enable", 1) == 1)
 		outp32((void *)(0x40410180),
 			inp32((void *)(0x40410180)) |
