@@ -421,7 +421,7 @@ void ma35d1_wb_ddr3_512mb(void)
 	outp32((void *)UMCTL2_BA + 0x0d4,0x00350002);  //mod 20200505
 
 	//set INIT3
-	outp32((void *)UMCTL2_BA + 0x0dc, 0x1b400002);  /* mod 20220606 */
+	outp32((void *)UMCTL2_BA + 0x0dc, 0x1b400006); /* mod 20201109 */
 
 	//set INIT4
 	outp32((void *)UMCTL2_BA + 0x0e0,0x00480000);  //mod 20200822
@@ -527,7 +527,7 @@ void ma35d1_wb_ddr3_512mb(void)
 	outp32((void *)UMCTL2_BA + 0x240,0x06000608);
 
 	//set ODTMAP
-	outp32((void *)UMCTL2_BA + 0x244, 0x00000000);  /* mod 20220606 */
+	outp32((void *)UMCTL2_BA + 0x244, 0x00000101); /* mod 20200508 */
 
 	//set SCHED
 	outp32((void *)UMCTL2_BA + 0x250,0x00f51f00);
@@ -578,10 +578,13 @@ void ma35d1_wb_ddr3_512mb(void)
 	outp32((void *)UMCTL2_BA + 0x750,0x00000000);  //mod 20200323
 
 	//set PCTRL_5
-	outp32((void *)UMCTL2_BA + 0x800, 0x00000001);  /* mod 20201016 */
+	outp32((void *)UMCTL2_BA + 0x800, 0x00000000); /* mod 20200323 */
 
 	//set PCTRL_6
 	outp32((void *)UMCTL2_BA + 0x8b0,0x00000001);
+
+	/* set PCTRL_7 */
+	outp32((void *)UMCTL2_BA + 0x960, 0x00000001);
 
 	//set PCCFG
 	outp32((void *)UMCTL2_BA + 0x400,0x00000000);
@@ -607,6 +610,9 @@ void ma35d1_wb_ddr3_512mb(void)
 	//set PCFGR_6
 	outp32((void *)UMCTL2_BA + 0x824,0x0001500f);  //mod 20200408
 
+	/* set PCFGR_7 */
+	outp32((void *)UMCTL2_BA + 0x8d4, 0x0001500f); /* mod 20200408 */
+
 	//set PCFGW_0
 	outp32((void *)UMCTL2_BA + 0x408,0x0000500f);  //mod 20200408
 
@@ -627,6 +633,9 @@ void ma35d1_wb_ddr3_512mb(void)
 
 	//set PCFGW_6
 	outp32((void *)UMCTL2_BA + 0x828,0x0000500f);  //mod 20200408
+
+	/* set PCFGW_7 */
+	outp32((void *)UMCTL2_BA + 0x8d8, 0x0000500f); /* mod 20200408 */
 
 	//set SARBASE0
 	outp32((void *)UMCTL2_BA + 0xf04,0x00000008);
@@ -670,7 +679,7 @@ void ma35d1_wb_ddr3_512mb(void)
 	outp32((void *)DDRPHY_BA + 0x054,0x00001b40);  //mod
 
 	//set MR1,addr=22
-	outp32((void *)DDRPHY_BA + 0x058, 0x00000002);  /* mod 20220606 */
+	outp32((void *)DDRPHY_BA + 0x058, 0x00000006); /* mod 20201109 */
 
 	//set MR2,addr=23
 	outp32((void *)DDRPHY_BA + 0x05c,0x00000048);  //mod 20200822
