@@ -641,8 +641,6 @@ static void ma35d1_sdhc_setup(struct mmc *mmc)
 {
 	int node;
 
-	ma35d1_sdhc_hw_init(mmc);
-
 	/* get device tree information */
 	if (fdt_check_header(fdt) < 0) {
 		WARN("device tree header check error.\n");
@@ -664,6 +662,8 @@ static void ma35d1_sdhc_setup(struct mmc *mmc)
 
 	mmc->offset = fdt_read_uint32_default(fdt, node, "mmc-image-offset", 0);
 	mmc->bus_width = fdt_read_uint32_default(fdt, node, "bus-width", 1);
+
+	ma35d1_sdhc_hw_init(mmc);
 }
 
 static size_t ma35d1_sdhc_read(int lba, uintptr_t buf, size_t size)
