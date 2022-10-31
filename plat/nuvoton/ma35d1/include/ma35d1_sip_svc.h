@@ -8,9 +8,17 @@
 #define MA35D1_SIP_SVC_H
 
 /* SMC function IDs for SiP Service queries */
-#define SIP_SVC_PMIC		0xC2000008
-#define SIP_CPU_CLK		0xC2000009
-#define SIP_SVC_VERSION		0xC200000F
+#define SIP_SVC_PMIC			0xC2000008
+#define SIP_CPU_CLK			0xC2000009
+#define SIP_SET_EPLL			0xC200000A
+#define SIP_LOW_SPEED			0xC200000B
+#define SIP_SVC_VERSION			0xC200000F
+
+/* MA35D1 SiP Service Calls PLL setting */
+#define NVT_SIP_SVC_EPLL_DIV_BY_2	0x2
+#define NVT_SIP_SVC_EPLL_DIV_BY_4	0x4
+#define NVT_SIP_SVC_EPLL_DIV_BY_8	0x8
+#define NVT_SIP_SVC_EPLL_RESTORE	0xF
 
 /* MA35D1 SiP Service Calls version numbers */
 #define NVT_SIP_SVC_VERSION_MAJOR	0x0

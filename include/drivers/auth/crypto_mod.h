@@ -151,6 +151,19 @@ static inline void crypto_mod_finish(void)
 		.finish = _finish \
 	}
 
+#define REGISTER_CRYPTO_LIB_MA35(_name, _init, _verify_signature, _verify_hash, \
+			    _calc_hash, _auth_decrypt, _convert_pk, _finish) \
+	const crypto_lib_desc_t crypto_lib_desc_ma35 = { \
+		.name = _name, \
+		.init = _init, \
+		.verify_signature = _verify_signature, \
+		.verify_hash = _verify_hash, \
+		.calc_hash = _calc_hash, \
+		.auth_decrypt = _auth_decrypt, \
+		.convert_pk = _convert_pk, \
+		.finish = _finish \
+	}
+
 extern const crypto_lib_desc_t crypto_lib_desc;
 
 #endif /* CRYPTO_MOD_H */

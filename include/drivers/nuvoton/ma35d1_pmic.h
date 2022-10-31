@@ -43,15 +43,15 @@
 #define VOL_SD  0x02
 
 enum {
-	VOL_1_00 = 10,
-	VOL_1_10,
-	VOL_1_15,
-	VOL_1_20,
-	VOL_1_25,
-	VOL_1_29,
-	VOL_1_30,
-	VOL_1_80,
-	VOL_3_30
+	VOL_1_00 = 100,
+	VOL_1_10 = 110,
+	VOL_1_15 = 115,
+	VOL_1_20 = 120,
+	VOL_1_25 = 125,
+	VOL_1_29 = 129,
+	VOL_1_30 = 130,
+	VOL_1_80 = 180,
+	VOL_3_30 = 330
 };
 
 static volatile int pmic_state[3] = { 0, VOL_1_20 /* CPU */, VOL_3_30 /* SD */ };

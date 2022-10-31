@@ -346,7 +346,7 @@ int ecc_p256_verify(char *message, char *public_k1, char *public_k2,
 #endif
 
 	/*
-	 *   4. Compute u1 = e ¡Ñ w (mod n) and u2 = r ¡Ñ w (mod n)
+	 *   4. Compute u1 = e ï¿½ï¿½ w (mod n) and u2 = r ï¿½ï¿½ w (mod n)
 	 *      (1) Write the curve order and curve length to N ,M registers
 	 *      (2) Write e, w to X1, Y1 registers
 	 *      (3) Set ECCOP(CRPT_ECC_CTL[10:9]) to 01
@@ -420,7 +420,7 @@ int ecc_p256_verify(char *message, char *public_k1, char *public_k2,
 #endif
 
 	/*
-	 *   5. Compute X¡¦ (x1¡¦, y1¡¦) = u1 * G + u2 * Q
+	 *   5. Compute Xï¿½ï¿½ (x1ï¿½ï¿½, y1ï¿½ï¿½) = u1 * G + u2 * Q
 	 *      (1) Write the curve parameter A, B, N, and curve length M to
 	 *          corresponding registers
 	 *      (2) Write the point G(x, y) to X1, Y1 registers
@@ -442,17 +442,17 @@ int ecc_p256_verify(char *message, char *public_k1, char *public_k2,
 	 *      (16) Set ECCOP(CRPT_ECC_CTL[10:9]) to 10
 	 *      (17) Set START(CRPT_ECC_CTL[0]) to 1
 	 *      (18) Wait for BUSY(CRPT_ECC_STS[0]) be cleared
-	 *      (19) Read X1, Y1 registers to get X¡¦(x1¡¦, y1¡¦)
+	 *      (19) Read X1, Y1 registers to get Xï¿½ï¿½(x1ï¿½ï¿½, y1ï¿½ï¿½)
 	 *      (20) Write the curve order and curve length to N ,M registers
-	 *      (21) Write x1¡¦ to X1 registers
+	 *      (21) Write x1ï¿½ï¿½ to X1 registers
 	 *      (22) Write 0x0 to Y1 registers
 	 *      (23) Set ECCOP(CRPT_ECC_CTL[10:9]) to 01
 	 *      (24) Set MOPOP(CRPT_ECC_CTL[12:11]) to 10
 	 *      (25) Set START(CRPT_ECC_CTL[0]) to 1
 	 *      (26) Wait for BUSY(CRPT_ECC_STS[0]) be cleared
-	 *      (27) Read X1 registers to get x1¡¦ (mod n)
+	 *      (27) Read X1 registers to get x1ï¿½ï¿½ (mod n)
 	 *
-	 *   6. The signature is valid if x1¡¦ = r, otherwise it is invalid
+	 *   6. The signature is valid if x1ï¿½ï¿½ = r, otherwise it is invalid
 	 */
 
 	/*
@@ -544,7 +544,7 @@ int ecc_p256_verify(char *message, char *public_k1, char *public_k2,
 
 	run_ecc_codec(ECCOP_POINT_ADD, 0);
 
-	/* (19) Read X1, Y1 registers to get X¡¦(x1¡¦, y1¡¦) */
+	/* (19) Read X1, Y1 registers to get Xï¿½ï¿½(x1ï¿½ï¿½, y1ï¿½ï¿½) */
 	for (i = 0; i < 18; i++) {
 		temp_x[i] = inp32(ECC_X1(i));
 		temp_y[i] = inp32(ECC_Y1(i));
@@ -564,7 +564,7 @@ int ecc_p256_verify(char *message, char *public_k1, char *public_k2,
 	Hex2Reg(pCurve->Eorder, ECC_N(0));
 
 	/*
-	 *  (21) Write x1¡¦ to X1 registers
+	 *  (21) Write x1ï¿½ï¿½ to X1 registers
 	 *  (22) Write 0x0 to Y1 registers
 	 */
 	for (i = 0; i < 18; i++) {
@@ -581,11 +581,11 @@ int ecc_p256_verify(char *message, char *public_k1, char *public_k2,
 
 	run_ecc_codec(ECCOP_MODULE | MODOP_ADD, 0);
 
-	/*  (27) Read X1 registers to get x1¡¦ (mod n) */
+	/*  (27) Read X1 registers to get x1ï¿½ï¿½ (mod n) */
 	Reg2Hex(pCurve->Echar, (uint32_t *) (ECC_X1(0)), temp_hex_str);
 	printf("5-(27) x1' (mod n) = %s\n", temp_hex_str);
 
-	/* 6. The signature is valid if x1¡¦ = r, otherwise it is invalid */
+	/* 6. The signature is valid if x1ï¿½ï¿½ = r, otherwise it is invalid */
 
 	/* Compare with test pattern to check if r is correct or not */
 	if (ecc_strcmp(temp_hex_str, R) != 0) {
@@ -892,4 +892,5 @@ err_out:
 /*
  * Register crypto library descriptor
  */
-REGISTER_CRYPTO_LIB(LIB_NAME, init, verify_signature, verify_hash, NULL);
+REGISTER_CRYPTO_LIB_MA35(LIB_NAME, init, verify_signature, verify_hash,
+			 NULL, NULL, NULL, NULL);

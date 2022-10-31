@@ -86,8 +86,8 @@ int tsi_send_command(TSI_REQ_T *req)
 
 	if (i >= 4)
 		return ST_WHC_TX_BUSY;	/* No WHC channel is ready for sending message */
-	printf("TSI CMD: 0x%x 0x%x 0x%x 0x%x\n", req->cmd[0], req->cmd[1],
-						req->cmd[2], req->cmd[3]);
+	//printf("TSI CMD: 0x%x 0x%x 0x%x 0x%x\n", req->cmd[0], req->cmd[1],
+	//					req->cmd[2], req->cmd[3]);
 
 	WHC1->TMDAT[i][0] = req->cmd[0];
 	WHC1->TMDAT[i][1] = req->cmd[1];
@@ -212,38 +212,24 @@ int TSI_Config_UART(uint32_t line, uint32_t baud)
 	return ret;
 }
 
-
 /*
- * @brief    Set TSI system clock.
- * @param[in]  pllsrc   0: PLL clock source from HXT; 1: PLL clock source from HIRC.
- * @param[in]  clksel   Select TSI system clock rate
- *                      0:  72 MHz
- *                      1:  96 MHz
- *                      2: 144 MHz
- *                      3: 172 MHz
- *                      4: 192 MHz
- *                      5: 224 MHz
- *                      6: 240 MHz
- * @return   0          success
- * @return   otherwise  Refer to ST_XXX error code.
+ * Set TSI system clock using the TSI PLL_CTL register value.
+ * Return zero on success, otherwise an ST_XXX error code.
  */
-int TSI_Set_Clock(int pllsrc, int clksel)
+int TSI_Set_Clock(uint32_t pllctl)
 {
-	TSI_REQ_T req;
-	int ret;
+	TSI_REQ_T  req;
+	int        ret;
 
 	memset(&req, 0, sizeof(req));
 	req.cmd[0] = (CMD_TSI_SET_CLOCK << 16);
-	if (pllsrc != 0)
-		req.cmd[1] |= (1 << 3);
-	req.cmd[1] |= (clksel & 0x7);
+	req.cmd[1] = pllctl;
 
 	ret = tsi_send_command_and_wait(&req, CMD_TIME_OUT_2S);
 	if (ret != 0)
 		return ret;
 	return 0;
 }
-
 
 /*
  * @brief    Request an encrypt/decrypt session for AES or SHA.

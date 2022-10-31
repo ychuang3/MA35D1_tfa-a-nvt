@@ -116,8 +116,8 @@ PLAT_BL_COMMON_SOURCES	:=	common/fdt_wrappers.c				\
 				plat/nuvoton/ma35d1/ma35d1_private.c		\
 				plat/nuvoton/ma35d1/ma35d1_platform.c		\
 				drivers/nuvoton/pmic/ma35d1_pmic.c		\
-#				plat/nuvoton/ma35d1/drivers/ma35d1_crypto.c	\
-#				plat/nuvoton/ma35d1/drivers/tsi_cmd.c	        \
+				plat/nuvoton/ma35d1/drivers/ma35d1_crypto.c	\
+				plat/nuvoton/ma35d1/drivers/tsi_cmd.c		\
 
 include lib/xlat_tables_v2/xlat_tables.mk
 PLAT_BL_COMMON_SOURCES	+=	${XLAT_TABLES_LIB_SRCS}

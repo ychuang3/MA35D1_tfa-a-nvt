@@ -157,7 +157,7 @@ int TSI_Sync(void);
 int TSI_Get_Version(uint32_t *ver_code);
 int TSI_Reset(void);
 int TSI_Config_UART(uint32_t line, uint32_t baud);
-int TSI_Set_Clock(int pllsrc, int clksel);
+int TSI_Set_Clock(uint32_t pllctl);
 int TSI_Open_Session(int class_code, int *session_id);
 int TSI_Close_Session(int class_code, int session_id);
 int TSI_AES_Set_Mode(int sid, int kinswap, int koutswap, int inswap, int outswap,
