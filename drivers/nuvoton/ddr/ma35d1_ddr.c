@@ -2170,6 +2170,13 @@ static void *fdt = (void *)(uintptr_t)MA35D1_DTB_BASE;
 
 void ma35d1_ddr_init(void)
 {
+	uint32_t clk_sel0;
+
+	clk_sel0 = inp32(CLK_BA + 0x18);
+
+	/* Use SYS-PLL for SYS_CLK0, DCUltra and GFX during AXI setup. */
+	outp32(CLK_BA + 0x18, 0xd000015);
+
 	//Set TAHBCKEN,CM4CKEN,CA35CKEN,DDR6CKEN,GFXCKEN,VC8KCKEN,DCUCKEN,GMAC0CKEN,GMAC1CKEN,CAP0CKEN,CAP1CKEN
 	outp32(CLK_BA + 0x04, (inp32(CLK_BA + 0x04) | 0x7F000037));
 	outp32(CLK_BA + 0x0C, (inp32(CLK_BA + 0x0C) | 0x40000000));
@@ -2216,4 +2223,7 @@ void ma35d1_ddr_init(void)
 
 	outp32(SYS_BA + 0x70,(inp32(SYS_BA + 0x70) & ~0x00800000));	/* DDR control register clock gating enable */
 	outp32(CLK_BA + 0x04, 0x35);
+
+	/* Restore CLK_CLKSEL0. */
+	outp32(CLK_BA + 0x18, clk_sel0);
 }
