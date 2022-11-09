@@ -33,6 +33,8 @@
 		lxt-enable = <1>;
 		/* rtc power control */
 		rtc-pwrctl-enable = <1>;
+		/* Set PH8/PH9 output high */
+		set-ph8-ph9-hight = <0>;
 	};
 
 	qspi0: qspi@40680000 {

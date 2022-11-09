@@ -179,6 +179,19 @@ static void ma35d1_clock_setup(void)
 			(inp32((void *)(0x40410180)) & ~0xffff0040) |
 			0x5aa50000);
 
+	/* Set PH8/PH9 */
+	if (fdt_read_uint32_default(fdt, node, "set-ph8-ph9-hight", 1) == 1) {
+		outp32((void *)(0x40410100),
+			(inp32((void *)(0x40410100)) & ~0x00000100) |
+			0x00000100);  /* Enable IOCTLSEL */
+
+		outp32((void *)(0x40410104),
+			(inp32((void *)(0x40410104)) & ~0x00000707) |
+			0x00000505); /* Set PH8/PH9 output high */
+	} else {
+		outp32((void *)(0x40410100),
+			(inp32((void *)(0x40410100)) & ~0x00000100));  /* Disable IOCTLSEL */
+	}
 
 }
 
