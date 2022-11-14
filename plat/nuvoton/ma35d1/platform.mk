@@ -29,6 +29,12 @@ $(eval $(call add_define,MA35D1_MAX_CPUS_PER_CLUSTER))
 $(eval $(call add_define,MA35D1_MAX_PE_PER_CPU))
 $(eval $(call add_define,MA35D1_INTERCONNECT_DRIVER))
 
+FIP_DE_AES ?= 0
+$(eval $(call add_define,FIP_DE_AES))
+
+MA35D1_PMIC ?= 1
+$(eval $(call add_define,MA35D1_PMIC))
+
 MA35D1_BL32_BASE ?= 0x8f800000
 $(eval $(call add_define,MA35D1_BL32_BASE))
 
@@ -116,8 +122,8 @@ PLAT_BL_COMMON_SOURCES	:=	common/fdt_wrappers.c				\
 				plat/nuvoton/ma35d1/ma35d1_private.c		\
 				plat/nuvoton/ma35d1/ma35d1_platform.c		\
 				drivers/nuvoton/pmic/ma35d1_pmic.c		\
-				plat/nuvoton/ma35d1/drivers/ma35d1_crypto.c	\
-				plat/nuvoton/ma35d1/drivers/tsi_cmd.c		\
+				drivers/nuvoton/crypto/ma35d1_crypto.c	\
+				drivers/nuvoton/crypto/tsi_cmd.c		\
 
 include lib/xlat_tables_v2/xlat_tables.mk
 PLAT_BL_COMMON_SOURCES	+=	${XLAT_TABLES_LIB_SRCS}

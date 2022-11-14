@@ -109,12 +109,45 @@ typedef struct tsi_cmd_t {
 	uint32_t	remain_len;	/* remaining data length                     */
 } TSI_REQ_T;
 
+typedef struct tsi_image_info {
+	uint8_t reserved[56];
+	uint8_t signatureR[32];
+	uint8_t signatureS[32];
+} IMAGE_INFO_T;
+
 enum {
 	TREQ_ST_UNUSED = 0,
 	TREQ_ST_WAIT_PROCESS,
 	TREQ_ST_PROCESSING,
 	TREQ_ST_ACK_SEND,
 };
+
+typedef enum {
+       CURVE_P_192  = 0x01,
+       CURVE_P_224  = 0x02,
+       CURVE_P_256  = 0x03,
+       CURVE_P_384  = 0x04,
+       CURVE_P_521  = 0x05,
+       CURVE_K_163  = 0x11,
+       CURVE_K_233  = 0x12,
+       CURVE_K_283  = 0x13,
+       CURVE_K_409  = 0x14,
+       CURVE_K_571  = 0x15,
+       CURVE_B_163  = 0x21,
+       CURVE_B_233  = 0x22,
+       CURVE_B_283  = 0x23,
+       CURVE_B_409  = 0x24,
+       CURVE_B_571  = 0x25,
+       CURVE_KO_192 = 0x31,
+       CURVE_KO_224 = 0x32,
+       CURVE_KO_256 = 0x33,
+       CURVE_BP_256 = 0x41,
+       CURVE_BP_384 = 0x42,
+       CURVE_BP_512 = 0x43,
+       CURVE_SM2_256 = 0x50,
+       CURVE_25519  = 0x51,
+       CURVE_UNDEF,
+} E_ECC_CURVE;
 
 #define TC_GET_CLASS_CODE(r)	((((r)->cmd[0])>>24)&0xff)
 #define TC_GET_SUB_CODE(r)	((((r)->cmd[0])>>16)&0xff)
@@ -183,5 +216,8 @@ int TSI_ECC_VerifySignature(E_ECC_CURVE curve_id, int psel, int x_knum,
 		int y_knum, uint32_t param_addr);
 int TSI_ECC_Multiply(E_ECC_CURVE curve_id, int type, int msel, int sps, int m_knum,
 		int x_knum, int y_knum, uint32_t param_addr, uint32_t dest_addr);
+int TSI_run_sha(int inswap, int outswap, int mode_sel, int hmac,
+		int mode, int keylen, int ks, int ks_num,
+		int wcnt, int data_cnt, unsigned int src_addr, unsigned int dest_addr);
 
 #endif	/* __TSI_CMD_H__ */

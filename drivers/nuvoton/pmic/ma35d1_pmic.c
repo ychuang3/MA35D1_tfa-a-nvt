@@ -22,10 +22,22 @@
 #include <drivers/nuvoton/ma35d1_pmic.h>
 
 #define RETRY_COUNT 3
+
+#define PMIC_DIALOG 1
+#define PMIC_IP6103 2
+
+#if (MA35D1_PMIC == PMIC_IP6103)
+#define DEVICE_ADDR 0x60
+#endif
+
+#if (MA35D1_PMIC == PMIC_DIALOG)
+#define DEVICE_ADDR 0xB0
+#endif
+
 /*---------------------------------------------------------------------------*/
 /* Global variables                                                          */
 /*---------------------------------------------------------------------------*/
-unsigned char g_u8DeviceAddr = 0xB0;
+unsigned char g_u8DeviceAddr = DEVICE_ADDR;
 unsigned char g_uPageNum;
 unsigned char g_u8RegAddr;
 unsigned char g_u8WriteData;
@@ -131,7 +143,7 @@ void I2C_MasterTx(unsigned int u32Status)
 
 unsigned int ma35d1_write_i2c_data(unsigned int u32Addr, unsigned int u32Data)
 {
-	unsigned int I2C_TIME_OUT_COUNT = 6000;
+	unsigned int I2C_TIME_OUT_COUNT = 0x20000;
 	unsigned int u32Status;
 	unsigned int u32time_out = 0;
 
@@ -150,6 +162,7 @@ unsigned int ma35d1_write_i2c_data(unsigned int u32Addr, unsigned int u32Data)
 
 	while (1) {
 		if (mmio_read_32(REG_I2C0_CTL) & I2C_CTL_SI) {
+			u32time_out = 0;
 			u32Status = mmio_read_32(REG_I2C0_STATUS);
 			I2C_MasterTx(u32Status);
 		}
@@ -167,7 +180,7 @@ unsigned int ma35d1_write_i2c_data(unsigned int u32Addr, unsigned int u32Data)
 
 unsigned int ma35d1_read_i2c_data(unsigned int u32Addr, unsigned int *u32Data)
 {
-	unsigned int I2C_TIME_OUT_COUNT = 6000;
+	unsigned int I2C_TIME_OUT_COUNT = 0x200000;
 	unsigned int u32Status;
 	unsigned int u32time_out = 0;
 
@@ -185,6 +198,7 @@ unsigned int ma35d1_read_i2c_data(unsigned int u32Addr, unsigned int *u32Data)
 
 	while (1) {
 		if (mmio_read_32(REG_I2C0_CTL) & I2C_CTL_SI) {
+			u32time_out = 0;
 			u32Status = mmio_read_32(REG_I2C0_STATUS);
 			I2C_MasterRx(u32Status);
 		}
@@ -276,6 +290,77 @@ void ma35d1_i2c0_init(unsigned int sys_clk)
 }
 
 
+#if MA35D1_PMIC == PMIC_IP6103
+int ma35d1_set_pmic(int type, int vol)
+{
+	unsigned int reg0 = 0xff;
+	int ret = 0;
+
+	if (pmicIsInit == 0) {
+		ma35d1_i2c0_init(pmic_clk);
+		pmicIsInit = 1;
+		ma35d1_write_pmic_data(0x2e, 0x00);
+		ma35d1_write_pmic_data(0x35, 0x00);
+	}
+
+	if (type == VOL_CPU) {
+		reg0 = 0x21;	/* cpu */
+	} else if (type == VOL_SD) {
+		reg0 = 0x42;
+	} else {
+		ERROR("Not support type!\n");
+	}
+
+	switch (vol)
+	{
+	case VOL_1_00:
+		INFO("IP6103 1.00V\n");
+		ret = ma35d1_write_pmic_data(reg0, 0x24);
+		break;
+	case VOL_1_10:
+		INFO("IP6103 1.10V\n");
+		ret = ma35d1_write_pmic_data(reg0, 0x28);
+		break;
+	case VOL_1_15:
+		INFO("IP6103 1.15V\n");
+		ret = ma35d1_write_pmic_data(reg0, 0x2c);
+		break;
+	case VOL_1_20:
+		INFO("IP6103 1.20V\n");
+		ret = ma35d1_write_pmic_data(reg0, 0x30);
+		break;
+	case VOL_1_25:
+		INFO("IP6103 1.25V\n");
+		ret = ma35d1_write_pmic_data(reg0, 0x34);
+		break;
+	case VOL_1_29:
+		INFO("IP6103 1.29V\n");
+		ret = ma35d1_write_pmic_data(reg0, 0x37);
+		break;
+	case VOL_1_30:
+		INFO("IP6103 1.30V\n");
+		ret = ma35d1_write_pmic_data(reg0, 0x38);
+		break;
+	case VOL_1_80:
+		INFO("IP6103 SD 1.8V\n");
+		ret = ma35d1_write_pmic_data(reg0, 0x2c);
+		break;
+	case VOL_3_30:
+		INFO("IP6103 SD 3.3V\n");
+		ret = ma35d1_write_pmic_data(reg0, 0x68);
+		break;
+	default:
+		ERROR("Not support voltage!\n");
+		ret=-1;
+		break;
+	}
+
+	if (ret >= 0)
+		pmic_state[type] = vol;
+
+	return ret;
+}
+#elif (MA35D1_PMIC == PMIC_DIALOG)
 int ma35d1_set_pmic(int type, int vol)
 {
 	unsigned int reg = 0xff;
@@ -331,6 +416,11 @@ int ma35d1_set_pmic(int type, int vol)
 
 	return ret;
 }
+#else
+int ma35d1_set_pmic(int type, int vol) {
+	return 1;
+}
+#endif
 
 int ma35d1_get_pmic(int type)
 {

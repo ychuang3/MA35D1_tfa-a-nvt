@@ -20,11 +20,9 @@
 #include <plat/common/common_def.h>
 #include <platform_def.h>
 
-#include "../ma35d1_def.h"
-#include "../include/ma35d1_crypto.h"
-#include "../include/tsi_cmd.h"
-#include "../include/whc.h"
-
+#include <ma35d1_crypto.h>
+#include <whc.h>
+#include <tsi_cmd.h>
 
 typedef struct err_code_t {
 	int	code;
@@ -212,10 +210,12 @@ int TSI_Config_UART(uint32_t line, uint32_t baud)
 	return ret;
 }
 
-/*
- * Set TSI system clock using the TSI PLL_CTL register value.
- * Return zero on success, otherwise an ST_XXX error code.
- */
+/**
+  * @brief    Set TSI system clock.
+  * @param[in]  pllctl   The value to be written to TSI PLL_CTL register
+  * @return   0          success
+  * @return   otherwise  Refer to ST_XXX error code.
+  */
 int TSI_Set_Clock(uint32_t pllctl)
 {
 	TSI_REQ_T  req;
@@ -714,4 +714,32 @@ int TSI_ECC_Multiply(E_ECC_CURVE curve_id, int type, int msel, int sps,
 	req.cmd[2] = param_addr;
 	req.cmd[3] = dest_addr;
 	return tsi_send_command_and_wait(&req, CMD_TIME_OUT_2S);
+}
+
+/**********************************************************************************/
+int TSI_run_sha(int inswap, int outswap, int mode_sel, int hmac,
+				int mode, int keylen, int ks, int ks_num,
+				int wcnt, int data_cnt, unsigned int src_addr, unsigned int dest_addr)
+{
+	int sid, ret;
+
+	inv_dcache_range((uintptr_t)src_addr, data_cnt);
+	inv_dcache_range((uintptr_t)dest_addr, 32);
+	ret = TSI_Open_Session(C_CODE_SHA, &sid);
+	if (ret != 0)
+		goto err_out;
+
+	ret = TSI_SHA_Start(sid, inswap, outswap, mode_sel, hmac, mode, keylen, ks, ks_num);
+	if (ret != 0)
+		goto err_out;
+	ret = TSI_SHA_Finish(sid, wcnt, data_cnt, src_addr, dest_addr);
+	if (ret != 0)
+		goto err_out;
+	TSI_Close_Session(C_CODE_SHA, sid);
+	inv_dcache_range((uintptr_t)dest_addr, 32);
+	return 0;
+
+err_out:
+	TSI_Close_Session(C_CODE_SHA, sid);
+	return ret;
 }

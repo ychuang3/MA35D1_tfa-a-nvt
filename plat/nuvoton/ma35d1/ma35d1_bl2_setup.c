@@ -18,6 +18,189 @@
 #include <lib/optee_utils.h>
 
 #include "ma35d1_private.h"
+#include <ma35d1_crypto.h>
+#include <tsi_cmd.h>
+
+#if FIP_DE_AES
+static __inline unsigned int Swap32(unsigned int val)
+{
+	return (val<<24) | ((val<<8)&0xff0000) | ((val>>8)&0xff00) | (val>>24);
+}
+
+
+int ma35d1_fip_verify(uintptr_t base, size_t size) {
+	int j, k;
+	IMAGE_INFO_T *image_info;
+	unsigned int shaDigest[8], tmpbuf[8], *ptr;
+	unsigned char image[256];
+	unsigned int volatile u32SysCfg;
+	char *param = (char *)(TSI_PARAM_BASE);
+
+	if (size <= 0)
+		return 0;
+
+	image_info = (IMAGE_INFO_T *)image;
+	memcpy(image,(unsigned char *)base+size-sizeof(IMAGE_INFO_T),sizeof(IMAGE_INFO_T));
+	u32SysCfg = inp32((void *)SYS_CHIPCFG);
+	if ((u32SysCfg & 0x100) == 0x000)       /* 0: TSI; 1: crypto */
+	{
+		/* Enable whc0 clock */
+		outp32((void *)CLK_SYSCLK1, (inp32((void *)CLK_SYSCLK1) | 0x10));
+		/* connect with TSI */
+		while (1)
+		{
+			if (TSI_Sync() == 0)
+			{
+				INFO("TSI Connected\n");
+				break;
+			}
+		}
+		if (TSI_run_sha(	1,                          /* inswap        */
+					1,                          /* outswap       */
+					0,                          /* mode_sel      */
+					0,                          /* hmac          */
+					SHA_MODE_SHA256,            /* mode          */
+					0,                          /* keylen (hmac) */
+					0,                          /* ks            */
+					0,                          /* ks_num        */
+					8,                          /* wcnt          */
+					(size-sizeof(IMAGE_INFO_T)),	/* data_cnt      */
+					base,				/* src_addr      */
+					(long)shaDigest		/* dest_addr     */
+					) != 0)
+		{
+				printf("\nTSI SHA command failed!!\n");
+				return 1;
+		}
+
+		/* ECC authenticate */
+		/* parameters */
+		ptr = (unsigned int *)shaDigest;
+		for (j=7, k=0; j>=0; j--, k++)
+			tmpbuf[j] = Swap32(*(ptr+k));
+		Reg2Hex(64, tmpbuf, param);
+
+		ptr = (unsigned int *)image_info->signatureR;
+		for (j=7, k=0; j>=0; j--, k++)
+			tmpbuf[j] = Swap32(*(ptr+k));
+		Reg2Hex(64, tmpbuf, (param+1728));
+
+		ptr = (unsigned int *)image_info->signatureS;
+		for (j=7, k=0; j>=0; j--, k++)
+			tmpbuf[j] = Swap32(*(ptr+k));
+		Reg2Hex(64, tmpbuf, (param+2304));
+
+		inv_dcache_range((uintptr_t)param, 4096);
+
+		if(TSI_ECC_VerifySignature(0x3, 0x1, 6, 7, ((uint32_t)(uint64_t)(TSI_PARAM_BASE)))!=0)
+			return 1;
+	} else { /* crypto */
+
+		/* initial crypto engine and ks clock */
+                outp32((void *)(TSI_CLK_BASE+0x04),
+                            (inp32((void *)(TSI_CLK_BASE+0x04)) | 0x5000));
+
+                /* Init KeyStore */
+                /* KS INIT(KS_CTL[8]) + START(KS_CTL[0]) */
+                outp32((void *)(KS_BASE+0x00), 0x101);
+                while ((inp32((void *)(KS_BASE+0x08)) & 0x80) == 0)
+                        ;   /* wait for INITDONE(KS_STS[7]) set */
+                while (inp32((void *)(KS_BASE+0x08)) & 0x4)
+                        ;      /* wait for BUSY(KS_STS[2]) cleared */
+
+		/* enable SHA, AES, and ECC */
+		/* SHA mode 256, in/out swap, key len 0 */
+		SHA_Open(SHA_MODE_SHA256, SHA_IN_OUT_SWAP, 0);
+
+		/* calculate SHA-256 HASH */
+		SHA_SetDMATransfer(base, size-sizeof(IMAGE_INFO_T));
+		SHA_Start(CRYPTO_DMA_ONE_SHOT);
+
+		SHA_Read(shaDigest);
+		for (j=7, k=0; j>=0; j--, k++)
+			tmpbuf[j] = Swap32(shaDigest[k]);
+		Reg2Hex(64, tmpbuf, param);
+
+		ptr = (unsigned int *)image_info->signatureR;
+		for (j=7, k=0; j>=0; j--, k++)
+			tmpbuf[j] = Swap32(*(ptr+k));
+		Reg2Hex(64, tmpbuf, (param+128));
+
+		ptr = (unsigned int *)image_info->signatureS;
+		for (j=7, k=0; j>=0; j--, k++)
+			tmpbuf[j] = Swap32(*(ptr+k));
+		Reg2Hex(64, tmpbuf, (param+256));
+
+		inv_dcache_range(base, size);
+		if (ECC_VerifySignature_KS(param, 0x86, 0x87, (param+128), (param+256)) < 0)
+			return 1;
+	}
+
+	return 0;
+}
+
+int ma35d1_fip_deaes(uintptr_t base, size_t size) {
+	int sid, j;
+	volatile unsigned char *param = (volatile unsigned char *)TSI_PARAM_BASE;
+	unsigned int volatile u32SysCfg;
+
+	if (size <= 0)
+		return 0;
+	u32SysCfg = inp32((void *)SYS_CHIPCFG);
+	if ((u32SysCfg & 0x100) == 0x000)       /* 0: TSI; 1: crypto */
+	{
+
+		/* AES decrypt */
+		if (TSI_Open_Session(C_CODE_AES, &sid) != 0)
+			return 1;
+		inv_dcache_range(TSI_PARAM_BASE, 32);
+		for (j=0; j<32; j++)
+			*(param+j) = 0;
+		inv_dcache_range(TSI_PARAM_BASE, 32);
+		if (TSI_AES_Set_IV(sid, (unsigned int)TSI_PARAM_BASE) != 0)
+			return 1;
+		if (TSI_AES_Set_Mode(sid, 0, 0, 1, 1, 0, 0, 2, AES_KEY_SIZE_256, 5, 8) != 0)
+			return 1;
+		if (TSI_AES_Run(sid, 1, size-sizeof(IMAGE_INFO_T), base, base) != 0)
+			return 1;
+		TSI_Close_Session(C_CODE_AES, sid);
+		inv_dcache_range(base, size);
+	} else { /* crypto */
+
+		/* AES, channel 0, AES decode, CFB mode, key 256, in/out swap */
+		outp32((void *)AES_IV(0), 0);
+		outp32((void *)AES_IV(1), 0);
+		outp32((void *)AES_IV(2), 0);
+		outp32((void *)AES_IV(3), 0);
+
+		/* AES decrypt */
+		outp32((void *)AES_SADDR, base);
+		outp32((void *)AES_DADDR, base);
+		outp32((void *)AES_CNT, base);
+
+		/* 0x2<<KSCTL_RSSRC_Pos | KSCTL_RSRC_Msk | 8 */
+		outp32((void *)AES_KSCTL,  (0x2<<6) | (0x1<<5) | 8); /* from KS_OTP */
+
+		/* ((AES_MODE_CFB << CRPT_AES_CTL_OPMODE_Pos) |
+		   (AES_KEY_SIZE_256 << CRPT_AES_CTL_KEYSZ_Pos)) |
+		   CRPT_AES_CTL_INSWAP_Msk | CRPT_AES_CTL_OUTSWAP_Msk |
+		   CRPT_AES_CTL_DMAEN_Msk | CRPT_AES_CTL_DMALAST_Msk | CRPT_AES_CTL_START_Msk  */
+		outp32((void *)AES_CTL, ((2<<8) | (2<<2)) | (1<<23) | (1<<22) |
+				(1<<7) | (1<<5) | (1<<0));
+		while (1)
+		{
+			/* CRPT_INTSTS_AESIF_Msk|CRPT_INTSTS_AESEIF_Msk */
+			if(inp32(INTSTS) & ((1<<0)|(1<<1)) )
+			{
+				outp32(INTSTS,((1<<0)|(1<<1)));
+			}
+		}
+		inv_dcache_range(base, size);
+	}
+
+	return 0;
+}
+#endif
 
 /*
  * bl2_platform_setup()
@@ -129,6 +312,14 @@ int bl2_plat_handle_post_image_load(unsigned int image_id)
 	bl_mem_params_node_t *paged_mem_params = NULL;
 
 	assert(bl_mem_params != NULL);
+
+#if FIP_DE_AES
+	if(ma35d1_fip_verify(bl_mem_params->image_info.image_base,bl_mem_params->image_info.image_size)!=0) {
+		ERROR("ECC authenticate fail.\n");
+		while(1);
+	}
+	ma35d1_fip_deaes(bl_mem_params->image_info.image_base,bl_mem_params->image_info.image_size);
+#endif
 
 	switch (image_id) {
 	case BL32_IMAGE_ID:

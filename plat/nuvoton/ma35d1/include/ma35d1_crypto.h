@@ -4,12 +4,33 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#ifndef MA35D1_CRYPTO_H
-#define MA35D1_CRYPTO_H
+/**************************************************************************//**
+ * @file     crypto.h
+ * @version  V1.10
+ * @brief    Cryptographic Accelerator driver header file
+ *
+ * @copyright (C) 2017 Nuvoton Technology Corp. All rights reserved.
+ ******************************************************************************/
+#ifndef __CRYPTO_H__
+#define __CRYPTO_H__
 
-#include "../ma35d1_def.h"
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+/** @addtogroup Standard_Driver Standard Driver
+  @{
+*/
+
+/** @addtogroup CRYPTO_Driver CRYPTO Driver
+  @{
+*/
 
 
+/** @addtogroup CRYPTO_EXPORTED_CONSTANTS CRYPTO Exported Constants
+  @{
+*/
 #define INTEN			(CRYPTO_BASE+0x000)
 #define INTEN_AESIEN			(0x1 << 0)
 #define INTEN_AESEIEN			(0x1 << 1)
@@ -83,6 +104,7 @@
 #define HMAC_CTL_START			(0x1 << 0)
 #define HMAC_CTL_STOP			(0x1 << 1)
 #define HMAC_CTL_DMAFIRST		(0x1 << 4)
+#define HMAC_CTL_DMALAST_OFFSET		5
 #define HMAC_CTL_DMALAST		(0x1 << 5)
 #define HMAC_CTL_DMACSCAD		(0x1 << 6)
 #define HMAC_CTL_DMAEN			(0x1 << 7)
@@ -94,6 +116,7 @@
 #define HMAC_CTL_MD5EN			(0x1 << 14)
 #define HMAC_CTL_FBIN			(0x1 << 20)
 #define HMAC_CTL_FBOUT			(0x1 << 21)
+#define HMAC_CTL_OUTSWAP_OFFFSET		22
 #define HMAC_CTL_OUTSWAP		(0x1 << 22)
 #define HMAC_CTL_INSWAP			(0x1 << 23)
 #define HMAC_CTL_NEXTDGST		(0x1 << 24)
@@ -192,80 +215,224 @@
 #define ECC_KSXY_RSSRCY_MASK		(0x3 << 14)
 
 
+#define AES_KEY_SIZE_128        0UL     /*!< AES select 128-bit key length           \hideinitializer */
+#define AES_KEY_SIZE_192        1UL     /*!< AES select 192-bit key length           \hideinitializer */
+#define AES_KEY_SIZE_256        2UL     /*!< AES select 256-bit key length           \hideinitializer */
 
-#define AES_KEYSZ_SEL_128       (0x0 << AES_CTL_KEYSZ_OFFSET)
-#define AES_KEYSZ_SEL_192       (0x1 << AES_CTL_KEYSZ_OFFSET)
-#define AES_KEYSZ_SEL_256       (0x2 << AES_CTL_KEYSZ_OFFSET)
+#define AES_MODE_ECB            0UL     /*!< AES select ECB mode                     \hideinitializer */
+#define AES_MODE_CBC            1UL     /*!< AES select CBC mode                     \hideinitializer */
+#define AES_MODE_CFB            2UL     /*!< AES select CFB mode                     \hideinitializer */
+#define AES_MODE_OFB            3UL     /*!< AES select OFB mode                     \hideinitializer */
+#define AES_MODE_CTR            4UL     /*!< AES select CTR mode                     \hideinitializer */
+#define AES_MODE_CBC_CS1        0x10UL  /*!< AES select CBC CS1 mode                 \hideinitializer */
+#define AES_MODE_CBC_CS2        0x11UL  /*!< AES select CBC CS2 mode                 \hideinitializer */
+#define AES_MODE_CBC_CS3        0x12UL  /*!< AES select CBC CS3 mode                 \hideinitializer */
+#define AES_MODE_GCM            0x20UL  /*!< AES select GCM (Galois/Counter Mode)    \hideinitializer */
+#define AES_MODE_GHASH          0x21UL  /*!< AES select GHASH (Galois Hash Function) \hideinitializer */
+#define AES_MODE_CCM            0x22UL  /*!< AES select CCM (Counter with CBC-MAC Mode)   \hideinitializer */
 
-#define AES_MODE_ECB            (0x00 << AES_CTL_OPMODE_OFFSET)
-#define AES_MODE_CBC            (0x01 << AES_CTL_OPMODE_OFFSET)
-#define AES_MODE_CFB            (0x02 << AES_CTL_OPMODE_OFFSET)
-#define AES_MODE_OFB            (0x03 << AES_CTL_OPMODE_OFFSET)
-#define AES_MODE_CTR            (0x04 << AES_CTL_OPMODE_OFFSET)
-#define AES_MODE_CBC_CS1        (0x10 << AES_CTL_OPMODE_OFFSET)
-#define AES_MODE_CBC_CS2        (0x11 << AES_CTL_OPMODE_OFFSET)
-#define AES_MODE_CBC_CS3        (0x12 << AES_CTL_OPMODE_OFFSET)
-#define AES_MODE_GCM            (0x20 << AES_CTL_OPMODE_OFFSET)
-#define AES_MODE_GHASH          (0x21 << AES_CTL_OPMODE_OFFSET)
-#define AES_MODE_CCM            (0x22 << AES_CTL_OPMODE_OFFSET)
+#define AES_NO_SWAP             0UL     /*!< AES do not swap input and output data   \hideinitializer */
+#define AES_OUT_SWAP            1UL     /*!< AES swap output data                    \hideinitializer */
+#define AES_IN_SWAP             2UL     /*!< AES swap input data                     \hideinitializer */
+#define AES_IN_OUT_SWAP         3UL     /*!< AES swap both input and output data     \hideinitializer */
 
-#define SHA_OPMODE_SHA1		(0x0 << HMAC_CTL_OPMODE_OFFSET)
-#define SHA_OPMODE_SHA224	(0x5 << HMAC_CTL_OPMODE_OFFSET)
-#define SHA_OPMODE_SHA256	(0x4 << HMAC_CTL_OPMODE_OFFSET)
-#define SHA_OPMODE_SHA384	(0x7 << HMAC_CTL_OPMODE_OFFSET)
-#define SHA_OPMODE_SHA512	(0x6 << HMAC_CTL_OPMODE_OFFSET)
-#define SHA_OPMODE_SHAKE128	(0x0 << HMAC_CTL_OPMODE_OFFSET)
-#define SHA_OPMODE_SHAKE256	(0x1 << HMAC_CTL_OPMODE_OFFSET)
+#define SHA_MODE_SHA1           0UL     /*!< SHA select SHA-1 160-bit                \hideinitializer */
+#define SHA_MODE_SHA224         5UL     /*!< SHA select SHA-224 224-bit              \hideinitializer */
+#define SHA_MODE_SHA256         4UL     /*!< SHA select SHA-256 256-bit              \hideinitializer */
+#define SHA_MODE_SHA384         7UL     /*!< SHA select SHA-384 384-bit              \hideinitializer */
+#define SHA_MODE_SHA512         6UL     /*!< SHA select SHA-512 512-bit              \hideinitializer */
 
-#define ECCOP_POINT_MUL		(0x0 << ECC_CTL_ECCOP_OFFSET)
-#define ECCOP_MODULE		(0x1 << ECC_CTL_ECCOP_OFFSET)
-#define ECCOP_POINT_ADD		(0x2 << ECC_CTL_ECCOP_OFFSET)
-#define ECCOP_POINT_DOUBLE	(0x3 << ECC_CTL_ECCOP_OFFSET)
-
-#define MODOP_DIV		(0x0 << ECC_CTL_MODOP_OFFSET)
-#define MODOP_MUL		(0x1 << ECC_CTL_MODOP_OFFSET)
-#define MODOP_ADD		(0x2 << ECC_CTL_MODOP_OFFSET)
-#define MODOP_SUB		(0x3 << ECC_CTL_MODOP_OFFSET)
-
-#define AES_BUFF_SIZE		(PAGE_SIZE)
-#define SHA_BUFF_SIZE		(PAGE_SIZE)
-#define SHA_FDBCK_SIZE		(HMAC_FDBCK_WCNT * 4)
-
-#define AES_KEY_SIZE_128	0UL
-#define AES_KEY_SIZE_192	1UL
-#define AES_KEY_SIZE_256	2UL
+#define SHA_MODE_SHAKE128       0UL     /*!< SHA select SHA-3 SHAKE128               \hideinitializer */
+#define SHA_MODE_SHAKE256       1UL     /*!< SHA select SHA-3 SHAKE256               \hideinitializer */
 
 
-typedef enum {
-	CURVE_P_192  = 0x01,
-	CURVE_P_224  = 0x02,
-	CURVE_P_256  = 0x03,
-	CURVE_P_384  = 0x04,
-	CURVE_P_521  = 0x05,
-	CURVE_K_163  = 0x11,
-	CURVE_K_233  = 0x12,
-	CURVE_K_283  = 0x13,
-	CURVE_K_409  = 0x14,
-	CURVE_K_571  = 0x15,
-	CURVE_B_163  = 0x21,
-	CURVE_B_233  = 0x22,
-	CURVE_B_283  = 0x23,
-	CURVE_B_409  = 0x24,
-	CURVE_B_571  = 0x25,
-	CURVE_KO_192 = 0x31,
-	CURVE_KO_224 = 0x32,
-	CURVE_KO_256 = 0x33,
-	CURVE_BP_256 = 0x41,
-	CURVE_BP_384 = 0x42,
-	CURVE_BP_512 = 0x43,
-	CURVE_SM2_256 = 0x50,
-	CURVE_25519  = 0x51,
-	CURVE_UNDEF,
-} E_ECC_CURVE;
+#define SHA_NO_SWAP             0UL     /*!< SHA do not swap input and output data   \hideinitializer */
+#define SHA_OUT_SWAP            1UL     /*!< SHA swap output data                    \hideinitializer */
+#define SHA_IN_SWAP             2UL     /*!< SHA swap input data                     \hideinitializer */
+#define SHA_IN_OUT_SWAP         3UL     /*!< SHA swap both input and output data     \hideinitializer */
 
-enum {
-	CURVE_GF_P,
-	CURVE_GF_2M,
-};
+#define CRYPTO_DMA_FIRST        0x4UL   /*!< Do first encrypt/decrypt in DMA cascade \hideinitializer */
+#define CRYPTO_DMA_ONE_SHOT     0x5UL   /*!< Do one shot encrypt/decrypt with DMA      \hideinitializer */
+#define CRYPTO_DMA_CONTINUE     0x6UL   /*!< Do continuous encrypt/decrypt in DMA cascade \hideinitializer */
+#define CRYPTO_DMA_LAST         0x7UL   /*!< Do last encrypt/decrypt in DMA cascade          \hideinitializer */
 
+
+#define RSA_MAX_KLEN            (4096)
+#define RSA_KBUF_HLEN           (RSA_MAX_KLEN/4 + 8)
+#define RSA_KBUF_BLEN           (RSA_MAX_KLEN + 32)
+
+/*@}*/ /* end of group CRYPTO_EXPORTED_CONSTANTS */
+
+
+/** @addtogroup M480_CRYPTO_EXPORTED_MACROS CRYPTO Exported Macros
+  @{
+*/
+
+/*----------------------------------------------------------------------------------------------*/
+/*  Macros                                                                                      */
+/*----------------------------------------------------------------------------------------------*/
+
+/**
+  * @brief This macro enables PRNG interrupt.
+  * @param crpt     Specified cripto module
+  * @return None
+  * \hideinitializer
+  */
+#define PRNG_ENABLE_INT(crpt)       ((crpt)->INTEN |= CRPT_INTEN_PRNGIEN_Msk)
+
+/**
+  * @brief This macro disables PRNG interrupt.
+  * @param crpt     Specified cripto module
+  * @return None
+  * \hideinitializer
+  */
+#define PRNG_DISABLE_INT(crpt)      ((crpt)->INTEN &= ~CRPT_INTEN_PRNGIEN_Msk)
+
+/**
+  * @brief This macro gets PRNG interrupt flag.
+  * @param crpt     Specified cripto module
+  * @return PRNG interrupt flag.
+  * \hideinitializer
+  */
+#define PRNG_GET_INT_FLAG(crpt)     ((crpt)->INTSTS & CRPT_INTSTS_PRNGIF_Msk)
+
+/**
+  * @brief This macro clears PRNG interrupt flag.
+  * @param crpt     Specified cripto module
+  * @return None
+  * \hideinitializer
+  */
+#define PRNG_CLR_INT_FLAG(crpt)     ((crpt)->INTSTS = CRPT_INTSTS_PRNGIF_Msk)
+
+/**
+  * @brief This macro enables AES interrupt.
+  * @param crpt     Specified cripto module
+  * @return None
+  * \hideinitializer
+  */
+#define AES_ENABLE_INT(crpt)        ((crpt)->INTEN |= (CRPT_INTEN_AESIEN_Msk|CRPT_INTEN_AESEIEN_Msk))
+
+/**
+  * @brief This macro disables AES interrupt.
+  * @param crpt     Specified cripto module
+  * @return None
+  * \hideinitializer
+  */
+#define AES_DISABLE_INT(crpt)       ((crpt)->INTEN &= ~(CRPT_INTEN_AESIEN_Msk|CRPT_INTEN_AESEIEN_Msk))
+
+/**
+  * @brief This macro gets AES interrupt flag.
+  * @param crpt     Specified cripto module
+  * @return AES interrupt flag.
+  * \hideinitializer
+  */
+#define AES_GET_INT_FLAG(crpt)      ((crpt)->INTSTS & (CRPT_INTSTS_AESIF_Msk|CRPT_INTSTS_AESEIF_Msk))
+
+/**
+  * @brief This macro clears AES interrupt flag.
+  * @param crpt     Specified cripto module
+  * @return None
+  * \hideinitializer
+  */
+#define AES_CLR_INT_FLAG(crpt)      ((crpt)->INTSTS = (CRPT_INTSTS_AESIF_Msk|CRPT_INTSTS_AESEIF_Msk))
+
+/**
+  * @brief This macro enables AES key protection.
+  * @param crpt     Specified cripto module
+  * @return None
+  * \hideinitializer
+  */
+#define AES_ENABLE_KEY_PROTECT(crpt)  ((crpt)->AES_CTL |= CRPT_AES_CTL_KEYPRT_Msk)
+
+/**
+  * @brief This macro disables AES key protection.
+  * @param crpt     Specified cripto module
+  * @return None
+  * \hideinitializer
+  */
+#define AES_DISABLE_KEY_PROTECT(crpt) ((crpt)->AES_CTL = ((crpt)->AES_CTL & ~CRPT_AES_CTL_KEYPRT_Msk) | (0x16UL<<CRPT_AES_CTL_KEYUNPRT_Pos)); \
+									  ((crpt)->AES_CTL &= ~CRPT_AES_CTL_KEYPRT_Msk)
+
+
+/**
+  * @brief This macro enables SHA interrupt.
+  * @param crpt     Specified cripto module
+  * @return None
+  * \hideinitializer
+  */
+#define SHA_ENABLE_INT(crpt)        ((crpt)->INTEN |= (CRPT_INTEN_HMACIEN_Msk|CRPT_INTEN_HMACEIEN_Msk))
+
+/**
+  * @brief This macro disables SHA interrupt.
+  * @param crpt     Specified cripto module
+  * @return None
+  * \hideinitializer
+  */
+#define SHA_DISABLE_INT(crpt)       ((crpt)->INTEN &= ~(CRPT_INTEN_HMACIEN_Msk|CRPT_INTEN_HMACEIEN_Msk))
+
+/**
+  * @brief This macro gets SHA interrupt flag.
+  * @param crpt     Specified cripto module
+  * @return SHA interrupt flag.
+  * \hideinitializer
+  */
+#define SHA_GET_INT_FLAG(crpt)      ((crpt)->INTSTS & (CRPT_INTSTS_HMACIF_Msk|CRPT_INTSTS_HMACEIF_Msk))
+
+/**
+  * @brief This macro clears SHA interrupt flag.
+  * @param crpt     Specified cripto module
+  * @return None
+  * \hideinitializer
+  */
+#define SHA_CLR_INT_FLAG(crpt)      ((crpt)->INTSTS = (CRPT_INTSTS_HMACIF_Msk|CRPT_INTSTS_HMACEIF_Msk))
+
+/**
+  * @brief This macro enables ECC interrupt.
+  * @param crpt     Specified cripto module
+  * @return None
+  * \hideinitializer
+  */
+#define ECC_ENABLE_INT(crpt)        ((crpt)->INTEN |= (CRPT_INTEN_ECCIEN_Msk|CRPT_INTEN_ECCEIEN_Msk))
+
+/**
+  * @brief This macro disables ECC interrupt.
+  * @param crpt     Specified cripto module
+  * @return None
+  * \hideinitializer
+  */
+#define ECC_DISABLE_INT(crpt)       ((crpt)->INTEN &= ~(CRPT_INTEN_ECCIEN_Msk|CRPT_INTEN_ECCEIEN_Msk))
+
+/**
+  * @brief This macro gets ECC interrupt flag.
+  * @param crpt     Specified cripto module
+  * @return ECC interrupt flag.
+  * \hideinitializer
+  */
+#define ECC_GET_INT_FLAG(crpt)      ((crpt)->INTSTS & (CRPT_INTSTS_ECCIF_Msk|CRPT_INTSTS_ECCEIF_Msk))
+
+/**
+  * @brief This macro clears ECC interrupt flag.
+  * @param crpt     Specified cripto module
+  * @return None
+  * \hideinitializer
+  */
+#define ECC_CLR_INT_FLAG(crpt)      ((crpt)->INTSTS = (CRPT_INTSTS_ECCIF_Msk|CRPT_INTSTS_ECCEIF_Msk))
+
+
+/*@}*/ /* end of group M480_CRYPTO_EXPORTED_MACROS */
+
+
+/** @addtogroup CRYPTO_EXPORTED_FUNCTIONS CRYPTO Exported Functions
+  @{
+*/
+
+/*---------------------------------------------------------------------------------------------------------*/
+/*  Functions                                                                                      */
+/*---------------------------------------------------------------------------------------------------------*/
+void Reg2Hex(int count, unsigned int volatile reg[], char output[]);
+void SHA_Open(unsigned int u32OpMode, unsigned int u32SwapType, unsigned int hmac_key_len);
+void SHA_Start(unsigned int u32DMAMode);
+void SHA_SetDMATransfer(unsigned int u32SrcAddr, unsigned int u32TransCnt);
+void SHA_Read(unsigned int u32Digest[]);
+int ECC_VerifySignature_KS(char *message, int x_ksnum, int y_ksnum, char *R, char *S);
 #endif /* MA35D1_CRYPTO_H */
