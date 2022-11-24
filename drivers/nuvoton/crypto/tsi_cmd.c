@@ -19,6 +19,7 @@
 #include <plat/common/platform.h>
 #include <plat/common/common_def.h>
 #include <platform_def.h>
+#include <drivers/delay_timer.h>
 
 #include <ma35d1_crypto.h>
 #include <whc.h>
@@ -98,13 +99,11 @@ int tsi_send_command(TSI_REQ_T *req)
 	return 0;
 }
 
-
 int tsi_wait_ack(TSI_REQ_T *req, int time_out)
 {
-	int	i;
+	int	i, t;
 
-	//t0 = get_ticks();
-	while (1) {
+	for (t = 0; t < 2000; t++) {
 		for (i = 0; i < 4; i++) {
 			if (WHC1->RXSTS & (1 << i)) {	/* Check CHxRDY */
 				if ((WHC1->RMDAT[i][0] & TCK_CHR_MASK) ==
@@ -122,7 +121,9 @@ int tsi_wait_ack(TSI_REQ_T *req, int time_out)
 				}
 			}
 		}
+		mdelay(1);
 	}
+	return ST_CMD_ACK_TIME_OUT;
 }
 
 int tsi_send_command_and_wait(TSI_REQ_T *req, int time_out)
