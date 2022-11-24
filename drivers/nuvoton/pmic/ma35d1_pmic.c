@@ -23,8 +23,9 @@
 
 #define RETRY_COUNT 3
 
-#define PMIC_DIALOG 1
-#define PMIC_IP6103 2
+#define PMIC_NO		0
+#define PMIC_DIALOG	1
+#define PMIC_IP6103	2
 
 #if (MA35D1_PMIC == PMIC_IP6103)
 #define DEVICE_ADDR 0x60
@@ -32,6 +33,10 @@
 
 #if (MA35D1_PMIC == PMIC_DIALOG)
 #define DEVICE_ADDR 0xB0
+#endif
+
+#if (MA35D1_PMIC == PMIC_NO)
+#define DEVICE_ADDR 0x0
 #endif
 
 /*---------------------------------------------------------------------------*/
