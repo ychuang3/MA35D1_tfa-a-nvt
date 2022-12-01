@@ -429,7 +429,7 @@ extern "C"
 /*---------------------------------------------------------------------------------------------------------*/
 /*  Functions                                                                                      */
 /*---------------------------------------------------------------------------------------------------------*/
-void Reg2Hex(int count, unsigned int volatile reg[], char output[]);
+void Reg2Hex(int count, unsigned int *reg, char output[]);
 void SHA_Open(unsigned int u32OpMode, unsigned int u32SwapType, unsigned int hmac_key_len);
 void SHA_Start(unsigned int u32DMAMode);
 void SHA_SetDMATransfer(unsigned int u32SrcAddr, unsigned int u32TransCnt);

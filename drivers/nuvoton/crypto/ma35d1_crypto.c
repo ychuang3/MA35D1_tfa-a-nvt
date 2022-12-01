@@ -102,7 +102,7 @@ static char  ch2hex(char ch)
 	return ch;
 }
 
-void Hex2Reg(char input[], unsigned int volatile reg[])
+void Hex2Reg(char input[], unsigned int volatile *reg)
 {
 	char      hex;
 	int       si, ri;
@@ -263,7 +263,7 @@ static char get_Nth_nibble_char(unsigned int val32, unsigned int idx)
 }
 
 
-void Reg2Hex(int count, unsigned int volatile reg[], char output[])
+void Reg2Hex(int count, unsigned int *reg, char output[])
 {
 	int idx, ri;
 	unsigned int i;
