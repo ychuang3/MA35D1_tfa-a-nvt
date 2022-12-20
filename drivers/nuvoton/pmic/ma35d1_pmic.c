@@ -346,6 +346,18 @@ int ma35d1_set_pmic(int type, int vol)
 		INFO("IP6103 1.30V\n");
 		ret = ma35d1_write_pmic_data(reg0, 0x38);
 		break;
+	case VOL_1_32:
+		INFO("IP6103 1.32V\n");
+		ret = ma35d1_write_pmic_data(reg0, 0x3a);
+		break;
+	case VOL_1_34:
+		INFO("IP6103 1.34V\n");
+		ret = ma35d1_write_pmic_data(reg0, 0x3c);
+		break;
+	case VOL_1_36:
+		INFO("IP6103 1.36V\n");
+		ret = ma35d1_write_pmic_data(reg0, 0x3e);
+		break;
 	case VOL_1_80:
 		INFO("IP6103 SD 1.8V\n");
 		ret = ma35d1_write_pmic_data(reg0, 0x2c);
