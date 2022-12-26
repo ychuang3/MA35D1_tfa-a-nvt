@@ -21,13 +21,14 @@
 #pragma weak ma35d1_plat_sip_handler
 
 /* CPU-PLL: 1000MHz 700MHz */
-static unsigned int CAPLL_MODE[6] = {
+static unsigned int CAPLL_MODE[7] = {
 	0x000006FA,	/* 1000 MHz */
 	0x00000364,	/* 800 MHz */
 	0x000006AF,	/* 700 MHz */
-	0x00001019,	/* 600 MHz */
+	0x00001396,	/* 600 MHz */
 	0x0000137D,	/* 500 MHz */
-	0x0000237D,	/* 125 MHz */
+	0x0000237D,	/* 250 MHz */
+	0x0000337D,	/* 125 MHz */
 };
 
 static uint32_t eppl_div_restore = 0xFFFFFFFF;
@@ -76,8 +77,12 @@ static int32_t ma35d1_set_cpu_clock(int cpu_freq)
 		index = 4;
 		INFO("CA-PLL is 500 MHz\n");
 		break;
-	case CPU_PLL_125:
+	case CPU_PLL_250:
 		index = 5;
+		INFO("CA-PLL is 250 MHz\n");
+		break;
+	case CPU_PLL_125:
+		index = 6;
 		INFO("CA-PLL is 125 MHz\n");
 		break;
 	default:
@@ -144,6 +149,7 @@ uintptr_t sip_smc_handler(uint32_t smc_fid,
 		}
 		outp32((void *)SYS_RLKTZS, 0);
 		SMC_RET1(handle, volt);
+
 	case SIP_CPU_CLK:
 		if ((uint32_t)x1 == 1000)
 			cpu_clk = CPU_PLL_1G;
@@ -154,6 +160,12 @@ uintptr_t sip_smc_handler(uint32_t smc_fid,
 		else if ((uint32_t)x1 == 600)
 			cpu_clk = CPU_PLL_600;
 		else if ((uint32_t)x1 == 500)
+			cpu_clk = CPU_PLL_500;
+		else if ((uint32_t)x1 == 250)
+			cpu_clk = CPU_PLL_250;
+		else if ((uint32_t)x1 == 125)
+			cpu_clk = CPU_PLL_125;
+		else
 			cpu_clk = CPU_PLL_500;
 
 		ret = ma35d1_set_cpu_clock(cpu_clk);
