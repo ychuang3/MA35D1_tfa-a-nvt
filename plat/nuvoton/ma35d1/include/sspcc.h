@@ -73,7 +73,7 @@
 #define EPWM1_TZNS	20	18	1
 #define EPWM1_SUBM	20	18	3
 #define EPWM2_TZNS	20	20	1
-#define EPWM3_SUBM	20	20	3
+#define EPWM2_SUBM	20	20	3
 
 #define SPI0_TZNS	24	0	1
 #define SPI0_SUBM	24	0	3
