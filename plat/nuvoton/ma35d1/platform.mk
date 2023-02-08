@@ -82,19 +82,17 @@ PLAT_INCLUDES		:=	-Iplat/nuvoton/ma35d1/include		\
 # Device tree
 DTB_FILE_NAME		?=	\
 				ma35d1-cpu1g-wb-256m.dtb \
-				ma35d1-cpu1g-wb-512m.dtb \
+                                ma35d1-cpu1g-wb-512m.dtb \
 				\
-				ma35d1-cpu1g-issi-1g.dtb \
 				ma35d1-cpu1g-mc-1g.dtb \
-				ma35d1-cpu1g-zt-1g.dtb \
+				ma35d1-cpu1g-custom-ddr.dtb \
 				\
 				ma35d1-cpu800-wb-128m.dtb \
 				ma35d1-cpu800-wb-256m.dtb \
 				ma35d1-cpu800-wb-512m.dtb \
 				\
-				ma35d1-cpu800-issi-1g.dtb \
 				ma35d1-cpu800-mc-1g.dtb \
-				ma35d1-cpu800-zt-1g.dtb
+				ma35d1-cpu800-custom-ddr.dtb \
 
 FDT_SOURCES		:=	$(addprefix fdts/, $(patsubst %.dtb,%.dts,$(DTB_FILE_NAME)))
 DTC_FLAGS		+=	-Wno-unit_address_vs_reg

@@ -1,0 +1,37 @@
+// SPDX-License-Identifier:
+/*
+ * Copyright 2020 - Nuvoton Technology Corporation
+ *
+ */
+
+/dts-v1/;
+#include "ma35d1.dtsi"
+
+/ {
+	model = "Nuvoton MA35D1 EVB board";
+	compatible = "nuvoton,ma35d1";
+
+	aliases {
+
+	};
+
+	ddr: ddr-controller {
+		compatible = "custom-ddr";
+	};
+
+};
+
+&clk {
+	assigned-clocks = <&clk capll>, <&clk syspll>,
+				<&clk ddrpll>, <&clk apll>,
+				<&clk epll>, <&clk vpll>;
+	assigned-clock-rates =<1000000000>, <180000000>,
+				<266000000>, <200000000>,
+				<500000000>, <150000000>;
+	clock-pll-mode = <0>, <0>, <1>, <0>, <0>, <0>;
+};
+
+&sspcc {
+	gpio_s = <PD6_S>,
+		<PD7_S>;
+};

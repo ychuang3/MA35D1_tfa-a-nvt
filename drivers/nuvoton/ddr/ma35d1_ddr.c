@@ -14,2169 +14,647 @@
 #include <plat/common/platform.h>
 #include <platform_def.h>
 
+#include <ma35d1_ddr.h>
 
-/* DDR3_256MB_1066MBPS_WINBOND_INIT_BY_DDR32PHY */
-void ma35d1_wb_ddr3_256mb(void)
+#include <custom_ddr.h>
+
+struct nvt_ddr_init_param ma35d1_wb_ddr3_256mb = {
+		0x00000001,   // 0
+		0x00000001,   // 1
+		0x01040001,   // 2
+		0x0000d010,   // 3
+		0x00000000,   // 4
+		0x00000000,   // 5
+		0x00400010,   // 6
+		0x000a0003,   // 7
+		0x00210000,   // 8
+		0x003c003c,   // 9
+		0x00000000,   // 10
+		0x0010002b,   // 11
+		0x00000000,   // 12
+		0x40020083,   // 13
+		0x00350002,   // 14
+		0x1b400006,   // 15
+		0x00480000,   // 16
+		0x00090000,   // 17
+		0x00000000,   // 18
+		0x0000032f,   // 19
+		0x090d040a,   // 20
+		0x0003020e,   // 21
+		0x00000408,   // 22
+		0x00003007,   // 23
+		0x04020205,   // 24
+		0x03030202,   // 25
+		0x00000a02,   // 26
+		0x80000032,   // 27
+		0x00800020,   // 28
+		0x00000100,   // 29
+		0x04020101,   // 30
+		0x00060101,   // 31
+		0x0700b030,   // 32
+		0x00400005,   // 33
+		0x00170066,   // 34
+		0x80000000,   // 35
+		0x00000011,   // 36
+		0x00000000,   // 37
+		0x00000015,   // 38
+		0x00080808,   // 39
+		0x00000000,   // 40
+		0x00000000,   // 41
+		0x00001f1f,   // 42
+		0x070f0707,   // 43
+		0x0f0f0707,   // 44
+		0x07070707,   // 45
+		0x07070707,   // 46
+		0x00000007,   // 47
+		0x06000608,   // 48
+		0x00000101,   // 49
+		0x00f51f00,   // 50
+		0x00000000,   // 51
+		0x0f000001,   // 52
+		0x0f00007f,   // 53
+		0x0f00007f,   // 54
+		0x00000000,   // 55
+		0x00000000,   // 56
+		0x00000000,   // 57
+		0x00000001,   // 58
+		0x00000000,   // 59
+		0x00110011,   // 60
+		0x00000001,   // 61
+		0x00000000,   // 62
+		0x00000000,   // 63
+		0x00000000,   // 64
+		0x00000000,   // 65
+		0x00000000,   // 66
+		0x00000001,   // 67
+		0x00000000,   // 68
+		0x0001500f,   // 69
+		0x0001500f,   // 70
+		0x0001500f,   // 71
+		0x0001500f,   // 72
+		0x0001500f,   // 73
+		0x0001500f,   // 74
+		0x0001500f,   // 75
+		0x0000500f,   // 76
+		0x0000500f,   // 77
+		0x0000500f,   // 78
+		0x0000500f,   // 79
+		0x0000500f,   // 80
+		0x0000500f,   // 81
+		0x0000500f,   // 82
+		0x00000008,   // 83
+		0x00000000,   // 84
+
+		 // DDR PHY
+		0xf004649f,   // 85
+		0x0300c461,   // 86
+		0x00f0027f,   // 87
+		0x0c806403,   // 88
+		0x27100385,   // 89
+		0x00083def,   // 90
+		0x05b4111d,   // 91
+		0x0801a072,   // 92
+		0x00001b40,   // 93
+		0x00000006,   // 94
+		0x00000048,   // 95
+		0x00000000,   // 96
+		0x71568855,   // 97
+		0x2282b32a,   // 98
+		0x30023e00,   // 99
+		0x0000105d,   // 100
+		0x0000040b,   // 101
+		0x91003587,   // 102
+		0x0001c000,   // 103
+		0x0000ff81,   // 104
+
+		0x0000000b,   // 105
+		0x00000000,   // 106
+		0x00000001,   // 107
+};
+
+struct nvt_ddr_init_param ma35d1_wb_ddr2_128mb = {
+	0x00000001, // 0
+	0x00000001, // 1
+	0x01040000, // 2
+	0x00001010, // 3
+	0x00000000, // 4
+	0x00000000, // 5
+	0x00400010, // 6
+	0x000a0003, // 7
+	0x00210000, // 8
+	0x003c003c, // 9
+	0x00000000, // 10
+	0x00100022, // 11
+	0x00000000, // 12
+	0x40020035, // 13
+	0x00010002, // 14
+	0x0e730004, // 15
+	0x00000000, // 16
+	0x00010000, // 17
+	0x00000000, // 18
+	0x0000031f, // 19
+	0x090c110c, // 20
+	0x0003030e, // 21
+	0x00000407, // 22
+	0x00001004, // 23
+	0x03010304, // 24
+	0x01010202, // 25
+	0x00000502, // 26
+	0x80000032, // 27
+	0xc0000000, // 28
+	0x00074bf0, // 29
+	0x04020101, // 30
+	0x00060101, // 31
+	0x0700b030, // 32
+	0x00400005, // 33
+	0x00170066, // 34
+	0x80000000, // 35
+	0x00000011, // 36
+	0x00000000, // 37
+	0x0000001f, // 38
+	0x00080808, // 39
+	0x00000000, // 40
+	0x00000000, // 41
+	0x00001f1f, // 42
+	0x070f0707, // 43
+	0x0f0f0f07, // 44
+	0x07070707, // 45
+	0x07070707, // 46
+	0x00000007, // 47
+	0x07010708, // 48
+	0x00000101, // 49
+	0x00f51f00, // 50
+	0x00000000, // 51
+	0x0f000001, // 52
+	0x0f00007f, // 53
+	0x0f00007f, // 54
+	0x00000000, // 55
+	0x00000000, // 56
+	0x00000000, // 57
+	0x00000001, // 58
+	0x00000000, // 59
+	0x00110011, // 60
+	0x00000001, // 61
+	0x00000000, // 62
+	0x00000000, // 63
+	0x00000000, // 64
+	0x00000000, // 65
+	0x00000000, // 66
+	0x00000001, // 67
+	0x00000000, // 68
+	0x0001500f, // 69
+	0x0001500f, // 70
+	0x0001500f, // 71
+	0x0001500f, // 72
+	0x0001500f, // 73
+	0x0001500f, // 74
+	0x0001500f, // 75
+	0x0000500f, // 76
+	0x0000500f, // 77
+	0x0000500f, // 78
+	0x0000500f, // 79
+	0x0000500f, // 80
+	0x0000500f, // 81
+	0x0000500f, // 82
+	0x00000008, // 83
+	0x00000000, // 84
+
+	// DDR PHY
+	0xf004649f, // 85
+	0x0300c461, // 86
+	0x00f0027f, // 87
+	0x0c806403, // 88
+	0x27100385, // 89
+	0x00083def, // 90
+	0x0d61a072, // 91
+	0x0559a072, // 92
+	0x00000e73, // 93
+	0x00000004, // 94
+	0x00000000, // 95
+	0x00000000, // 96 // MR3
+	0x71987755, // 97
+	0x22822322, // 98
+	0x0641a8c8, // 99
+	0x0000104b, // 100
+	0x0000040a, // 101
+	0x91003587, // 102
+	0x0001c000, // 103
+	0x0000f501, // 104
+
+	0x00000000, // 105
+	0x0000000b, // 106
+	0x00000001, // 107
+
+};
+
+struct nvt_ddr_init_param ma35d1_wb_ddr3_512mb = {
+	0x00000001,   // 0
+	0x00000001,   // 1
+	0x01040001,   // 2
+	0x0000d010,   // 3
+	0x00000000,   // 4
+	0x00000000,   // 5
+	0x00400010,   // 6
+	0x000a0003,   // 7
+	0x00210000,   // 8
+	0x003c003c,   // 9
+	0x00000000,   // 10
+	0x00100046,   // 11
+	0x00000000,   // 12
+	0x40020083,   // 13
+	0x00350002,   // 14
+	0x1b400006,   // 15
+	0x00480000,   // 16
+	0x00090000,   // 17
+	0x00000000,   // 18
+	0x0000032f,   // 19
+	0x090d040a,   // 20
+	0x0003020e,   // 21
+	0x00000408,   // 22
+	0x00003007,   // 23
+	0x04020205,   // 24
+	0x03030202,   // 25
+	0x00000a04,   // 26
+	0x80000032,   // 27
+	0x00800020,   // 28
+	0x00000100,   // 29
+	0x04020101,   // 30
+	0x00060101,   // 31
+	0x0700b030,   // 32
+	0x00400005,   // 33
+	0x00170066,   // 34
+	0x80000000,   // 35
+	0x00000011,   // 36
+	0x00000000,   // 37
+	0x0000001f,   // 38
+	0x00080808,   // 39
+	0x00000000,   // 40
+	0x00000000,   // 41
+	0x00001f1f,   // 42
+	0x070f0707,   // 43
+	0x0f070707,   // 44
+	0x07070707,   // 45
+	0x07070707,   // 46
+	0x00000007,   // 47
+	0x06000608,   // 48
+	0x00000101,   // 49
+	0x00f51f00,   // 50
+	0x00000000,   // 51
+	0x0f000001,   // 52
+	0x0f00007f,   // 53
+	0x0f00007f,   // 54
+	0x00000000,   // 55
+	0x00000000,   // 56
+	0x00000000,   // 57
+	0x00000001,   // 58
+	0x00000000,   // 59
+	0x00110011,   // 60
+	0x00000001,   // 61
+	0x00000000,   // 62
+	0x00000000,   // 63
+	0x00000000,   // 64
+	0x00000000,   // 65
+	0x00000000,   // 66
+	0x00000001,   // 67
+	0x00000000,   // 68
+	0x0001500f,   // 69
+	0x0001500f,   // 70
+	0x0001500f,   // 71
+	0x0001500f,   // 72
+	0x0001500f,   // 73
+	0x0001500f,   // 74
+	0x0001500f,   // 75
+	0x0000500f,   // 76
+	0x0000500f,   // 77
+	0x0000500f,   // 78
+	0x0000500f,   // 79
+	0x0000500f,   // 80
+	0x0000500f,   // 81
+	0x0000500f,   // 82
+	0x00000008,   // 83
+	0x00000001,   // 84
+
+	// DDR PHY
+	0xf004649f,   // 85
+	0x0300c461,   // 86
+	0x00f0027f,   // 87
+	0x0c806403,   // 88
+	0x27100385,   // 89
+	0x00083def,   // 90
+	0x0904111d,   // 91
+	0x0801a072,   // 92
+	0x00001b40,   // 93
+	0x00000006,   // 94
+	0x00000048,   // 95
+	0x00000000,   // 96
+	0x71568855,   // 97
+	0x2284632a,   // 98
+	0x30023e00,   // 99
+	0x0000105d,   // 100
+	0x0000040b,   // 101
+	0x91003587,   // 102
+	0x0001c000,   // 103
+	0x0000ff81,   // 104
+
+	0x00000000,   // 105
+	0x0000000b,   // 106
+	0x00000001,   // 107
+
+};
+
+struct nvt_ddr_init_param ma35d1_mt_ddr3_1gb = {
+	0x00000001, // 0
+	0x00000001, // 1
+	0x01040001, // 2
+	0x0000d010, // 3
+	0x00000000, // 4
+	0x00000000, // 5
+	0x00400010, // 6
+	0x000a0003, // 7
+	0x00210000, // 8
+	0x003c003c, // 9
+	0x00000000, // 10
+	0x0020005e, // 11
+	0x00000000, // 12
+	0x40020083, // 13
+	0x00350002, // 14
+	0x1b400006, // 15
+	0x00480000, // 16
+	0x00090000, // 17
+	0x00000000, // 18
+	0x0000032f, // 19
+	0x090e080a, // 20
+	0x0003020e, // 21
+	0x00000407, // 22
+	0x00003007, // 23
+	0x04020305, // 24
+	0x03030202, // 25
+	0x00000a04, // 26
+	0x80000032, // 27
+	0x00800020, // 28
+	0x00000100, // 29
+	0x04020101, // 30
+	0x00060101, // 31
+	0x0700b030, // 32
+	0x00400005, // 33
+	0x00170066, // 34
+	0x80000000, // 35
+	0x00000011, // 36
+	0x00000000, // 37
+	0x0000001f, // 38
+	0x00080808, // 39
+	0x00000000, // 40
+	0x00000000, // 41
+	0x00001f1f, // 42
+	0x070f0707, // 43
+	0x07070707, // 44
+	0x07070707, // 45
+	0x07070707, // 46
+	0x00000007, // 47
+	0x06000608, // 48
+	0x00000101, // 49
+	0x00f51f00, // 50
+	0x00000000, // 51
+	0x0f000001, // 52
+	0x0f00007f, // 53
+	0x0f00007f, // 54
+	0x00000000, // 55
+	0x00000000, // 56
+	0x00000000, // 57
+	0x00000001, // 58
+	0x00000000, // 59
+	0x00110011, // 60
+	0x00000001, // 61
+	0x00000000, // 62
+	0x00000000, // 63
+	0x00000000, // 64
+	0x00000000, // 65
+	0x00000000, // 66
+	0x00000001, // 67
+	0x00000000, // 68
+	0x0001500f, // 69
+	0x0001500f, // 70
+	0x0001500f, // 71
+	0x0001500f, // 72
+	0x0001500f, // 73
+	0x0001500f, // 74
+	0x0001500f, // 75
+	0x0000500f, // 76
+	0x0000500f, // 77
+	0x0000500f, // 78
+	0x0000500f, // 79
+	0x0000500f, // 80
+	0x0000500f, // 81
+	0x0000500f, // 82
+	0x00000008, // 83
+	0x00000003, // 84
+
+	// DDR PHY
+	0xf004649f, // 85
+	0x0300c461, // 86
+	0x00f0068e, // 87
+	0x0c806403, // 88
+	0x27100385, // 89
+	0x00083def, // 90
+	0x0c04111d, // 91
+	0x0801a072, // 92
+	0x00001b40, // 93
+	0x00000006, // 94
+	0x00000048, // 95
+	0x00000000, // 96
+	0x75959955, // 97
+	0x2285e36a, // 98
+	0x30023e00, // 99
+	0x0000105d, // 100
+	0x0000040b, // 101
+	0x91003587, // 102
+	0x0001c000, // 103
+	0x0000ff81, // 104
+
+	0x00000000, // 105
+	0x0000000b, // 106
+	0x00000001, // 107
+};
+
+
+struct DDR_Setting nvt_ddr_init_setting[] = {
+	DDR_CTL_REG(DBG1_1),     // 0
+	DDR_CTL_REG(PWRCTL_1),   // 1
+	DDR_CTL_REG(MSTR),       // 2
+	DDR_CTL_REG(MRCTRL0),    // 3
+	DDR_CTL_REG(MRCTRL1),    // 4
+	DDR_CTL_REG(PWRCTL_2),   // 5
+	DDR_CTL_REG(PWRTMG),     // 6
+	DDR_CTL_REG(HWLPCTL),    // 7
+	DDR_CTL_REG(RFSHCTL0),   // 8
+	DDR_CTL_REG(RFSHCTL1),   // 9
+	DDR_CTL_REG(RFSHCTL3),   // 10
+	DDR_CTL_REG(RFSHTMG),    // 11
+	DDR_CTL_REG(CRCPARCTL0), // 12
+	DDR_CTL_REG(INIT0),      // 13
+	DDR_CTL_REG(INIT1),      // 14
+	DDR_CTL_REG(INIT3),      // 15
+	DDR_CTL_REG(INIT4),      // 16
+	DDR_CTL_REG(INIT5),      // 17
+	DDR_CTL_REG(DIMMCTL),    // 18
+	DDR_CTL_REG(RANKCTL),    // 19
+	DDR_CTL_REG(DRAMTMG0),   // 20
+	DDR_CTL_REG(DRAMTMG1),   // 21
+	DDR_CTL_REG(DRAMTMG2),   // 22
+	DDR_CTL_REG(DRAMTMG3),   // 23
+	DDR_CTL_REG(DRAMTMG4),   // 24
+	DDR_CTL_REG(DRAMTMG5),   // 25
+	DDR_CTL_REG(DRAMTMG8),   // 26
+	DDR_CTL_REG(DRAMTMG15),  // 27
+	DDR_CTL_REG(ZQCTL0),     // 28
+	DDR_CTL_REG(ZQCTL1),     // 29
+	DDR_CTL_REG(DFITMG0),    // 30
+	DDR_CTL_REG(DFITMG1),    // 31
+	DDR_CTL_REG(DFILPCFG0),  // 32
+	DDR_CTL_REG(DFIUPD0),    // 33
+	DDR_CTL_REG(DFIUPD1),    // 34
+	DDR_CTL_REG(DFIUPD2),    // 35
+	DDR_CTL_REG(DFIMISC),    // 36
+	DDR_CTL_REG(DFIPHYMSTR), // 37
+	DDR_CTL_REG(ADDRMAP0),   // 38
+	DDR_CTL_REG(ADDRMAP1),   // 39
+	DDR_CTL_REG(ADDRMAP2),   // 40
+	DDR_CTL_REG(ADDRMAP3),   // 41
+	DDR_CTL_REG(ADDRMAP4),   // 42
+	DDR_CTL_REG(ADDRMAP5),   // 43
+	DDR_CTL_REG(ADDRMAP6),   // 44
+	DDR_CTL_REG(ADDRMAP9),   // 45
+	DDR_CTL_REG(ADDRMAP10),  // 46
+	DDR_CTL_REG(ADDRMAP11),  // 47
+	DDR_CTL_REG(ODTCFG),     // 48
+	DDR_CTL_REG(ODTMAP),     // 49
+	DDR_CTL_REG(SCHED),      // 50
+	DDR_CTL_REG(SCHED1),     // 51
+	DDR_CTL_REG(PERFHPR1),   // 52
+	DDR_CTL_REG(PERFLPR1),   // 53
+	DDR_CTL_REG(PERFWR1),    // 54
+	DDR_CTL_REG(DBG0),       // 55
+	DDR_CTL_REG(DBG1_2),     // 56
+	DDR_CTL_REG(DBGCMD),     // 57
+	DDR_CTL_REG(SWCTL_1),    // 58
+	DDR_CTL_REG(SWCTLSTATIC),// 59
+	DDR_CTL_REG(POISONCFG),  // 60
+	DDR_CTL_REG(PCTRL_0),    // 61
+	DDR_CTL_REG(PCTRL_1),    // 62
+	DDR_CTL_REG(PCTRL_2),    // 63
+	DDR_CTL_REG(PCTRL_3),    // 64
+	DDR_CTL_REG(PCTRL_4),    // 65
+	DDR_CTL_REG(PCTRL_5),    // 66
+	DDR_CTL_REG(PCTRL_6),    // 67
+	DDR_CTL_REG(PCCFG),      // 68
+	DDR_CTL_REG(PCFGR_0),    // 69
+	DDR_CTL_REG(PCFGR_1),    // 70
+	DDR_CTL_REG(PCFGR_2),    // 71
+	DDR_CTL_REG(PCFGR_3),    // 72
+	DDR_CTL_REG(PCFGR_4),    // 73
+	DDR_CTL_REG(PCFGR_5),    // 74
+	DDR_CTL_REG(PCFGR_6),    // 75
+	DDR_CTL_REG(PCFGW_0),    // 76
+	DDR_CTL_REG(PCFGW_1),    // 77
+	DDR_CTL_REG(PCFGW_2),    // 78
+	DDR_CTL_REG(PCFGW_3),    // 79
+	DDR_CTL_REG(PCFGW_4),    // 80
+	DDR_CTL_REG(PCFGW_5),    // 81
+	DDR_CTL_REG(PCFGW_6),    // 82
+	DDR_CTL_REG(SARBASE0),   // 83
+	DDR_CTL_REG(SARSIZE0),   // 84
+
+	// DDR PHY
+	DDR_PHY_REG(DSGCR),      // 85
+	DDR_PHY_REG(PGCR1),      // 86
+	DDR_PHY_REG(PGCR2),      // 87
+	DDR_PHY_REG(PTR0),       // 88
+	DDR_PHY_REG(PTR1),       // 89
+	DDR_PHY_REG(PTR2),       // 90
+	DDR_PHY_REG(PTR3),       // 91
+	DDR_PHY_REG(PTR4),       // 92
+	DDR_PHY_REG(MR0),        // 93
+	DDR_PHY_REG(MR1),        // 94
+	DDR_PHY_REG(MR2),        // 95
+	DDR_PHY_REG(MR3),        // 96
+	DDR_PHY_REG(DTPR0),      // 97
+	DDR_PHY_REG(DTPR1),      // 98
+	DDR_PHY_REG(DTPR2),      // 99
+	DDR_PHY_REG(ZQ0CR1),     // 100
+	DDR_PHY_REG(DCR),        // 101
+	DDR_PHY_REG(DTCR),       // 102
+	DDR_PHY_REG(PLLCR),      // 103
+	DDR_PHY_REG(PIR),        // 104
+
+	DDR_CTL_REG(SWCTL_2),    // 105
+	DDR_CTL_REG(PWRCTL_3),   // 106
+	DDR_CTL_REG(SWCTL_3),    // 107
+
+};
+
+
+void ma35d1_ddr_setting(struct nvt_ddr_init_param ddrparam, int size)
 {
+	uint32_t i;
+	uint64_t ddr_reg_address;
+	uint32_t value;
+	uint32_t u32TimeOut1 = 0, u32TimeOut2 = 0, u32TimeOut3 = 0;
+
+	INFO("\n DDR init Finish: SYS_BA = 0x%x \n", SYS_BA);
+
+	for(i = 0; i < size; i++)
+	{
+		ddr_reg_address = (uint32_t)nvt_ddr_init_setting[i].base + (uint32_t)nvt_ddr_init_setting[i].offset;
+		value =  *((uint32_t *)(((uintptr_t)&ddrparam) + nvt_ddr_init_setting[i].init_flow_offset));
+
+		*(volatile uint32_t *)((void *)ddr_reg_address) = value;
+
+		if (i == 84) // 0xf08 //DDRCTRL
+		{
+			//de-assert reset signals of DDR memory controller
+			outp32((void *)SYS_BA+0x20,(inp32((void *)SYS_BA+0x20) & 0x8fffffff));
+			while( (inp32((void *)SYS_BA+0x20) & 0x20000000) != 0x00000000);
+		}
+
+		if (i == 100) // 0x184 //DDRPHY
+		{
+			//polling PGSR0 (addr=4) to 0x0000000f
+			while((inp32((void *)DDRPHY_BASE + 0x010) & 0x0000000f) != 0x0000000f)
+			{
+				u32TimeOut1++;
+			}
+		}
+
+		if (i == 104) // 0x04  // DDRPHY
+		{
+			//polling PGSR0 (addr=4) to 0xb0000fff
+			while((inp32((void *)DDRPHY_BASE + 0x010) & 0xffffffff) != 0xb0000fff)
+			{
+				u32TimeOut2++;
+			}
+
+			//polling MCTL2 STAT to 0x00000001
+			while((inp32((void *)UMCTL2_BASE + 0x004) & 0x00000003) != 0x00000001)
+			{
+				u32TimeOut3++;
+			}
+		}
+
+	}
+
+	while((inp32((void *)UMCTL2_BASE + 0x324) & 0x00000001) != 0x00000001);
+
+	INFO("\n DDR init Finish: 0x%x, 0x%x, 0x%x \n", u32TimeOut1, u32TimeOut2, u32TimeOut3);
+
+	//while(1);
 
-	//set DBG1
-	outp32((void *)UMCTL2_BA + 0x304,0x00000001);
-
-	//set PWRCTL
-	outp32((void *)UMCTL2_BA + 0x030,0x00000001);
-
-	//polling to 0x00000000
-	//while((inp32((void *)UMCTL2_BA + 0x004) & 0x00000003) != 0x00000000);
-
-	//set MSTR
-	outp32((void *)UMCTL2_BA + 0x000,0x01040001);
-
-	//set MRCTRL0
-	outp32((void *)UMCTL2_BA + 0x010,0x0000d010);
-
-	//set MRCTRL1
-	outp32((void *)UMCTL2_BA + 0x014,0x00000000);
-
-	//set PWRCTL
-	outp32((void *)UMCTL2_BA + 0x030,0x00000000);  //add
-
-	//set PWRTMG
-	outp32((void *)UMCTL2_BA + 0x034,0x00400010);  //mod 20200421
-
-	//set HWLPCTL
-	outp32((void *)UMCTL2_BA + 0x038,0x000a0003);  //mod 20200121
-
-	//set RFSHCTL0
-	outp32((void *)UMCTL2_BA + 0x050,0x00210000);
-
-	//set RFSHCTL1
-	outp32((void *)UMCTL2_BA + 0x054,0x003c003c);
-
-	//set RFSHCTL3
-	outp32((void *)UMCTL2_BA + 0x060,0x00000000);  //mod 20191211
-
-	//set RFSHTMG
-	outp32((void *)UMCTL2_BA + 0x064,0x0010002b);  //mod 20210106
-
-	//set CRCPARCTL0
-	outp32((void *)UMCTL2_BA + 0x0c0,0x00000000);
-
-	//set INIT0
-	outp32((void *)UMCTL2_BA + 0x0d0,0x40020083);  //mod 20200505
-
-	//set INIT1
-	outp32((void *)UMCTL2_BA + 0x0d4,0x00350002);  //mod 20200505
-
-	//set INIT3
-	outp32((void *)UMCTL2_BA + 0x0dc,0x1b400006);  //mod 20201109
-
-	//set INIT4
-	outp32((void *)UMCTL2_BA + 0x0e0,0x00480000);  //mod 20200822
-
-	//set INIT5
-	outp32((void *)UMCTL2_BA + 0x0e4,0x00090000);
-
-	//set DIMMCTL
-	outp32((void *)UMCTL2_BA + 0x0f0,0x00000000);
-
-	//set RANKCTL
-	outp32((void *)UMCTL2_BA + 0x0f4,0x0000032f);
-
-	//set DRAMTMG0
-	outp32((void *)UMCTL2_BA + 0x100,0x090d040a);  //mod 20210108
-
-	//set DRAMTMG1
-	outp32((void *)UMCTL2_BA + 0x104,0x0003020e);  //mod 20200103
-
-	//set DRAMTMG2
-	outp32((void *)UMCTL2_BA + 0x108,0x00000408);  //mod 20200103
-
-	//set DRAMTMG3
-	outp32((void *)UMCTL2_BA + 0x10c,0x00003007);  //mod 20201208
-
-	//set DRAMTMG4
-	outp32((void *)UMCTL2_BA + 0x110,0x04020205);  //mod 20200103
-
-	//set DRAMTMG5
-	outp32((void *)UMCTL2_BA + 0x114,0x03030202);  //mod 20200103
-
-	//set DRAMTMG8
-	outp32((void *)UMCTL2_BA + 0x120,0x00000a02);  //mod 20200506
-
-	//set DRAMTMG15
-	outp32((void *)UMCTL2_BA + 0x13c,0x80000032);  //mod 20200225
-
-	//set ZQCTL0
-	outp32((void *)UMCTL2_BA + 0x180,0x00800020);
-
-	//set ZQCTL1
-	outp32((void *)UMCTL2_BA + 0x184,0x00000100);  //mod 20200505
-
-	//set DFITMG0
-	outp32((void *)UMCTL2_BA + 0x190,0x04020101);
-
-	//set DFITMG1
-	outp32((void *)UMCTL2_BA + 0x194,0x00060101);
-
-	//set DFILPCFG0
-#ifdef DFI_DDR_PHY_LP
-	outp32((void *)UMCTL2_BA + 0x198,0x0700b131);  //mod 20200417
-#else
-	outp32((void *)UMCTL2_BA + 0x198,0x0700b030);  //mod 20200825
-#endif
-
-	//set DFIUPD0
-	outp32((void *)UMCTL2_BA + 0x1a0,0x00400005);  //mod 20200303
-
-	//set DFIUPD1
-	outp32((void *)UMCTL2_BA + 0x1a4,0x00170066);  //mod 20200425
-
-	//set DFIUPD2
-	outp32((void *)UMCTL2_BA + 0x1a8,0x80000000);  //mod 20200309
-
-	//set DFIMISC
-	outp32((void *)UMCTL2_BA + 0x1b0,0x00000011);  //mod
-
-	//set DFIPHYMSTR
-	outp32((void *)UMCTL2_BA + 0x1c4,0x00000000);
-
-	//set ADDRMAP0
-	outp32((void *)UMCTL2_BA + 0x200,0x00000015);  //mod 20200506
-
-	//set ADDRMAP1
-	outp32((void *)UMCTL2_BA + 0x204,0x00080808);
-
-	//set ADDRMAP2
-	outp32((void *)UMCTL2_BA + 0x208,0x00000000);
-
-	//set ADDRMAP3
-	outp32((void *)UMCTL2_BA + 0x20c,0x00000000);
-
-	//set ADDRMAP4
-	outp32((void *)UMCTL2_BA + 0x210,0x00001f1f);
-
-	//set ADDRMAP5
-	outp32((void *)UMCTL2_BA + 0x214,0x070f0707);
-
-	//set ADDRMAP6
-	outp32((void *)UMCTL2_BA + 0x218,0x0f0f0707);  //mod 20200506
-
-	//set ADDRMAP9
-	outp32((void *)UMCTL2_BA + 0x224,0x07070707);
-
-	//set ADDRMAP10
-	outp32((void *)UMCTL2_BA + 0x228,0x07070707);
-
-	//set ADDRMAP11
-	outp32((void *)UMCTL2_BA + 0x22c,0x00000007);
-
-	//set ODTCFG
-	outp32((void *)UMCTL2_BA + 0x240,0x06000608);
-
-	//set ODTMAP
-	outp32((void *)UMCTL2_BA + 0x244, 0x00000000);  /* mod 20220606 */
-
-	//set SCHED
-	outp32((void *)UMCTL2_BA + 0x250,0x00f51f00);
-
-	//set SCHED1
-	outp32((void *)UMCTL2_BA + 0x254,0x00000000);
-
-	//set PERFHPR1
-	outp32((void *)UMCTL2_BA + 0x25c,0x0f000001);
-
-	//set PERFLPR1
-	outp32((void *)UMCTL2_BA + 0x264,0x0f00007f);
-
-	//set PERFWR1
-	outp32((void *)UMCTL2_BA + 0x26c,0x0f00007f);
-
-	//set DBG0
-	outp32((void *)UMCTL2_BA + 0x300,0x00000000);
-
-	//set DBG1
-	outp32((void *)UMCTL2_BA + 0x304,0x00000000);
-
-	//set DBGCMD
-	outp32((void *)UMCTL2_BA + 0x30c,0x00000000);
-
-	//set SWCTL
-	outp32((void *)UMCTL2_BA + 0x320,0x00000001);
-
-	//set SWCTLSTATIC
-	outp32((void *)UMCTL2_BA + 0x328,0x00000000);
-
-	//set POISONCFG
-	outp32((void *)UMCTL2_BA + 0x36c,0x00110011);
-
-	//set PCTRL_0
-	outp32((void *)UMCTL2_BA + 0x490,0x00000001);
-
-	//set PCTRL_1
-	outp32((void *)UMCTL2_BA + 0x540,0x00000000);  //mod 20200323
-
-	//set PCTRL_2
-	outp32((void *)UMCTL2_BA + 0x5f0,0x00000000);  //mod 20200323
-
-	//set PCTRL_3
-	outp32((void *)UMCTL2_BA + 0x6a0,0x00000000);  //mod 20200323
-
-	//set PCTRL_4
-	outp32((void *)UMCTL2_BA + 0x750,0x00000000);  //mod 20200323
-
-	//set PCTRL_5
-	outp32((void *)UMCTL2_BA + 0x800, 0x00000001);  /* mod 20201016 */
-
-	//set PCTRL_6
-	outp32((void *)UMCTL2_BA + 0x8b0,0x00000001);
-
-	//set PCCFG
-	outp32((void *)UMCTL2_BA + 0x400,0x00000000);
-
-	//set PCFGR_0
-	outp32((void *)UMCTL2_BA + 0x404,0x0001500f);  //mod 20200408
-
-	//set PCFGR_1
-	outp32((void *)UMCTL2_BA + 0x4b4,0x0001500f);  //mod 20200408
-
-	//set PCFGR_2
-	outp32((void *)UMCTL2_BA + 0x564,0x0001500f);  //mod 20200408
-
-	//set PCFGR_3
-	outp32((void *)UMCTL2_BA + 0x614,0x0001500f);  //mod 20200408
-
-	//set PCFGR_4
-	outp32((void *)UMCTL2_BA + 0x6c4,0x0001500f);  //mod 20200408
-
-	//set PCFGR_5
-	outp32((void *)UMCTL2_BA + 0x774,0x0001500f);  //mod 20200408
-
-	//set PCFGR_6
-	outp32((void *)UMCTL2_BA + 0x824,0x0001500f);  //mod 20200408
-
-	//set PCFGW_0
-	outp32((void *)UMCTL2_BA + 0x408,0x0000500f);  //mod 20200408
-
-	//set PCFGW_1
-	outp32((void *)UMCTL2_BA + 0x4b8,0x0000500f);  //mod 20200408
-
-	//set PCFGW_2
-	outp32((void *)UMCTL2_BA + 0x568,0x0000500f);  //mod 20200408
-
-	//set PCFGW_3
-	outp32((void *)UMCTL2_BA + 0x618,0x0000500f);  //mod 20200408
-
-	//set PCFGW_4
-	outp32((void *)UMCTL2_BA + 0x6c8,0x0000500f);  //mod 20200408
-
-	//set PCFGW_5
-	outp32((void *)UMCTL2_BA + 0x778,0x0000500f);  //mod 20200408
-
-	//set PCFGW_6
-	outp32((void *)UMCTL2_BA + 0x828,0x0000500f);  //mod 20200408
-
-	//set SARBASE0
-	outp32((void *)UMCTL2_BA + 0xf04,0x00000008);
-
-	//set SARSIZE0
-	outp32((void *)UMCTL2_BA + 0xf08,0x00000000);
-
-	//de-assert reset signals of DDR memory controller
-	outp32((void *)SYS_BA+0x20,(inp32((void *)SYS_BA+0x20) & 0x8fffffff));
-	while( (inp32((void *)SYS_BA+0x20) & 0x20000000) != 0x00000000);
-
-	//=====================================================================
-	//                  DDR PHY initialization
-	//=====================================================================
-
-	//set DSGCR,addr=16
-	outp32((void *)DDRPHY_BA + 0x040,0xf004649f);
-
-	//set PGCR1,addr=3
-	outp32((void *)DDRPHY_BA + 0x00c,0x0300c461);  //mod 20200608
-
-	//set PGCR2,addr=35
-	outp32((void *)DDRPHY_BA + 0x08c,0x00f0027f);  //mod 20210106
-
-	//set PTR0,addr=7
-	outp32((void *)DDRPHY_BA + 0x01c,0x0c806403);  //mod 20200306 for pclk=100mhz
-
-	//set PTR1,addr=8
-	outp32((void *)DDRPHY_BA + 0x020,0x27100385);  //mod 20200306 for pclk=100mhz
-
-	//set PTR2,addr=9
-	outp32((void *)DDRPHY_BA + 0x024,0x00083def);
-
-	//set PTR3,addr=10
-	outp32((void *)DDRPHY_BA + 0x028,0x05b4111d);  //mod 20200506
-
-	//set PTR4,addr=11
-	outp32((void *)DDRPHY_BA + 0x02c,0x0801a072);  //mod 20200508
-
-	//set MR0,addr=21
-	outp32((void *)DDRPHY_BA + 0x054,0x00001b40);  //mod
-
-	//set MR1,addr=22
-	outp32((void *)DDRPHY_BA + 0x058, 0x00000002);  /* mod 20220606 */
-
-	//set MR2,addr=23
-	outp32((void *)DDRPHY_BA + 0x05c,0x00000048);  //mod 20200822
-
-	//set MR3,addr=24
-	outp32((void *)DDRPHY_BA + 0x060,0x00000000);
-
-	//set DTPR0,addr=18
-	outp32((void *)DDRPHY_BA + 0x048,0x71568855);
-
-	//set DTPR1,addr=19
-	outp32((void *)DDRPHY_BA + 0x04c,0x2282b32a);  //mod 20201208
-
-	//set DTPR2,addr=20
-	outp32((void *)DDRPHY_BA + 0x050,0x30023e00);
-
-	//set ZQ0CR1,addr=97
-	outp32((void *)DDRPHY_BA + 0x184,0x0000105d);  //mod 20201109
-
-	//polling PGSR0 (addr=4) to 0x0000000f
-	while((inp32((void *)DDRPHY_BA + 0x010) & 0x0000000f) != 0x0000000f);
-
-	//set DCR,addr=17
-	outp32((void *)DDRPHY_BA + 0x044,0x0000040b);
-
-	//set DTCR,addr=26
-	outp32((void *)DDRPHY_BA + 0x068,0x91003587);  //mod 20200820
-
-	//set PIR,addr=1
-	outp32((void *)DDRPHY_BA + 0x004,0x0000ff81);
-
-	//polling PGSR0 (addr=4) to 0xb0000fff
-	while((inp32((void *)DDRPHY_BA + 0x010) & 0xffffffff) != 0xb0000fff);
-
-	//polling MCTL2 STAT to 0x00000001
-	while((inp32((void *)UMCTL2_BA + 0x004) & 0x00000003) != 0x00000001);
-
-	//set SWCTL
-	outp32((void *)UMCTL2_BA + 0x320,0x00000000);
-
-	//set PWRCTL
-	outp32((void *)UMCTL2_BA + 0x030,0x0000000b);  //mod 20191213
-
-	//set SWCTL
-	outp32((void *)UMCTL2_BA + 0x320,0x00000001);
-
-	//polling MCTL2 SWSTAT to 0x00000001
-	while((inp32((void *)UMCTL2_BA + 0x324) & 0x00000001) != 0x00000001);
 
 }
-
-/* DDR3_512MB_1066MBPS_WINBOND_INIT_BY_DDR32PHY */
-void ma35d1_wb_ddr3_512mb(void)
-{
-	//set DBG1
-	outp32((void *)UMCTL2_BA + 0x304,0x00000001);
-
-	//set PWRCTL
-	outp32((void *)UMCTL2_BA + 0x030,0x00000001);  //mod
-
-	//polling to 0x00000000
-	//while((inp32((void *)UMCTL2_BA + 0x004) & 0x00000003) != 0x00000000);
-
-	//set MSTR
-	outp32((void *)UMCTL2_BA + 0x000,0x01040001);  //mod 20200507
-
-	//set MRCTRL0
-	outp32((void *)UMCTL2_BA + 0x010,0x0000d010);  //mod 20200507
-
-	//set MRCTRL1
-	outp32((void *)UMCTL2_BA + 0x014,0x00000000);
-
-	//set PWRCTL
-	outp32((void *)UMCTL2_BA + 0x030,0x00000000);  //add
-
-	//set PWRTMG
-	outp32((void *)UMCTL2_BA + 0x034,0x00400010);  //mod 20200421
-
-	//set HWLPCTL
-	outp32((void *)UMCTL2_BA + 0x038,0x000a0003);  //mod 20200121
-
-	//set RFSHCTL0
-	outp32((void *)UMCTL2_BA + 0x050,0x00210000);
-
-	//set RFSHCTL1
-	outp32((void *)UMCTL2_BA + 0x054,0x003c003c);
-
-	//set RFSHCTL3
-	outp32((void *)UMCTL2_BA + 0x060,0x00000000);  //mod 20191211
-
-	//set RFSHTMG
-	outp32((void *)UMCTL2_BA + 0x064,0x00100046);  //mod 20210106
-
-	//set CRCPARCTL0
-	outp32((void *)UMCTL2_BA + 0x0c0,0x00000000);
-
-	//set INIT0
-	outp32((void *)UMCTL2_BA + 0x0d0,0x40020083);  //mod 20200505
-
-	//set INIT1
-	outp32((void *)UMCTL2_BA + 0x0d4,0x00350002);  //mod 20200505
-
-	//set INIT3
-	outp32((void *)UMCTL2_BA + 0x0dc, 0x1b400006); /* mod 20201109 */
-
-	//set INIT4
-	outp32((void *)UMCTL2_BA + 0x0e0,0x00480000);  //mod 20200822
-
-	//set INIT5
-	outp32((void *)UMCTL2_BA + 0x0e4,0x00090000);
-
-	//set DIMMCTL
-	outp32((void *)UMCTL2_BA + 0x0f0,0x00000000);
-
-	//set RANKCTL
-	outp32((void *)UMCTL2_BA + 0x0f4,0x0000032f);
-
-	//set DRAMTMG0
-	outp32((void *)UMCTL2_BA + 0x100,0x090d040a);  //mod 20210108
-
-	//set DRAMTMG1
-	outp32((void *)UMCTL2_BA + 0x104,0x0003020e);  //mod 20200103
-
-	//set DRAMTMG2
-	outp32((void *)UMCTL2_BA + 0x108,0x00000408);  //mod 20200103
-
-	//set DRAMTMG3
-	outp32((void *)UMCTL2_BA + 0x10c,0x00003007);  //mod 20201208
-
-	//set DRAMTMG4
-	outp32((void *)UMCTL2_BA + 0x110,0x04020205);  //mod 20200103
-
-	//set DRAMTMG5
-	outp32((void *)UMCTL2_BA + 0x114,0x03030202);  //mod 20200103
-
-	//set DRAMTMG8
-	outp32((void *)UMCTL2_BA + 0x120,0x00000a04);
-
-	//set DRAMTMG15
-	outp32((void *)UMCTL2_BA + 0x13c,0x80000032);  //mod 20200225
-
-	//set ZQCTL0
-	outp32((void *)UMCTL2_BA + 0x180,0x00800020);
-
-	//set ZQCTL1
-	outp32((void *)UMCTL2_BA + 0x184,0x00000100);  //mod 20200505
-
-	//set DFITMG0
-	outp32((void *)UMCTL2_BA + 0x190,0x04020101);
-
-	//set DFITMG1
-	outp32((void *)UMCTL2_BA + 0x194,0x00060101);
-
-	//set DFILPCFG0
-#ifdef DFI_DDR_PHY_LP
-	outp32((void *)UMCTL2_BA + 0x198,0x0700b131);  //mod 20200417
-#else
-	outp32((void *)UMCTL2_BA + 0x198,0x0700b030);  //mod 20200825
-#endif
-
-	//set DFIUPD0
-	outp32((void *)UMCTL2_BA + 0x1a0,0x00400005);  //mod 20200303
-
-	//set DFIUPD1
-	outp32((void *)UMCTL2_BA + 0x1a4,0x00170066);  //mod 20200425
-
-	//set DFIUPD2
-	outp32((void *)UMCTL2_BA + 0x1a8,0x80000000);  //mod 20200309
-
-	//set DFIMISC
-	outp32((void *)UMCTL2_BA + 0x1b0,0x00000011);  //mod
-
-	//set DFIPHYMSTR
-	outp32((void *)UMCTL2_BA + 0x1c4,0x00000000);
-
-	//set ADDRMAP0
-	outp32((void *)UMCTL2_BA + 0x200,0x0000001f);  //mod 20200507
-
-	//set ADDRMAP1
-	outp32((void *)UMCTL2_BA + 0x204,0x00080808);
-
-	//set ADDRMAP2
-	outp32((void *)UMCTL2_BA + 0x208,0x00000000);
-
-	//set ADDRMAP3
-	outp32((void *)UMCTL2_BA + 0x20c,0x00000000);
-
-	//set ADDRMAP4
-	outp32((void *)UMCTL2_BA + 0x210,0x00001f1f);
-
-	//set ADDRMAP5
-	outp32((void *)UMCTL2_BA + 0x214,0x070f0707);
-
-	//set ADDRMAP6
-	outp32((void *)UMCTL2_BA + 0x218,0x0f070707);
-
-	//set ADDRMAP9
-	outp32((void *)UMCTL2_BA + 0x224,0x07070707);
-
-	//set ADDRMAP10
-	outp32((void *)UMCTL2_BA + 0x228,0x07070707);
-
-	//set ADDRMAP11
-	outp32((void *)UMCTL2_BA + 0x22c,0x00000007);
-
-	//set ODTCFG
-	outp32((void *)UMCTL2_BA + 0x240,0x06000608);
-
-	//set ODTMAP
-	outp32((void *)UMCTL2_BA + 0x244, 0x00000101); /* mod 20200508 */
-
-	//set SCHED
-	outp32((void *)UMCTL2_BA + 0x250,0x00f51f00);
-
-	//set SCHED1
-	outp32((void *)UMCTL2_BA + 0x254,0x00000000);
-
-	//set PERFHPR1
-	outp32((void *)UMCTL2_BA + 0x25c,0x0f000001);
-
-	//set PERFLPR1
-	outp32((void *)UMCTL2_BA + 0x264,0x0f00007f);
-
-	//set PERFWR1
-	outp32((void *)UMCTL2_BA + 0x26c,0x0f00007f);
-
-	//set DBG0
-	outp32((void *)UMCTL2_BA + 0x300,0x00000000);
-
-	//set DBG1
-	outp32((void *)UMCTL2_BA + 0x304,0x00000000);
-
-	//set DBGCMD
-	outp32((void *)UMCTL2_BA + 0x30c,0x00000000);
-
-	//set SWCTL
-	outp32((void *)UMCTL2_BA + 0x320,0x00000001);
-
-	//set SWCTLSTATIC
-	outp32((void *)UMCTL2_BA + 0x328,0x00000000);
-
-	//set POISONCFG
-	outp32((void *)UMCTL2_BA + 0x36c,0x00110011);
-
-	//set PCTRL_0
-	outp32((void *)UMCTL2_BA + 0x490,0x00000001);
-
-	//set PCTRL_1
-	outp32((void *)UMCTL2_BA + 0x540,0x00000000);  //mod 20200323
-
-	//set PCTRL_2
-	outp32((void *)UMCTL2_BA + 0x5f0,0x00000000);  //mod 20200323
-
-	//set PCTRL_3
-	outp32((void *)UMCTL2_BA + 0x6a0,0x00000000);  //mod 20200323
-
-	//set PCTRL_4
-	outp32((void *)UMCTL2_BA + 0x750,0x00000000);  //mod 20200323
-
-	//set PCTRL_5
-	outp32((void *)UMCTL2_BA + 0x800, 0x00000000); /* mod 20200323 */
-
-	//set PCTRL_6
-	outp32((void *)UMCTL2_BA + 0x8b0,0x00000001);
-
-	/* set PCTRL_7 */
-	outp32((void *)UMCTL2_BA + 0x960, 0x00000001);
-
-	//set PCCFG
-	outp32((void *)UMCTL2_BA + 0x400,0x00000000);
-
-	//set PCFGR_0
-	outp32((void *)UMCTL2_BA + 0x404,0x0001500f);  //mod 20200408
-
-	//set PCFGR_1
-	outp32((void *)UMCTL2_BA + 0x4b4,0x0001500f);  //mod 20200408
-
-	//set PCFGR_2
-	outp32((void *)UMCTL2_BA + 0x564,0x0001500f);  //mod 20200408
-
-	//set PCFGR_3
-	outp32((void *)UMCTL2_BA + 0x614,0x0001500f);  //mod 20200408
-
-	//set PCFGR_4
-	outp32((void *)UMCTL2_BA + 0x6c4,0x0001500f);  //mod 20200408
-
-	//set PCFGR_5
-	outp32((void *)UMCTL2_BA + 0x774,0x0001500f);  //mod 20200408
-
-	//set PCFGR_6
-	outp32((void *)UMCTL2_BA + 0x824,0x0001500f);  //mod 20200408
-
-	/* set PCFGR_7 */
-	outp32((void *)UMCTL2_BA + 0x8d4, 0x0001500f); /* mod 20200408 */
-
-	//set PCFGW_0
-	outp32((void *)UMCTL2_BA + 0x408,0x0000500f);  //mod 20200408
-
-	//set PCFGW_1
-	outp32((void *)UMCTL2_BA + 0x4b8,0x0000500f);  //mod 20200408
-
-	//set PCFGW_2
-	outp32((void *)UMCTL2_BA + 0x568,0x0000500f);  //mod 20200408
-
-	//set PCFGW_3
-	outp32((void *)UMCTL2_BA + 0x618,0x0000500f);  //mod 20200408
-
-	//set PCFGW_4
-	outp32((void *)UMCTL2_BA + 0x6c8,0x0000500f);  //mod 20200408
-
-	//set PCFGW_5
-	outp32((void *)UMCTL2_BA + 0x778,0x0000500f);  //mod 20200408
-
-	//set PCFGW_6
-	outp32((void *)UMCTL2_BA + 0x828,0x0000500f);  //mod 20200408
-
-	/* set PCFGW_7 */
-	outp32((void *)UMCTL2_BA + 0x8d8, 0x0000500f); /* mod 20200408 */
-
-	//set SARBASE0
-	outp32((void *)UMCTL2_BA + 0xf04,0x00000008);
-
-	//set SARSIZE0
-	outp32((void *)UMCTL2_BA + 0xf08,0x00000001);  //mod 20200507
-
-	//de-assert reset signals of DDR memory controller
-	outp32((void *)SYS_BA+0x20,(inp32((void *)SYS_BA+0x20) & 0x8fffffff));
-	while( (inp32((void *)SYS_BA+0x20) & 0x20000000) != 0x00000000);
-
-	//=====================================================================
-	//                  DDR PHY initialization
-	//=====================================================================
-
-	//set DSGCR,addr=16
-	outp32((void *)DDRPHY_BA + 0x040,0xf004649f);
-
-	//set PGCR1,addr=3
-	outp32((void *)DDRPHY_BA + 0x00c,0x0300c461);  //mod 20200608
-
-	//set PGCR2,addr=35
-	outp32((void *)DDRPHY_BA + 0x08c,0x00f0027f);  //mod 20210106
-
-	//set PTR0,addr=7
-	outp32((void *)DDRPHY_BA + 0x01c,0x0c806403);  //mod 20200306 for pclk=100mhz
-
-	//set PTR1,addr=8
-	outp32((void *)DDRPHY_BA + 0x020,0x27100385);  //mod 20200306 for pclk=100mhz
-
-	//set PTR2,addr=9
-	outp32((void *)DDRPHY_BA + 0x024,0x00083def);
-
-	//set PTR3,addr=10
-	outp32((void *)DDRPHY_BA + 0x028,0x0904111d);  //mod 20200504
-
-	//set PTR4,addr=11
-	outp32((void *)DDRPHY_BA + 0x02c,0x0801a072);  //mod 20200508
-
-	//set MR0,addr=21
-	outp32((void *)DDRPHY_BA + 0x054,0x00001b40);  //mod
-
-	//set MR1,addr=22
-	outp32((void *)DDRPHY_BA + 0x058, 0x00000006); /* mod 20201109 */
-
-	//set MR2,addr=23
-	outp32((void *)DDRPHY_BA + 0x05c,0x00000048);  //mod 20200822
-
-	//set MR3,addr=24
-	outp32((void *)DDRPHY_BA + 0x060,0x00000000);
-
-	//set DTPR0,addr=18
-	outp32((void *)DDRPHY_BA + 0x048,0x71568855);
-
-	//set DTPR1,addr=19
-	outp32((void *)DDRPHY_BA + 0x04c,0x2284632a);  //mod 20201208
-
-	//set DTPR2,addr=20
-	outp32((void *)DDRPHY_BA + 0x050,0x30023e00);
-
-	//set ZQ0CR1,addr=97
-	outp32((void *)DDRPHY_BA + 0x184,0x0000105d);  //mod 20201109
-
-	//polling PGSR0 (addr=4) to 0x0000000f
-	while((inp32((void *)DDRPHY_BA + 0x010) & 0x0000000f) != 0x0000000f);
-
-	//set DCR,addr=17
-	outp32((void *)DDRPHY_BA + 0x044,0x0000040b);
-
-	//set DTCR,addr=26
-	outp32((void *)DDRPHY_BA + 0x068,0x91003587);  //mod 20200820
-
-	//set PIR,addr=1
-	outp32((void *)DDRPHY_BA + 0x004,0x0000ff81);
-
-	//polling PGSR0 (addr=4) to 0xb0000fff
-	while((inp32((void *)DDRPHY_BA + 0x010) & 0xffffffff) != 0xb0000fff);
-
-	//polling MCTL2 STAT to 0x00000001
-	while((inp32((void *)UMCTL2_BA + 0x004) & 0x00000003) != 0x00000001);
-
-	//set SWCTL
-	outp32((void *)UMCTL2_BA + 0x320,0x00000000);
-
-	//set PWRCTL
-	outp32((void *)UMCTL2_BA + 0x030,0x0000000b);  //mod 20191213
-
-	//set SWCTL
-	outp32((void *)UMCTL2_BA + 0x320,0x00000001);
-
-	//polling MCTL2 SWSTAT to 0x00000001
-	while((inp32((void *)UMCTL2_BA + 0x324) & 0x00000001) != 0x00000001);
-
-}
-
-/* #define DDR3_1GB_1066MBPS_MICRON_INIT_BY_DDR32PHY */
-void ma35d1_mt_ddr3_1gb(void)
-{
-	INFO("MICRON DDR3 1GB\n");
-
-	//set DBG1
-	outp32((void *)UMCTL2_BA + 0x304,0x00000001);
-
-	//set PWRCTL
-	outp32((void *)UMCTL2_BA + 0x030,0x00000001);  //mod
-
-	//polling to 0x00000000
-	//while((inp32((void *)UMCTL2_BA + 0x004) & 0x00000003) != 0x00000000);
-
-	//set MSTR
-	outp32((void *)UMCTL2_BA + 0x000,0x01040001);  //mod 20201204
-
-	//set MRCTRL0
-	outp32((void *)UMCTL2_BA + 0x010,0x0000d010);  //mod 20201204
-
-	//set MRCTRL1
-	outp32((void *)UMCTL2_BA + 0x014,0x00000000);
-
-	//set PWRCTL
-	outp32((void *)UMCTL2_BA + 0x030,0x00000000);  //add
-
-	//set PWRTMG
-	outp32((void *)UMCTL2_BA + 0x034,0x00400010);  //mod 20200421
-
-	//set HWLPCTL
-	outp32((void *)UMCTL2_BA + 0x038,0x000a0003);  //mod 20200121
-
-	//set RFSHCTL0
-	outp32((void *)UMCTL2_BA + 0x050,0x00210000);
-
-	//set RFSHCTL1
-	outp32((void *)UMCTL2_BA + 0x054,0x003c003c);
-
-	//set RFSHCTL3
-	outp32((void *)UMCTL2_BA + 0x060,0x00000000);  //mod 20191211
-
-	//set RFSHTMG
-	outp32((void *)UMCTL2_BA + 0x064,0x0020005e);  //mod 20210106
-
-	//set CRCPARCTL0
-	outp32((void *)UMCTL2_BA + 0x0c0,0x00000000);
-
-	//set INIT0
-	outp32((void *)UMCTL2_BA + 0x0d0,0x40020083);  //mod 20200505
-
-	//set INIT1
-	outp32((void *)UMCTL2_BA + 0x0d4,0x00350002);  //mod 20200505
-
-	//set INIT3
-	outp32((void *)UMCTL2_BA + 0x0dc,0x1b400006);  //mod 20201109
-
-	//set INIT4
-	outp32((void *)UMCTL2_BA + 0x0e0,0x00480000);  //mod 20200822
-
-	//set INIT5
-	outp32((void *)UMCTL2_BA + 0x0e4,0x00090000);
-
-	//set DIMMCTL
-	outp32((void *)UMCTL2_BA + 0x0f0,0x00000000);
-
-	//set RANKCTL
-	outp32((void *)UMCTL2_BA + 0x0f4,0x0000032f);
-
-	//set DRAMTMG0
-	outp32((void *)UMCTL2_BA + 0x100,0x090e080a);  //mod 20210108
-
-	//set DRAMTMG1
-	outp32((void *)UMCTL2_BA + 0x104,0x0003020e);
-
-	//set DRAMTMG2
-	outp32((void *)UMCTL2_BA + 0x108,0x00000407);
-
-	//set DRAMTMG3
-	outp32((void *)UMCTL2_BA + 0x10c,0x00003007);  //mod 20201208
-
-	//set DRAMTMG4
-	outp32((void *)UMCTL2_BA + 0x110,0x04020305);  //mod 20200529
-
-	//set DRAMTMG5
-	outp32((void *)UMCTL2_BA + 0x114,0x03030202);
-
-	//set DRAMTMG8
-	outp32((void *)UMCTL2_BA + 0x120,0x00000a04);
-
-	//set DRAMTMG15
-	outp32((void *)UMCTL2_BA + 0x13c,0x80000032);  //mod 20200225
-
-	//set ZQCTL0
-	outp32((void *)UMCTL2_BA + 0x180,0x00800020);
-
-	//set ZQCTL1
-	outp32((void *)UMCTL2_BA + 0x184,0x00000100);  //mod 20200505
-
-	//set DFITMG0
-	outp32((void *)UMCTL2_BA + 0x190,0x04020101);
-
-	//set DFITMG1
-	outp32((void *)UMCTL2_BA + 0x194,0x00060101);
-
-	//set DFILPCFG0
-#ifdef DFI_DDR_PHY_LP
-	outp32((void *)UMCTL2_BA + 0x198,0x0700b131);  //mod 20200417
-#else
-	outp32((void *)UMCTL2_BA + 0x198,0x0700b030);  //mod 20200825
-#endif
-
-	//set DFIUPD0
-	outp32((void *)UMCTL2_BA + 0x1a0,0x00400005);  //mod 20200303
-
-	//set DFIUPD1
-	outp32((void *)UMCTL2_BA + 0x1a4,0x00170066);  //mod 20200425
-
-	//set DFIUPD2
-	outp32((void *)UMCTL2_BA + 0x1a8,0x80000000);  //mod 20200309
-
-	//set DFIMISC
-	outp32((void *)UMCTL2_BA + 0x1b0,0x00000011);  //mod
-
-	//set DFIPHYMSTR
-	outp32((void *)UMCTL2_BA + 0x1c4,0x00000000);
-
-	//set ADDRMAP0
-	outp32((void *)UMCTL2_BA + 0x200,0x0000001f);  //mod 20201204
-
-	//set ADDRMAP1
-	outp32((void *)UMCTL2_BA + 0x204,0x00080808);
-
-	//set ADDRMAP2
-	outp32((void *)UMCTL2_BA + 0x208,0x00000000);
-
-	//set ADDRMAP3
-	outp32((void *)UMCTL2_BA + 0x20c,0x00000000);
-
-	//set ADDRMAP4
-	outp32((void *)UMCTL2_BA + 0x210,0x00001f1f);
-
-	//set ADDRMAP5
-	outp32((void *)UMCTL2_BA + 0x214,0x070f0707);
-
-	//set ADDRMAP6
-	outp32((void *)UMCTL2_BA + 0x218,0x07070707);  //mod 20200117,for 1G bytes
-
-	//set ADDRMAP9
-	outp32((void *)UMCTL2_BA + 0x224,0x07070707);
-
-	//set ADDRMAP10
-	outp32((void *)UMCTL2_BA + 0x228,0x07070707);
-
-	//set ADDRMAP11
-	outp32((void *)UMCTL2_BA + 0x22c,0x00000007);
-
-	//set ODTCFG
-	outp32((void *)UMCTL2_BA + 0x240,0x06000608);
-
-	//set ODTMAP
-	outp32((void *)UMCTL2_BA + 0x244,0x00000101);  //mod 20201204
-
-	//set SCHED
-	outp32((void *)UMCTL2_BA + 0x250,0x00f51f00);
-
-	//set SCHED1
-	outp32((void *)UMCTL2_BA + 0x254,0x00000000);
-
-	//set PERFHPR1
-	outp32((void *)UMCTL2_BA + 0x25c,0x0f000001);
-
-	//set PERFLPR1
-	outp32((void *)UMCTL2_BA + 0x264,0x0f00007f);
-
-	//set PERFWR1
-	outp32((void *)UMCTL2_BA + 0x26c,0x0f00007f);
-
-	//set DBG0
-	outp32((void *)UMCTL2_BA + 0x300,0x00000000);
-
-	//set DBG1
-	outp32((void *)UMCTL2_BA + 0x304,0x00000000);
-
-	//set DBGCMD
-	outp32((void *)UMCTL2_BA + 0x30c,0x00000000);
-
-	//set SWCTL
-	outp32((void *)UMCTL2_BA + 0x320,0x00000001);
-
-	//set SWCTLSTATIC
-	outp32((void *)UMCTL2_BA + 0x328,0x00000000);
-
-	//set POISONCFG
-	outp32((void *)UMCTL2_BA + 0x36c,0x00110011);
-
-	//set PCTRL_0
-	outp32((void *)UMCTL2_BA + 0x490,0x00000001);
-
-	//set PCTRL_1
-	outp32((void *)UMCTL2_BA + 0x540,0x00000000);  //mod 20200323
-
-	//set PCTRL_2
-	outp32((void *)UMCTL2_BA + 0x5f0,0x00000000);  //mod 20200323
-
-	//set PCTRL_3
-	outp32((void *)UMCTL2_BA + 0x6a0,0x00000000);  //mod 20200323
-
-	//set PCTRL_4
-	outp32((void *)UMCTL2_BA + 0x750,0x00000000);  //mod 20200323
-
-	//set PCTRL_5
-	outp32((void *)UMCTL2_BA + 0x800,0x00000000);  //mod 20200323
-
-	//set PCTRL_6
-	outp32((void *)UMCTL2_BA + 0x8b0,0x00000001);
-
-	//set PCTRL_7
-	outp32((void *)UMCTL2_BA + 0x960,0x00000001);
-
-	//set PCCFG
-	outp32((void *)UMCTL2_BA + 0x400,0x00000000);
-
-	//set PCFGR_0
-	outp32((void *)UMCTL2_BA + 0x404,0x0001500f);  //mod 20200408
-
-	//set PCFGR_1
-	outp32((void *)UMCTL2_BA + 0x4b4,0x0001500f);  //mod 20200408
-
-	//set PCFGR_2
-	outp32((void *)UMCTL2_BA + 0x564,0x0001500f);  //mod 20200408
-
-	//set PCFGR_3
-	outp32((void *)UMCTL2_BA + 0x614,0x0001500f);  //mod 20200408
-
-	//set PCFGR_4
-	outp32((void *)UMCTL2_BA + 0x6c4,0x0001500f);  //mod 20200408
-
-	//set PCFGR_5
-	outp32((void *)UMCTL2_BA + 0x774,0x0001500f);  //mod 20200408
-
-	//set PCFGR_6
-	outp32((void *)UMCTL2_BA + 0x824,0x0001500f);  //mod 20200408
-
-	//set PCFGR_7
-	outp32((void *)UMCTL2_BA + 0x8d4,0x0001500f);  //mod 20200408
-
-	//set PCFGW_0
-	outp32((void *)UMCTL2_BA + 0x408,0x0000500f);  //mod 20200408
-
-	//set PCFGW_1
-	outp32((void *)UMCTL2_BA + 0x4b8,0x0000500f);  //mod 20200408
-
-	//set PCFGW_2
-	outp32((void *)UMCTL2_BA + 0x568,0x0000500f);  //mod 20200408
-
-	//set PCFGW_3
-	outp32((void *)UMCTL2_BA + 0x618,0x0000500f);  //mod 20200408
-
-	//set PCFGW_4
-	outp32((void *)UMCTL2_BA + 0x6c8,0x0000500f);  //mod 20200408
-
-	//set PCFGW_5
-	outp32((void *)UMCTL2_BA + 0x778,0x0000500f);  //mod 20200408
-
-	//set PCFGW_6
-	outp32((void *)UMCTL2_BA + 0x828,0x0000500f);  //mod 20200408
-
-	//set PCFGW_7
-	outp32((void *)UMCTL2_BA + 0x8d8,0x0000500f);  //mod 20200408
-
-	//set SARBASE0
-	outp32((void *)UMCTL2_BA + 0xf04,0x00000008);
-
-	//set SARSIZE0
-	outp32((void *)UMCTL2_BA + 0xf08,0x00000003);  //mod 20201204
-
-	//de-assert reset signals of DDR memory controller
-	outp32((void *)SYS_BA+0x20,(inp32((void *)SYS_BA+0x20) & 0x8fffffff));
-	while( (inp32((void *)SYS_BA+0x20) & 0x20000000) != 0x00000000);
-
-	//=====================================================================
-	//                  DDR PHY initialization
-	//=====================================================================
-
-	//set DSGCR,addr=16
-	outp32((void *)DDRPHY_BA + 0x040,0xf004649f);
-
-	//set PGCR1,addr=3
-	outp32((void *)DDRPHY_BA + 0x00c,0x0300c461);  //mod 20200608
-
-	//set PGCR2,addr=35
-	outp32((void *)DDRPHY_BA + 0x08c,0x00f0068e);  //mod 20210106
-
-	//set PTR0,addr=7
-	outp32((void *)DDRPHY_BA + 0x01c,0x0c806403);  //mod 20200306 for pclk=100mhz
-
-	//set PTR1,addr=8
-	outp32((void *)DDRPHY_BA + 0x020,0x27100385);  //mod 20200306 for pclk=100mhz
-
-	//set PTR2,addr=9
-	outp32((void *)DDRPHY_BA + 0x024,0x00083def);
-
-	//set PTR3,addr=10
-	outp32((void *)DDRPHY_BA + 0x028,0x0c04111d);  //mod 20200511
-
-	//set PTR4,addr=11
-	outp32((void *)DDRPHY_BA + 0x02c,0x0801a072);  //mod 20200511
-
-	//set MR0,addr=21
-	outp32((void *)DDRPHY_BA + 0x054,0x00001b40);  //mod
-
-	//set MR1,addr=22
-	outp32((void *)DDRPHY_BA + 0x058,0x00000006);  //mod 20201109
-
-	//set MR2,addr=23
-	outp32((void *)DDRPHY_BA + 0x05c,0x00000048);  //mod 20200822
-
-	//set MR3,addr=24
-	outp32((void *)DDRPHY_BA + 0x060,0x00000000);
-
-	//set DTPR0,addr=18
-	outp32((void *)DDRPHY_BA + 0x048,0x75959955);  //mod 20200511
-
-	//set DTPR1,addr=19
-	outp32((void *)DDRPHY_BA + 0x04c,0x2285e36a);  //mod 20201208
-
-	//set DTPR2,addr=20
-	outp32((void *)DDRPHY_BA + 0x050,0x30023e00);
-
-	//set ZQ0CR1,addr=97
-	outp32((void *)DDRPHY_BA + 0x184,0x0000105d);  //mod 20201109
-
-	//polling PGSR0 (addr=4) to 0x0000000f
-	while((inp32((void *)DDRPHY_BA + 0x010) & 0x0000000f) != 0x0000000f);
-
-	//set DCR,addr=17
-	outp32((void *)DDRPHY_BA + 0x044,0x0000040b);
-
-	//set DTCR,addr=26
-	outp32((void *)DDRPHY_BA + 0x068,0x91003587);  //mod 20201204
-
-	//set PIR,addr=1
-	outp32((void *)DDRPHY_BA + 0x004,0x0000ff81);
-
-	//polling PGSR0 (addr=4) to 0xb0000fff
-	while((inp32((void *)DDRPHY_BA + 0x010) & 0xffffffff) != 0xb0000fff);
-
-	//polling MCTL2 STAT to 0x00000001
-	while((inp32((void *)UMCTL2_BA + 0x004) & 0x00000003) != 0x00000001);
-
-	//set SWCTL
-	outp32((void *)UMCTL2_BA + 0x320,0x00000000);
-
-	//set PWRCTL
-	outp32((void *)UMCTL2_BA + 0x030,0x0000000b);  //mod 20191213
-
-	//set SWCTL
-	outp32((void *)UMCTL2_BA + 0x320,0x00000001);
-
-	//polling MCTL2 SWSTAT to 0x00000001
-	while((inp32((void *)UMCTL2_BA + 0x324) & 0x00000001) != 0x00000001);
-
-}
-
-/* #define DDR2_128MB_1066MBPS_WINBOND_INIT_BY_DDR32PHY */
-void ma35d1_wb_ddr2_128mb(void)
-{
-
-	//set DBG1
-	outp32((void *)UMCTL2_BA + 0x304,0x00000001);
-
-	//set PWRCTL
-	outp32((void *)UMCTL2_BA + 0x030,0x00000001);  //mod
-
-	//polling to 0x00000000
-	//while((inp32((void *)UMCTL2_BA + 0x004) & 0x00000003) != 0x00000000);
-
-	//set MSTR
-	outp32((void *)UMCTL2_BA + 0x000,0x01040000);
-
-	//set MRCTRL0
-	outp32((void *)UMCTL2_BA + 0x010,0x00001010);  //mod 20200511
-
-	//set MRCTRL1
-	outp32((void *)UMCTL2_BA + 0x014,0x00000000);
-
-	//set PWRCTL
-	outp32((void *)UMCTL2_BA + 0x030,0x00000000);  //add
-
-	//set PWRTMG
-	outp32((void *)UMCTL2_BA + 0x034,0x00400010);  //mod 20200421
-
-	//set HWLPCTL
-	outp32((void *)UMCTL2_BA + 0x038,0x000a0003);  //mod 20200121
-
-	//set RFSHCTL0
-	outp32((void *)UMCTL2_BA + 0x050,0x00210000);
-
-	//set RFSHCTL1
-	outp32((void *)UMCTL2_BA + 0x054,0x003c003c);
-
-	//set RFSHCTL3
-	outp32((void *)UMCTL2_BA + 0x060,0x00000000);  //mod 20191211
-
-	//set RFSHTMG
-	outp32((void *)UMCTL2_BA + 0x064,0x00100022);  //mod 20210106
-
-	//set CRCPARCTL0
-	outp32((void *)UMCTL2_BA + 0x0c0,0x00000000);
-
-	//set INIT0
-	outp32((void *)UMCTL2_BA + 0x0d0,0x40020035);  //mod 20200309
-
-	//set INIT1
-	outp32((void *)UMCTL2_BA + 0x0d4,0x00010002);
-
-	//set INIT3
-	outp32((void *)UMCTL2_BA + 0x0dc, 0x0e730000);  /* mod 20220608 */
-
-	//set INIT4
-	outp32((void *)UMCTL2_BA + 0x0e0, 0x00000080);  /* mod 20220607 */
-
-	//set INIT5
-	outp32((void *)UMCTL2_BA + 0x0e4,0x00010000);
-
-	//set DIMMCTL
-	outp32((void *)UMCTL2_BA + 0x0f0,0x00000000);
-
-	//set RANKCTL
-	outp32((void *)UMCTL2_BA + 0x0f4,0x0000031f);
-
-	//set DRAMTMG0
-	outp32((void *)UMCTL2_BA + 0x100, 0x0a0d110d);  /* mod 20220608 */
-
-	//set DRAMTMG1
-	outp32((void *)UMCTL2_BA + 0x104, 0x0003040f);  /* mod 20220608 */
-
-	//set DRAMTMG2
-	outp32((void *)UMCTL2_BA + 0x108,0x00000407);  //mod 20200103
-
-	//set DRAMTMG3
-	outp32((void *)UMCTL2_BA + 0x10c,0x00001004);
-
-	//set DRAMTMG4
-	outp32((void *)UMCTL2_BA + 0x110, 0x04010305);  /* mod 20220608 */
-
-	//set DRAMTMG5
-	outp32((void *)UMCTL2_BA + 0x114,0x01010202);  //mod 20200103
-
-	//set DRAMTMG8
-	outp32((void *)UMCTL2_BA + 0x120,0x00000502);
-
-	//set DRAMTMG15
-	outp32((void *)UMCTL2_BA + 0x13c,0x80000032);  //mod 20200225
-
-	//set ZQCTL0
-	outp32((void *)UMCTL2_BA + 0x180,0xc0000000);
-
-	//set ZQCTL1
-	outp32((void *)UMCTL2_BA + 0x184,0x00074bf0);
-
-	//set DFITMG0
-	outp32((void *)UMCTL2_BA + 0x190,0x04020101);
-
-	//set DFITMG1
-	outp32((void *)UMCTL2_BA + 0x194,0x00060101);
-
-	//set DFILPCFG0
-#ifdef DFI_DDR_PHY_LP
-	outp32((void *)UMCTL2_BA + 0x198,0x0700b131);  //mod 20200417
-#else
-	outp32((void *)UMCTL2_BA + 0x198,0x0700b030);  //mod 20200825
-#endif
-
-	//set DFIUPD0
-	outp32((void *)UMCTL2_BA + 0x1a0,0x00400005);  //mod 20200303
-
-	//set DFIUPD1
-	outp32((void *)UMCTL2_BA + 0x1a4,0x00170066);  //mod 20200425
-
-	//set DFIUPD2
-	outp32((void *)UMCTL2_BA + 0x1a8,0x80000000);  //mod 20200309
-
-	//set DFIMISC
-	outp32((void *)UMCTL2_BA + 0x1b0,0x00000011);  //mod
-
-	//set DFIPHYMSTR
-	outp32((void *)UMCTL2_BA + 0x1c4,0x00000000);
-
-	//set ADDRMAP0
-	outp32((void *)UMCTL2_BA + 0x200,0x0000001f);
-
-	//set ADDRMAP1
-	outp32((void *)UMCTL2_BA + 0x204,0x00080808);
-
-	//set ADDRMAP2
-	outp32((void *)UMCTL2_BA + 0x208,0x00000000);
-
-	//set ADDRMAP3
-	outp32((void *)UMCTL2_BA + 0x20c,0x00000000);
-
-	//set ADDRMAP4
-	outp32((void *)UMCTL2_BA + 0x210,0x00001f1f);
-
-	//set ADDRMAP5
-	outp32((void *)UMCTL2_BA + 0x214,0x070f0707);
-
-	//set ADDRMAP6
-	outp32((void *)UMCTL2_BA + 0x218,0x0f0f0f07);
-
-	//set ADDRMAP9
-	outp32((void *)UMCTL2_BA + 0x224,0x07070707);
-
-	//set ADDRMAP10
-	outp32((void *)UMCTL2_BA + 0x228,0x07070707);
-
-	//set ADDRMAP11
-	outp32((void *)UMCTL2_BA + 0x22c,0x00000007);
-
-	//set ODTCFG
-	outp32((void *)UMCTL2_BA + 0x240,0x07010708);
-
-	//set ODTMAP
-	outp32((void *)UMCTL2_BA + 0x244, 0x00000000);  /* mod 20220606 */
-
-	//set SCHED
-	outp32((void *)UMCTL2_BA + 0x250,0x00f51f00);
-
-	//set SCHED1
-	outp32((void *)UMCTL2_BA + 0x254,0x00000000);
-
-	//set PERFHPR1
-	outp32((void *)UMCTL2_BA + 0x25c,0x0f000001);
-
-	//set PERFLPR1
-	outp32((void *)UMCTL2_BA + 0x264,0x0f00007f);
-
-	//set PERFWR1
-	outp32((void *)UMCTL2_BA + 0x26c,0x0f00007f);
-
-	//set DBG0
-	outp32((void *)UMCTL2_BA + 0x300,0x00000000);
-
-	//set DBG1
-	outp32((void *)UMCTL2_BA + 0x304,0x00000000);
-
-	//set DBGCMD
-	outp32((void *)UMCTL2_BA + 0x30c,0x00000000);
-
-	//set SWCTL
-	outp32((void *)UMCTL2_BA + 0x320,0x00000001);
-
-	//set SWCTLSTATIC
-	outp32((void *)UMCTL2_BA + 0x328,0x00000000);
-
-	//set POISONCFG
-	outp32((void *)UMCTL2_BA + 0x36c,0x00110011);
-
-	//set PCTRL_0
-	outp32((void *)UMCTL2_BA + 0x490,0x00000001);
-
-	//set PCTRL_1
-	outp32((void *)UMCTL2_BA + 0x540,0x00000000);  //mod 20200323
-
-	//set PCTRL_2
-	outp32((void *)UMCTL2_BA + 0x5f0,0x00000000);  //mod 20200323
-
-	//set PCTRL_3
-	outp32((void *)UMCTL2_BA + 0x6a0,0x00000000);  //mod 20200323
-
-	//set PCTRL_4
-	outp32((void *)UMCTL2_BA + 0x750,0x00000000);  //mod 20200323
-
-	//set PCTRL_5
-	outp32((void *)UMCTL2_BA + 0x800, 0x00000001);  /* mod 20201016 */
-
-	//set PCTRL_6
-	outp32((void *)UMCTL2_BA + 0x8b0,0x00000001);
-
-	//set PCCFG
-	outp32((void *)UMCTL2_BA + 0x400,0x00000000);
-
-	//set PCFGR_0
-	outp32((void *)UMCTL2_BA + 0x404,0x0001500f);  //mod 20200408
-
-	//set PCFGR_1
-	outp32((void *)UMCTL2_BA + 0x4b4,0x0001500f);  //mod 20200408
-
-	//set PCFGR_2
-	outp32((void *)UMCTL2_BA + 0x564,0x0001500f);  //mod 20200408
-
-	//set PCFGR_3
-	outp32((void *)UMCTL2_BA + 0x614,0x0001500f);  //mod 20200408
-
-	//set PCFGR_4
-	outp32((void *)UMCTL2_BA + 0x6c4,0x0001500f);  //mod 20200408
-
-	//set PCFGR_5
-	outp32((void *)UMCTL2_BA + 0x774,0x0001500f);  //mod 20200408
-
-	//set PCFGR_6
-	outp32((void *)UMCTL2_BA + 0x824,0x0001500f);  //mod 20200408
-
-	//set PCFGW_0
-	outp32((void *)UMCTL2_BA + 0x408,0x0000500f);  //mod 20200408
-
-	//set PCFGW_1
-	outp32((void *)UMCTL2_BA + 0x4b8,0x0000500f);  //mod 20200408
-
-	//set PCFGW_2
-	outp32((void *)UMCTL2_BA + 0x568,0x0000500f);  //mod 20200408
-
-	//set PCFGW_3
-	outp32((void *)UMCTL2_BA + 0x618,0x0000500f);  //mod 20200408
-
-	//set PCFGW_4
-	outp32((void *)UMCTL2_BA + 0x6c8,0x0000500f);  //mod 20200408
-
-	//set PCFGW_5
-	outp32((void *)UMCTL2_BA + 0x778,0x0000500f);  //mod 20200408
-
-	//set PCFGW_6
-	outp32((void *)UMCTL2_BA + 0x828,0x0000500f);  //mod 20200408
-
-	//set SARBASE0
-	outp32((void *)UMCTL2_BA + 0xf04,0x00000008);
-
-	//set SARSIZE0
-	outp32((void *)UMCTL2_BA + 0xf08,0x00000000);
-
-	//de-assert reset signals of DDR memory controller
-	outp32((void *)SYS_BA+0x20,(inp32((void *)SYS_BA+0x20) & 0x8fffffff));
-	while( (inp32((void *)SYS_BA+0x20) & 0x20000000) != 0x00000000);
-
-	//=====================================================================
-	//                  DDR PHY initialization
-	//=====================================================================
-
-	//set DSGCR,addr=16
-	outp32((void *)DDRPHY_BA + 0x040,0xf004649f);
-
-	//set PGCR1,addr=3
-	outp32((void *)DDRPHY_BA + 0x00c,0x0300c461);  //mod 20200608
-
-	//set PGCR2,addr=35
-	outp32((void *)DDRPHY_BA + 0x08c,0x00f0027f);  //mod 20210106
-
-	//set PTR0,addr=7
-	outp32((void *)DDRPHY_BA + 0x01c,0x0c806403);  //mod 20200306 for pclk=100mhz
-
-	//set PTR1,addr=8
-	outp32((void *)DDRPHY_BA + 0x020,0x27100385);  //mod 20200306 for pclk=100mhz
-
-	//set PTR2,addr=9
-	outp32((void *)DDRPHY_BA + 0x024,0x00083def);
-
-	//set PTR3,addr=10
-	outp32((void *)DDRPHY_BA + 0x028,0x0d61a072);
-
-	//set PTR4,addr=11
-	outp32((void *)DDRPHY_BA + 0x02c,0x0559a072);
-
-	//set MR0,addr=21
-	outp32((void *)DDRPHY_BA + 0x054,0x00000e73);  //mod 20200918
-
-	//set MR1,addr=22
-	outp32((void *)DDRPHY_BA + 0x058, 0x00000000);  /* mod 20220608 */
-
-	//set MR2,addr=23
-	outp32((void *)DDRPHY_BA + 0x05c, 0x00000080);  /* mod 20220607 */
-
-	/* set MR3,addr=24 */
-	outp32((void *)DDRPHY_BA + 0x060, 0x00000000);
-
-	//set DTPR0,addr=18
-	outp32((void *)DDRPHY_BA + 0x048, 0x71997755);  /* mod 20220608 */
-
-	//set DTPR1,addr=19
-	outp32((void *)DDRPHY_BA + 0x04c, 0x22822b22);  /* mod 20220608 */
-
-	//set DTPR2,addr=20
-	outp32((void *)DDRPHY_BA + 0x050, 0x1001a8c8);  /* mod 20220608 */
-
-	//set ZQ0CR1,addr=97
-	outp32((void *)DDRPHY_BA + 0x184,0x0000104b);  //mod 20201014
-
-	//polling PGSR0 (addr=4) to 0x0000000f
-	while((inp32((void *)DDRPHY_BA + 0x010) & 0x0000000f) != 0x0000000f);
-
-	//set DCR,addr=17
-	outp32((void *)DDRPHY_BA + 0x044,0x0000040a);
-
-	//set DTCR,addr=26
-	outp32((void *)DDRPHY_BA + 0x068,0x91003587);
-
-	//set PIR,addr=1
-	outp32((void *)DDRPHY_BA + 0x004,0x0000f501);
-
-	//polling PGSR0 (addr=4) to 0xb0000f5f
-	while((inp32((void *)DDRPHY_BA + 0x010) & 0xffffffff) != 0xb0000f5f);
-
-	//polling MCTL2 STAT to 0x00000001
-	while((inp32((void *)UMCTL2_BA + 0x004) & 0x00000003) != 0x00000001);
-
-	//set SWCTL
-	outp32((void *)UMCTL2_BA + 0x320,0x00000000);
-
-	//set PWRCTL
-	outp32((void *)UMCTL2_BA + 0x030,0x0000000b);  //mod 20191213
-
-	//set SWCTL
-	outp32((void *)UMCTL2_BA + 0x320,0x00000001);
-
-	//polling MCTL2 SWSTAT to 0x00000001
-	while((inp32((void *)UMCTL2_BA + 0x324) & 0x00000001) != 0x00000001);
-
-}
-
-/* #define DDR3_1GB_1066MBPS_ISSI_INIT_BY_DDR32PHY */
-void ma35d1_issi_ddr3_1gb(void)
-{
-	/* set DBG1 */
-	outp32((void *)UMCTL2_BA + 0x304, 0x00000001);
-
-	/* set PWRCTL */
-	outp32((void *)UMCTL2_BA + 0x030, 0x00000001);
-
-	/* polling to 0x00000000 */
-	/* while((inp32(UMCTL2_BA + 0x004) & 0x00000003) != 0x00000000); */
-
-	/* set MSTR */
-	outp32((void *)UMCTL2_BA + 0x000, 0x01040001);
-
-	/* set MRCTRL0 */
-	outp32((void *)UMCTL2_BA + 0x010, 0x0000d010);
-
-	/* set MRCTRL1 */
-	outp32((void *)UMCTL2_BA + 0x014, 0x00000000);
-
-	/* set PWRCTL */
-	outp32((void *)UMCTL2_BA + 0x030, 0x00000000);
-
-	/* set PWRTMG */
-	outp32((void *)UMCTL2_BA + 0x034, 0x00400010);
-
-	/* set HWLPCTL */
-	outp32((void *)UMCTL2_BA + 0x038, 0x000a0003);
-
-	/* set RFSHCTL0 */
-	outp32((void *)UMCTL2_BA + 0x050, 0x00210000);
-
-	/* set RFSHCTL1 */
-	outp32((void *)UMCTL2_BA + 0x054, 0x003c003c);
-
-	/* set RFSHCTL3 */
-	outp32((void *)UMCTL2_BA + 0x060, 0x00000000);
-
-	/* set RFSHTMG */
-	outp32((void *)UMCTL2_BA + 0x064, 0x0010005e); /* mod 2021916 */
-
-	/* set CRCPARCTL0 */
-	outp32((void *)UMCTL2_BA + 0x0c0, 0x00000000);
-
-	/* set INIT0 */
-	outp32((void *)UMCTL2_BA + 0x0d0, 0x40020083);
-
-	/* set INIT1 */
-	outp32((void *)UMCTL2_BA + 0x0d4, 0x00350002);
-
-	/* set INIT3 */
-	outp32((void *)UMCTL2_BA + 0x0dc, 0x1b400006);
-
-	/* set INIT4 */
-	outp32((void *)UMCTL2_BA + 0x0e0, 0x00480000);
-
-	/* set INIT5 */
-	outp32((void *)UMCTL2_BA + 0x0e4, 0x00090000);
-
-	/* set DIMMCTL */
-	outp32((void *)UMCTL2_BA + 0x0f0, 0x00000000);
-
-	/* set RANKCTL */
-	outp32((void *)UMCTL2_BA + 0x0f4, 0x0000032f);
-
-	/* set DRAMTMG0 */
-	outp32((void *)UMCTL2_BA + 0x100, 0x090b040a); /* mod 20210916 */
-
-	/* set DRAMTMG1 */
-	outp32((void *)UMCTL2_BA + 0x104, 0x0002020e); /* mod 20210916 */
-
-	/* set DRAMTMG2 */
-	outp32((void *)UMCTL2_BA + 0x108, 0x00000407);
-
-	/* set DRAMTMG3 */
-	outp32((void *)UMCTL2_BA + 0x10c, 0x00002006); /* mod 20210916 */
-
-	/* set DRAMTMG4 */
-	outp32((void *)UMCTL2_BA + 0x110, 0x04020305);
-
-	/* set DRAMTMG5 */
-	outp32((void *)UMCTL2_BA + 0x114, 0x03030202);
-
-	/* set DRAMTMG8 */
-	outp32((void *)UMCTL2_BA + 0x120, 0x00000a04);
-
-	/* set DRAMTMG15 */
-	outp32((void *)UMCTL2_BA + 0x13c, 0x80000032);
-
-	/* set ZQCTL0 */
-	outp32((void *)UMCTL2_BA + 0x180, 0x00800020);
-
-	/* set ZQCTL1 */
-	outp32((void *)UMCTL2_BA + 0x184, 0x00000100);
-
-	/* set DFITMG0 */
-	outp32((void *)UMCTL2_BA + 0x190, 0x04020101);
-
-	/* set DFITMG1 */
-	outp32((void *)UMCTL2_BA + 0x194, 0x00060101);
-
-	/* set DFILPCFG0 */
-#ifdef DFI_DDR_PHY_LP
-	outp32((void *)UMCTL2_BA + 0x198, 0x0700b131);
-#else
-	outp32((void *)UMCTL2_BA + 0x198, 0x0700b030);
-#endif
-
-	/* set DFIUPD0 */
-	outp32((void *)UMCTL2_BA + 0x1a0, 0x00400005);
-
-	/* set DFIUPD1 */
-	outp32((void *)UMCTL2_BA + 0x1a4, 0x00170066);
-
-	/* set DFIUPD2 */
-	outp32((void *)UMCTL2_BA + 0x1a8, 0x80000000);
-
-	/* set DFIMISC */
-	outp32((void *)UMCTL2_BA + 0x1b0, 0x00000011);
-
-	/* set DFIPHYMSTR */
-	outp32((void *)UMCTL2_BA + 0x1c4, 0x00000000);
-
-	/* set ADDRMAP0 */
-	outp32((void *)UMCTL2_BA + 0x200, 0x0000001f);
-
-	/* set ADDRMAP1 */
-	outp32((void *)UMCTL2_BA + 0x204, 0x00080808);
-
-	/* set ADDRMAP2 */
-	outp32((void *)UMCTL2_BA + 0x208, 0x00000000);
-
-	/* set ADDRMAP3 */
-	outp32((void *)UMCTL2_BA + 0x20c, 0x00000000);
-
-	/* set ADDRMAP4 */
-	outp32((void *)UMCTL2_BA + 0x210, 0x00001f1f);
-
-	/* set ADDRMAP5 */
-	outp32((void *)UMCTL2_BA + 0x214, 0x070f0707);
-
-	/* set ADDRMAP6 */
-	outp32((void *)UMCTL2_BA + 0x218, 0x07070707); /* for 1G bytes */
-
-	/* set ADDRMAP9 */
-	outp32((void *)UMCTL2_BA + 0x224, 0x07070707);
-
-	/* set ADDRMAP10 */
-	outp32((void *)UMCTL2_BA + 0x228, 0x07070707);
-
-	/* set ADDRMAP11 */
-	outp32((void *)UMCTL2_BA + 0x22c, 0x00000007);
-
-	/* set ODTCFG */
-	outp32((void *)UMCTL2_BA + 0x240, 0x06000608);
-
-	/* set ODTMAP */
-	outp32((void *)UMCTL2_BA + 0x244, 0x00000101);
-
-	/* set SCHED */
-	outp32((void *)UMCTL2_BA + 0x250, 0x00f51f00);
-
-	/* set SCHED1 */
-	outp32((void *)UMCTL2_BA + 0x254, 0x00000000);
-
-	/* set PERFHPR1 */
-	outp32((void *)UMCTL2_BA + 0x25c, 0x0f000001);
-
-	/* set PERFLPR1 */
-	outp32((void *)UMCTL2_BA + 0x264, 0x0f00007f);
-
-	/* set PERFWR1 */
-	outp32((void *)UMCTL2_BA + 0x26c, 0x0f00007f);
-
-	/* set DBG0 */
-	outp32((void *)UMCTL2_BA + 0x300, 0x00000000);
-
-	/* set DBG1 */
-	outp32((void *)UMCTL2_BA + 0x304, 0x00000000);
-
-	/* set DBGCMD */
-	outp32((void *)UMCTL2_BA + 0x30c, 0x00000000);
-
-	/* set SWCTL */
-	outp32((void *)UMCTL2_BA + 0x320, 0x00000001);
-
-	/* set SWCTLSTATIC */
-	outp32((void *)UMCTL2_BA + 0x328, 0x00000000);
-
-	/* set POISONCFG */
-	outp32((void *)UMCTL2_BA + 0x36c, 0x00110011);
-
-	/* set PCTRL_0 */
-	outp32((void *)UMCTL2_BA + 0x490, 0x00000001);
-
-	/* set PCTRL_1 */
-	outp32((void *)UMCTL2_BA + 0x540, 0x00000000);
-
-	/* set PCTRL_2 */
-	outp32((void *)UMCTL2_BA + 0x5f0, 0x00000000);
-
-	/* set PCTRL_3 */
-	outp32((void *)UMCTL2_BA + 0x6a0, 0x00000000);
-
-	/* set PCTRL_4 */
-	outp32((void *)UMCTL2_BA + 0x750, 0x00000000);
-
-	/* set PCTRL_5 */
-	outp32((void *)UMCTL2_BA + 0x800, 0x00000001);
-
-	/* set PCTRL_6 */
-	outp32((void *)UMCTL2_BA + 0x8b0, 0x00000001);
-
-	/* set PCCFG */
-	outp32((void *)UMCTL2_BA + 0x400, 0x00000000);
-
-	/* set PCFGR_0 */
-	outp32((void *)UMCTL2_BA + 0x404, 0x0001500f);
-
-	/* set PCFGR_1 */
-	outp32((void *)UMCTL2_BA + 0x4b4, 0x0001500f);
-
-	/* set PCFGR_2 */
-	outp32((void *)UMCTL2_BA + 0x564, 0x0001500f);
-
-	/* set PCFGR_3 */
-	outp32((void *)UMCTL2_BA + 0x614, 0x0001500f);
-
-	/* set PCFGR_4 */
-	outp32((void *)UMCTL2_BA + 0x6c4, 0x0001500f);
-
-	/* set PCFGR_5 */
-	outp32((void *)UMCTL2_BA + 0x774, 0x0001500f);
-
-	/* set PCFGR_6 */
-	outp32((void *)UMCTL2_BA + 0x824, 0x0001500f);
-
-	/* set PCFGW_0 */
-	outp32((void *)UMCTL2_BA + 0x408, 0x0000500f);
-
-	/* set PCFGW_1 */
-	outp32((void *)UMCTL2_BA + 0x4b8, 0x0000500f);
-
-	/* set PCFGW_2 */
-	outp32((void *)UMCTL2_BA + 0x568, 0x0000500f);
-
-	/* set PCFGW_3 */
-	outp32((void *)UMCTL2_BA + 0x618, 0x0000500f);
-
-	/* set PCFGW_4 */
-	outp32((void *)UMCTL2_BA + 0x6c8, 0x0000500f);
-
-	/* set PCFGW_5 */
-	outp32((void *)UMCTL2_BA + 0x778, 0x0000500f);
-
-	/* set PCFGW_6 */
-	outp32((void *)UMCTL2_BA + 0x828, 0x0000500f);
-
-	/* set SARBASE0 */
-	outp32((void *)UMCTL2_BA + 0xf04, 0x00000008);
-
-	/* set SARSIZE0 */
-	outp32((void *)UMCTL2_BA + 0xf08, 0x00000003);
-
-	/* de-assert reset signals of DDR memory controller */
-	outp32((void *)SYS_BA + 0x20, (inp32((void *)SYS_BA + 0x20) & 0x8fffffff));
-	while ((inp32((void *)SYS_BA + 0x20) & 0x20000000) != 0x00000000)
-		;
-
-	/* ===================================================================== */
-	/* DDR PHY initialization */
-	/* ===================================================================== */
-
-	/* set DSGCR,addr=16 */
-	outp32((void *)DDRPHY_BA + 0x040, 0xf004649f);
-
-	/* set PGCR1,addr=3 */
-	outp32((void *)DDRPHY_BA + 0x00c, 0x0300c461);
-
-	/* set PGCR2,addr=35 */
-	outp32((void *)DDRPHY_BA + 0x08c, 0x00f0027f); /* mod 20210916 */
-
-	/* set PTR0,addr=7 */
-	outp32((void *)DDRPHY_BA + 0x01c, 0x0c806403); /* for pclk=100mhz */
-
-	/* set PTR1,addr=8 */
-	outp32((void *)DDRPHY_BA + 0x020, 0x27100385); /* for pclk=100mhz */
-
-	/* set PTR2,addr=9 */
-	outp32((void *)DDRPHY_BA + 0x024, 0x00083def);
-
-	/* set PTR3,addr=10 */
-	outp32((void *)DDRPHY_BA + 0x028, 0x0c04111d);
-
-	/* set PTR4,addr=11 */
-	outp32((void *)DDRPHY_BA + 0x02c, 0x0801a072);
-
-	/* set MR0,addr=21 */
-	outp32((void *)DDRPHY_BA + 0x054, 0x00001b40);
-
-	/* set MR1,addr=22 */
-	outp32((void *)DDRPHY_BA + 0x058, 0x00000006);
-
-	/* set MR2,addr=23 */
-	outp32((void *)DDRPHY_BA + 0x05c, 0x00000048);
-
-	/* set MR3,addr=24 */
-	outp32((void *)DDRPHY_BA + 0x060, 0x00000000);
-
-	/* set DTPR0,addr=18 */
-	outp32((void *)DDRPHY_BA + 0x048, 0x6d548855); /* mod 20210916 */
-
-	/* set DTPR1,addr=19 */
-	outp32((void *)DDRPHY_BA + 0x04c, 0x1a85e2c0); /* mod 20210922 */
-
-	/* set DTPR2,addr=20 */
-	outp32((void *)DDRPHY_BA + 0x050, 0x30023e00);
-
-	/* set ZQ0CR1,addr=97 */
-	outp32((void *)DDRPHY_BA + 0x184, 0x0000105d);
-
-	/* polling PGSR0 (addr=4) to 0x0000000f */
-	while ((inp32((void *)DDRPHY_BA + 0x010) & 0x0000000f) != 0x0000000f)
-		;
-
-	/* set DCR,addr=17 */
-	outp32((void *)DDRPHY_BA + 0x044, 0x0000040b);
-
-	/* set DTCR,addr=26 */
-	outp32((void *)DDRPHY_BA + 0x068, 0x91003587);
-
-	/* set PIR,addr=1 */
-	outp32((void *)DDRPHY_BA + 0x004, 0x0000ff81);
-
-	/* polling PGSR0 (addr=4) to 0xb0000fff */
-	while ((inp32((void *)DDRPHY_BA + 0x010) & 0xffffffff) != 0xb0000fff)
-		;
-
-	/* polling MCTL2 STAT to 0x00000001 */
-	while ((inp32((void *)UMCTL2_BA + 0x004) & 0x00000003) != 0x00000001)
-		;
-
-	/* set SWCTL */
-	outp32((void *)UMCTL2_BA + 0x320, 0x00000000);
-
-	/* set PWRCTL */
-	outp32((void *)UMCTL2_BA + 0x030, 0x0000000b);
-
-	/* set SWCTL */
-	outp32((void *)UMCTL2_BA + 0x320, 0x00000001);
-
-	/* polling MCTL2 SWSTAT to 0x00000001 */
-	while ((inp32((void *)UMCTL2_BA + 0x324) & 0x00000001) != 0x00000001)
-		;
-
-}
-
-/* #define DDR3_1GB_1066MBPS_ZENTEL_INIT_BY_DDR32PHY */
-void ma35d1_zentel_ddr3_1gb(void)
-{
-	/* set DBG1 */
-	outp32((void *)UMCTL2_BA + 0x304, 0x00000001);
-
-	/* set PWRCTL */
-	outp32((void *)UMCTL2_BA + 0x030, 0x00000001); /* mod */
-
-	/* polling to 0x00000000 */
-	/* while((inp32(UMCTL2_BA + 0x004) & 0x00000003) != 0x00000000); */
-
-	/* set MSTR */
-	outp32((void *)UMCTL2_BA + 0x000, 0x01040001); /* mod 20201204 */
-
-	/* set MRCTRL0 */
-	outp32((void *)UMCTL2_BA + 0x010, 0x0000d010); /* mod 20201204 */
-
-	/* set MRCTRL1 */
-	outp32((void *)UMCTL2_BA + 0x014, 0x00000000);
-
-	/* set PWRCTL */
-	outp32((void *)UMCTL2_BA + 0x030, 0x00000000); /* add */
-
-	/* set PWRTMG */
-	outp32((void *)UMCTL2_BA + 0x034, 0x00400010); /* mod 20200421 */
-
-	/* set HWLPCTL */
-	outp32((void *)UMCTL2_BA + 0x038, 0x000a0003); /* mod 20200121 */
-
-	/* set RFSHCTL0 */
-	outp32((void *)UMCTL2_BA + 0x050, 0x00210000);
-
-	/* set RFSHCTL1 */
-	outp32((void *)UMCTL2_BA + 0x054, 0x003c003c);
-
-	/* set RFSHCTL3 */
-	outp32((void *)UMCTL2_BA + 0x060, 0x00000000); /* mod 20191211 */
-
-	/* set RFSHTMG */
-	outp32((void *)UMCTL2_BA + 0x064, 0x0020005e); /* mod 20210106 */
-
-	/* set CRCPARCTL0 */
-	outp32((void *)UMCTL2_BA + 0x0c0, 0x00000000);
-
-	/* set INIT0 */
-	outp32((void *)UMCTL2_BA + 0x0d0, 0x40020083); /* mod 20200505 */
-
-	/* set INIT1 */
-	outp32((void *)UMCTL2_BA + 0x0d4, 0x00350002); /* mod 20200505 */
-
-	/* set INIT3 */
-	outp32((void *)UMCTL2_BA + 0x0dc, 0x1b400006); /* mod 20201109 */
-
-	/* set INIT4 */
-	outp32((void *)UMCTL2_BA + 0x0e0, 0x00480000); /* mod 20200822 */
-
-	/* set INIT5 */
-	outp32((void *)UMCTL2_BA + 0x0e4, 0x00090000);
-
-	/* set DIMMCTL */
-	outp32((void *)UMCTL2_BA + 0x0f0, 0x00000000);
-
-	/* set RANKCTL */
-	outp32((void *)UMCTL2_BA + 0x0f4, 0x0000032f);
-
-	/* set DRAMTMG0 */
-	outp32((void *)UMCTL2_BA + 0x100, 0x090b080a); /* mod 20211222 */
-
-	/* set DRAMTMG1 */
-	outp32((void *)UMCTL2_BA + 0x104, 0x0003020e);
-
-	/* set DRAMTMG2 */
-	outp32((void *)UMCTL2_BA + 0x108, 0x00000407);
-
-	/* set DRAMTMG3 */
-	outp32((void *)UMCTL2_BA + 0x10c, 0x00002006); /* mod 20211222 */
-
-	/* set DRAMTMG4 */
-	outp32((void *)UMCTL2_BA + 0x110, 0x04020205); /* mod 20211222 */
-
-	/* set DRAMTMG5 */
-	outp32((void *)UMCTL2_BA + 0x114, 0x03030202);
-
-	/* set DRAMTMG8 */
-	outp32((void *)UMCTL2_BA + 0x120, 0x00000a04);
-
-	/* set DRAMTMG15 */
-	outp32((void *)UMCTL2_BA + 0x13c, 0x80000032); /* mod 20200225 */
-
-	/* set ZQCTL0 */
-	outp32((void *)UMCTL2_BA + 0x180, 0x00800020);
-
-	/* set ZQCTL1 */
-	outp32((void *)UMCTL2_BA + 0x184, 0x00000100); /* mod 20200505 */
-
-	/* set DFITMG0 */
-	outp32((void *)UMCTL2_BA + 0x190, 0x04020101);
-
-	/* set DFITMG1 */
-	outp32((void *)UMCTL2_BA + 0x194, 0x00060101);
-
-	/* set DFILPCFG0 */
-#ifdef DFI_DDR_PHY_LP
-	outp32((void *)UMCTL2_BA + 0x198, 0x0700b131); /* mod 20200417 */
-#else
-	outp32((void *)UMCTL2_BA + 0x198, 0x0700b030); /* mod 20200825 */
-#endif
-
-	/* set DFIUPD0 */
-	outp32((void *)UMCTL2_BA + 0x1a0, 0x00400005); /* mod 20200303 */
-
-	/* set DFIUPD1 */
-	outp32((void *)UMCTL2_BA + 0x1a4, 0x00170066); /* mod 20200425 */
-
-	/* set DFIUPD2 */
-	outp32((void *)UMCTL2_BA + 0x1a8, 0x80000000); /* mod 20200309 */
-
-	/* set DFIMISC */
-	outp32((void *)UMCTL2_BA + 0x1b0, 0x00000011); /* mod */
-
-	/* set DFIPHYMSTR */
-	outp32((void *)UMCTL2_BA + 0x1c4, 0x00000000);
-
-	/* set ADDRMAP0 */
-	outp32((void *)UMCTL2_BA + 0x200, 0x0000001f); /* mod 20201204 */
-
-	/* set ADDRMAP1 */
-	outp32((void *)UMCTL2_BA + 0x204, 0x00080808);
-
-	/* set ADDRMAP2 */
-	outp32((void *)UMCTL2_BA + 0x208, 0x00000000);
-
-	/* set ADDRMAP3 */
-	outp32((void *)UMCTL2_BA + 0x20c, 0x00000000);
-
-	/* set ADDRMAP4 */
-	outp32((void *)UMCTL2_BA + 0x210, 0x00001f1f);
-
-	/* set ADDRMAP5 */
-	outp32((void *)UMCTL2_BA + 0x214, 0x070f0707);
-
-	/* set ADDRMAP6 */
-	outp32((void *)UMCTL2_BA + 0x218, 0x07070707); /* mod 20200117, for 1G bytes */
-
-	/* set ADDRMAP9 */
-	outp32((void *)UMCTL2_BA + 0x224, 0x07070707);
-
-	/* set ADDRMAP10 */
-	outp32((void *)UMCTL2_BA + 0x228, 0x07070707);
-
-	/* set ADDRMAP11 */
-	outp32((void *)UMCTL2_BA + 0x22c, 0x00000007);
-
-	/* set ODTCFG */
-	outp32((void *)UMCTL2_BA + 0x240, 0x06000608);
-
-	/* set ODTMAP */
-	outp32((void *)UMCTL2_BA + 0x244, 0x00000101); /* mod 20201204 */
-
-	/* set SCHED */
-	outp32((void *)UMCTL2_BA + 0x250, 0x00f51f00);
-
-	/* set SCHED1 */
-	outp32((void *)UMCTL2_BA + 0x254, 0x00000000);
-
-	/* set PERFHPR1 */
-	outp32((void *)UMCTL2_BA + 0x25c, 0x0f000001);
-
-	/* set PERFLPR1 */
-	outp32((void *)UMCTL2_BA + 0x264, 0x0f00007f);
-
-	/* set PERFWR1 */
-	outp32((void *)UMCTL2_BA + 0x26c, 0x0f00007f);
-
-	/* set DBG0 */
-	outp32((void *)UMCTL2_BA + 0x300, 0x00000000);
-
-	/* set DBG1 */
-	outp32((void *)UMCTL2_BA + 0x304, 0x00000000);
-
-	/* set DBGCMD */
-	outp32((void *)UMCTL2_BA + 0x30c, 0x00000000);
-
-	/* set SWCTL */
-	outp32((void *)UMCTL2_BA + 0x320, 0x00000001);
-
-	/* set SWCTLSTATIC */
-	outp32((void *)UMCTL2_BA + 0x328, 0x00000000);
-
-	/* set POISONCFG */
-	outp32((void *)UMCTL2_BA + 0x36c, 0x00110011);
-
-	/* set PCTRL_0 */
-	outp32((void *)UMCTL2_BA + 0x490, 0x00000001);
-
-	/* set PCTRL_1 */
-	outp32((void *)UMCTL2_BA + 0x540, 0x00000000); /* mod 20200323 */
-
-	/* set PCTRL_2 */
-	outp32((void *)UMCTL2_BA + 0x5f0, 0x00000000); /* mod 20200323 */
-
-	/* set PCTRL_3 */
-	outp32((void *)UMCTL2_BA + 0x6a0, 0x00000000); /* mod 20200323 */
-
-	/* set PCTRL_4 */
-	outp32((void *)UMCTL2_BA + 0x750, 0x00000000); /* mod 20200323 */
-
-	/* set PCTRL_5 */
-	outp32((void *)UMCTL2_BA + 0x800, 0x00000001); /* mod 20201204 */
-
-	/* set PCTRL_6 */
-	outp32((void *)UMCTL2_BA + 0x8b0, 0x00000001);
-
-	/* set PCCFG */
-	outp32((void *)UMCTL2_BA + 0x400, 0x00000000);
-
-	/* set PCFGR_0 */
-	outp32((void *)UMCTL2_BA + 0x404, 0x0001500f); /* mod 20200408 */
-
-	/* set PCFGR_1 */
-	outp32((void *)UMCTL2_BA + 0x4b4, 0x0001500f); /* mod 20200408 */
-
-	/* set PCFGR_2 */
-	outp32((void *)UMCTL2_BA + 0x564, 0x0001500f); /* mod 20200408 */
-
-	/* set PCFGR_3 */
-	outp32((void *)UMCTL2_BA + 0x614, 0x0001500f); /* mod 20200408 */
-
-	/* set PCFGR_4 */
-	outp32((void *)UMCTL2_BA + 0x6c4, 0x0001500f); /* mod 20200408 */
-
-	/* set PCFGR_5 */
-	outp32((void *)UMCTL2_BA + 0x774, 0x0001500f); /* mod 20200408 */
-
-	/* set PCFGR_6 */
-	outp32((void *)UMCTL2_BA + 0x824, 0x0001500f); /* mod 20200408 */
-
-	/* set PCFGW_0 */
-	outp32((void *)UMCTL2_BA + 0x408, 0x0000500f); /* mod 20200408 */
-
-	/* set PCFGW_1 */
-	outp32((void *)UMCTL2_BA + 0x4b8, 0x0000500f); /* mod 20200408 */
-
-	/* set PCFGW_2 */
-	outp32((void *)UMCTL2_BA + 0x568, 0x0000500f); /* mod 20200408 */
-
-	/* set PCFGW_3 */
-	outp32((void *)UMCTL2_BA + 0x618, 0x0000500f); /* mod 20200408 */
-
-	/* set PCFGW_4 */
-	outp32((void *)UMCTL2_BA + 0x6c8, 0x0000500f); /* mod 20200408 */
-
-	/* set PCFGW_5 */
-	outp32((void *)UMCTL2_BA + 0x778, 0x0000500f); /* mod 20200408 */
-
-	/* set PCFGW_6 */
-	outp32((void *)UMCTL2_BA + 0x828, 0x0000500f); /* mod 20200408 */
-
-	/* set SARBASE0 */
-	outp32((void *)UMCTL2_BA + 0xf04, 0x00000008);
-
-	/* set SARSIZE0 */
-	outp32((void *)UMCTL2_BA + 0xf08, 0x00000003); /* mod 20201204 */
-
-	/* de-assert reset signals of DDR memory controller */
-	outp32((void *)SYS_BA + 0x20, (inp32((void *)SYS_BA + 0x20) & 0x8fffffff));
-	while ((inp32((void *)SYS_BA + 0x20) & 0x20000000) != 0x00000000)
-		;
-
-	/* ===================================================================== */
-	/* DDR PHY initialization */
-	/* ===================================================================== */
-
-	/* set DSGCR,addr=16 */
-	outp32((void *)DDRPHY_BA + 0x040, 0xf004649f);
-
-	/* set PGCR1,addr=3 */
-	outp32((void *)DDRPHY_BA + 0x00c, 0x0300c461); /* mod 20200608 */
-
-	/* set PGCR2,addr=35 */
-	outp32((void *)DDRPHY_BA + 0x08c, 0x00f0068e); /* mod 20210106 */
-
-	/* set PTR0,addr=7 */
-	outp32((void *)DDRPHY_BA + 0x01c, 0x0c806403); /* mod 20200306 for pclk=100mhz */
-
-	/* set PTR1,addr=8 */
-	outp32((void *)DDRPHY_BA + 0x020, 0x27100385); /* mod 20200306 for pclk=100mhz */
-
-	/* set PTR2,addr=9 */
-	outp32((void *)DDRPHY_BA + 0x024, 0x00083def);
-
-	/* set PTR3,addr=10 */
-	outp32((void *)DDRPHY_BA + 0x028, 0x0c04111d); /* mod 20200511 */
-
-	/* set PTR4,addr=11 */
-	outp32((void *)DDRPHY_BA + 0x02c, 0x0801a072); /* mod 20200511 */
-
-	/* set MR0,addr=21 */
-	outp32((void *)DDRPHY_BA + 0x054, 0x00001b40); /* mod */
-
-	/* set MR1,addr=22 */
-	outp32((void *)DDRPHY_BA + 0x058, 0x00000006); /* mod 20201109 */
-
-	/* set MR2,addr=23 */
-	outp32((void *)DDRPHY_BA + 0x05c, 0x00000048); /* mod 20200822 */
-
-	/* set MR3,addr=24 */
-	outp32((void *)DDRPHY_BA + 0x060, 0x00000000);
-
-	/* set DTPR0,addr=18 */
-	outp32((void *)DDRPHY_BA + 0x048, 0x6d558855); /* mod 20211222 */
-
-	/* set DTPR1,addr=19 */
-	outp32((void *)DDRPHY_BA + 0x04c, 0x2285e2ca); /* mod 20211222 */
-
-	/* set DTPR2,addr=20 */
-	outp32((void *)DDRPHY_BA + 0x050, 0x30023e00);
-
-	/* set ZQ0CR1,addr=97 */
-	outp32((void *)DDRPHY_BA + 0x184, 0x0000105d); /* mod 20201109 */
-
-	/* polling PGSR0 (addr=4) to 0x0000000f */
-	while ((inp32((void *)DDRPHY_BA + 0x010) & 0x0000000f) != 0x0000000f)
-		;
-
-	/* set DCR,addr=17 */
-	outp32((void *)DDRPHY_BA + 0x044, 0x0000040b);
-
-	/* set DTCR,addr=26 */
-	outp32((void *)DDRPHY_BA + 0x068, 0x91003587); /* mod 20201204 */
-
-	/* set PIR,addr=1 */
-	outp32((void *)DDRPHY_BA + 0x004, 0x0000ff81);
-
-	/* polling PGSR0 (addr=4) to 0xb0000fff */
-	while ((inp32((void *)DDRPHY_BA + 0x010) & 0xffffffff) != 0xb0000fff)
-		;
-
-	/* polling MCTL2 STAT to 0x00000001 */
-	while ((inp32((void *)UMCTL2_BA + 0x004) & 0x00000003) != 0x00000001)
-		;
-
-	/* set SWCTL */
-	outp32((void *)UMCTL2_BA + 0x320, 0x00000000);
-
-	/* set PWRCTL */
-	outp32((void *)UMCTL2_BA + 0x030, 0x0000000b); /* mod 20191213 */
-
-	/* set SWCTL */
-	outp32((void *)UMCTL2_BA + 0x320, 0x00000001);
-
-	/* polling MCTL2 SWSTAT to 0x00000001 */
-	while ((inp32((void *)UMCTL2_BA + 0x324) & 0x00000001) != 0x00000001)
-		;
-
-}
-
 
 static void *fdt = (void *)(uintptr_t)MA35D1_DTB_BASE;
 
 void ma35d1_ddr_init(void)
 {
-	uint32_t clk_sel0;
-
-	clk_sel0 = inp32(CLK_BA + 0x18);
-
-	/* Use SYS-PLL for SYS_CLK0, DCUltra and GFX during AXI setup. */
-	outp32(CLK_BA + 0x18, 0xd000015);
-
 	//Set TAHBCKEN,CM4CKEN,CA35CKEN,DDR6CKEN,GFXCKEN,VC8KCKEN,DCUCKEN,GMAC0CKEN,GMAC1CKEN,CAP0CKEN,CAP1CKEN
 	outp32(CLK_BA + 0x04, (inp32(CLK_BA + 0x04) | 0x7F000037));
 	outp32(CLK_BA + 0x0C, (inp32(CLK_BA + 0x0C) | 0x40000000));
@@ -2196,17 +674,15 @@ void ma35d1_ddr_init(void)
 	}
 
 	if (fdt_node_offset_by_compatible(fdt, -1, "wb-ddr3-256mb") >= 0) {
-		ma35d1_wb_ddr3_256mb();
+		ma35d1_ddr_setting(ma35d1_wb_ddr3_256mb, sizeof(ma35d1_wb_ddr3_256mb)/sizeof(uint32_t));
 	} else if (fdt_node_offset_by_compatible(fdt, -1, "wb-ddr3-512mb") >= 0) {
-		ma35d1_wb_ddr3_512mb();
+		ma35d1_ddr_setting(ma35d1_wb_ddr3_512mb, sizeof(ma35d1_wb_ddr3_512mb)/sizeof(uint32_t));
 	} else if (fdt_node_offset_by_compatible(fdt, -1, "mt-ddr3-1gb") >= 0) {
-		ma35d1_mt_ddr3_1gb();
+		ma35d1_ddr_setting(ma35d1_mt_ddr3_1gb, sizeof(ma35d1_mt_ddr3_1gb)/sizeof(uint32_t));
 	} else if (fdt_node_offset_by_compatible(fdt, -1, "wb-ddr2-128mb") >= 0) {
-		ma35d1_wb_ddr2_128mb();
-	} else if (fdt_node_offset_by_compatible(fdt, -1, "issi-ddr3-1gb") >= 0) {
-		ma35d1_issi_ddr3_1gb();
-	} else if (fdt_node_offset_by_compatible(fdt, -1, "zentel-ddr3-1gb") >= 0) {
-		ma35d1_zentel_ddr3_1gb();
+		ma35d1_ddr_setting(ma35d1_wb_ddr2_128mb, sizeof(ma35d1_wb_ddr2_128mb)/sizeof(uint32_t));
+	} else if (fdt_node_offset_by_compatible(fdt, -1, "custom-ddr") >= 0) {
+		ma35d1_ddr_setting(custom_ddr, sizeof(custom_ddr)/sizeof(uint32_t));
 	} else {
 		WARN("The compatible property ddr type not found\n");
 	}
@@ -2223,7 +699,4 @@ void ma35d1_ddr_init(void)
 
 	outp32(SYS_BA + 0x70,(inp32(SYS_BA + 0x70) & ~0x00800000));	/* DDR control register clock gating enable */
 	outp32(CLK_BA + 0x04, 0x35);
-
-	/* Restore CLK_CLKSEL0. */
-	outp32(CLK_BA + 0x18, clk_sel0);
 }

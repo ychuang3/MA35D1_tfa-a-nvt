@@ -23,9 +23,10 @@
 
 #define RETRY_COUNT 3
 
-#define PMIC_NO		0
-#define PMIC_DIALOG	1
-#define PMIC_IP6103	2
+#define PMIC_NO			0
+#define PMIC_DIALOG		1
+#define PMIC_IP6103		2
+#define PMIC_APW7704F	3
 
 #if (MA35D1_PMIC == PMIC_IP6103)
 #define DEVICE_ADDR 0x60
@@ -33,6 +34,10 @@
 
 #if (MA35D1_PMIC == PMIC_DIALOG)
 #define DEVICE_ADDR 0xB0
+#endif
+
+#if (MA35D1_PMIC == PMIC_APW7704F)
+#define DEVICE_ADDR (0x25 << 1)
 #endif
 
 #if (MA35D1_PMIC == PMIC_NO)
@@ -427,6 +432,41 @@ int ma35d1_set_pmic(int type, int vol)
 		ERROR("Not support voltage!\n");
 		ret = -1;
 	}
+
+	if (ret >= 0)
+		pmic_state[type] = vol;
+
+	return ret;
+}
+#elif (MA35D1_PMIC == PMIC_APW7704F)
+int ma35d1_set_pmic(int type, int vol)
+{
+	unsigned int reg = 0x07;
+	int ret = 0;
+
+	if (pmicIsInit == 0) {
+		ma35d1_i2c0_init(pmic_clk);
+		pmicIsInit = 1;
+	}
+
+	switch (vol)
+	{
+	case VOL_1_25:
+		INFO("APW7704F 1.26V\n");
+		ret = ma35d1_write_pmic_data(reg, 0x35);
+		break;
+
+	case VOL_1_10:
+		INFO("APW7704F 1.1V\n");
+		ret = ma35d1_write_pmic_data(reg, 0x37);
+		break;
+
+	default:
+		ERROR("Not support voltage!\n");
+		ret=-1;
+		break;
+	}
+	reg = 0x07;
 
 	if (ret >= 0)
 		pmic_state[type] = vol;
