@@ -44,6 +44,8 @@
 #define DEVICE_ADDR 0x0
 #endif
 
+
+
 /*---------------------------------------------------------------------------*/
 /* Global variables                                                          */
 /*---------------------------------------------------------------------------*/
@@ -315,66 +317,100 @@ int ma35d1_set_pmic(int type, int vol)
 
 	if (type == VOL_CPU) {
 		reg0 = 0x21;	/* cpu */
+		switch (vol) {
+		case VOL_1_00:
+			INFO("IP6103 1.00V\n");
+			ret = ma35d1_write_pmic_data(reg0, 0x24);
+			break;
+		case VOL_1_10:
+			INFO("IP6103 1.10V\n");
+			ret = ma35d1_write_pmic_data(reg0, 0x28);
+			break;
+		case VOL_1_15:
+			INFO("IP6103 1.15V\n");
+			ret = ma35d1_write_pmic_data(reg0, 0x2c);
+			break;
+		case VOL_1_18:
+			INFO("IP6103 1.175V\n");
+			ret = ma35d1_write_pmic_data(reg0, 0x2e);
+			break;
+		case VOL_1_19:
+			INFO("IP6103 1.1875V\n");
+			ret = ma35d1_write_pmic_data(reg0, 0x2f);
+			break;
+		case VOL_1_20:
+			INFO("IP6103 1.20V\n");
+			ret = ma35d1_write_pmic_data(reg0, 0x30);
+			break;
+		case VOL_1_21:
+			INFO("IP6103 1.2125V\n");
+			ret = ma35d1_write_pmic_data(reg0, 0x31);
+			break;
+		case VOL_1_22:
+			INFO("IP6103 1.225V\n");
+			ret = ma35d1_write_pmic_data(reg0, 0x32);
+			break;
+		case VOL_1_23:
+		case VOL_1_24:
+			INFO("IP6103 1.2375V\n");
+			ret = ma35d1_write_pmic_data(reg0, 0x33);
+			break;
+		case VOL_1_25:
+			INFO("IP6103 1.25V\n");
+			ret = ma35d1_write_pmic_data(reg0, 0x34);
+			break;
+		case VOL_1_26:
+			INFO("IP6103 1.2625V\n");
+			ret = ma35d1_write_pmic_data(reg0, 0x35);
+			break;
+		case VOL_1_27:
+			INFO("IP6103 1.275V\n");
+			ret = ma35d1_write_pmic_data(reg0, 0x36);
+			break;
+		case VOL_1_28:
+		case VOL_1_29:
+			INFO("IP6103 1.29V\n");
+			ret = ma35d1_write_pmic_data(reg0, 0x37);
+			break;
+		case VOL_1_30:
+			INFO("IP6103 1.30V\n");
+			ret = ma35d1_write_pmic_data(reg0, 0x38);
+			break;
+		case VOL_1_32:
+			INFO("IP6103 1.32V\n");
+			ret = ma35d1_write_pmic_data(reg0, 0x3a);
+			break;
+		case VOL_1_34:
+			INFO("IP6103 1.34V\n");
+			ret = ma35d1_write_pmic_data(reg0, 0x3c);
+			break;
+		case VOL_1_36:
+			INFO("IP6103 1.36V\n");
+			ret = ma35d1_write_pmic_data(reg0, 0x3e);
+			break;
+		default:
+			ERROR("Not support voltage!\n");
+			ret = -1;
+			break;
+		}
 	} else if (type == VOL_SD) {
 		reg0 = 0x42;
+		switch (vol) {
+		case VOL_1_80:
+			INFO("IP6103 SD 1.8V\n");
+			ret = ma35d1_write_pmic_data(reg0, 0x2c);
+			break;
+		case VOL_3_30:
+			INFO("IP6103 SD 3.3V\n");
+			ret = ma35d1_write_pmic_data(reg0, 0x68);
+			break;
+		default:
+			ERROR("Not support voltage!\n");
+			ret = -1;
+			break;
+		}
 	} else {
 		ERROR("Not support type!\n");
-	}
-
-	switch (vol)
-	{
-	case VOL_1_00:
-		INFO("IP6103 1.00V\n");
-		ret = ma35d1_write_pmic_data(reg0, 0x24);
-		break;
-	case VOL_1_10:
-		INFO("IP6103 1.10V\n");
-		ret = ma35d1_write_pmic_data(reg0, 0x28);
-		break;
-	case VOL_1_15:
-		INFO("IP6103 1.15V\n");
-		ret = ma35d1_write_pmic_data(reg0, 0x2c);
-		break;
-	case VOL_1_20:
-		INFO("IP6103 1.20V\n");
-		ret = ma35d1_write_pmic_data(reg0, 0x30);
-		break;
-	case VOL_1_25:
-		INFO("IP6103 1.25V\n");
-		ret = ma35d1_write_pmic_data(reg0, 0x34);
-		break;
-	case VOL_1_29:
-		INFO("IP6103 1.29V\n");
-		ret = ma35d1_write_pmic_data(reg0, 0x37);
-		break;
-	case VOL_1_30:
-		INFO("IP6103 1.30V\n");
-		ret = ma35d1_write_pmic_data(reg0, 0x38);
-		break;
-	case VOL_1_32:
-		INFO("IP6103 1.32V\n");
-		ret = ma35d1_write_pmic_data(reg0, 0x3a);
-		break;
-	case VOL_1_34:
-		INFO("IP6103 1.34V\n");
-		ret = ma35d1_write_pmic_data(reg0, 0x3c);
-		break;
-	case VOL_1_36:
-		INFO("IP6103 1.36V\n");
-		ret = ma35d1_write_pmic_data(reg0, 0x3e);
-		break;
-	case VOL_1_80:
-		INFO("IP6103 SD 1.8V\n");
-		ret = ma35d1_write_pmic_data(reg0, 0x2c);
-		break;
-	case VOL_3_30:
-		INFO("IP6103 SD 3.3V\n");
-		ret = ma35d1_write_pmic_data(reg0, 0x68);
-		break;
-	default:
-		ERROR("Not support voltage!\n");
-		ret=-1;
-		break;
 	}
 
 	if (ret >= 0)
@@ -395,42 +431,72 @@ int ma35d1_set_pmic(int type, int vol)
 
 	if (type == VOL_CPU) {
 		reg = 0xA4;
+		if (vol == VOL_1_10) {		// (1.1 - 0.3) / 0.01 = 80 = 0x50
+			INFO("1.1V\n");
+			ret = ma35d1_write_pmic_data(reg, 0x50);
+		} else if (vol == VOL_1_00) {	// (1.00 - 0.3) / 0.01 = 70 = 0x46
+			INFO("1.00V\n");
+			ret = ma35d1_write_pmic_data(reg, 0x46);
+		} else if (vol == VOL_1_15) {	// (1.15 - 0.3) / 0.01 = 85 = 0x55
+			INFO("1.15V\n");
+			ret = ma35d1_write_pmic_data(reg, 0x55);
+		} else if (vol == VOL_1_18) {	// (1.18 - 0.3) / 0.01 = 88 = 0x58
+			INFO("1.18V\n");
+			ret = ma35d1_write_pmic_data(reg, 0x58);
+		} else if (vol == VOL_1_19) {	// (1.19 - 0.3) / 0.01 = 89 = 0x59
+			INFO("1.19V\n");
+			ret = ma35d1_write_pmic_data(reg, 0x59);
+		} else if (vol == VOL_1_20) {	// (1.2 - 0.3) / 0.01 = 90 = 0x5A
+			INFO("1.20V\n");
+			ret = ma35d1_write_pmic_data(reg, 0x5A);
+		} else if (vol == VOL_1_21) {	// (1.21 - 0.3) / 0.01 = 91 = 0x5B
+			INFO("1.21V\n");
+			ret = ma35d1_write_pmic_data(reg, 0x5B);
+		} else if (vol == VOL_1_22) {	// (1.22 - 0.3) / 0.01 = 92 = 0x5C
+			INFO("1.22V\n");
+			ret = ma35d1_write_pmic_data(reg, 0x5C);
+		} else if (vol == VOL_1_23) {	// (1.23 - 0.3) / 0.01 = 93 = 0x5D
+			INFO("1.23V\n");
+			ret = ma35d1_write_pmic_data(reg, 0x5D);
+		} else if (vol == VOL_1_24) {	// (1.24 - 0.3) / 0.01 = 94 = 0x5E
+			INFO("1.24V\n");
+			ret = ma35d1_write_pmic_data(reg, 0x5E);
+		} else if (vol == VOL_1_25) {	// (1.25 - 0.3) / 0.01 = 95 = 0x5F
+			INFO("1.25V\n");
+			ret = ma35d1_write_pmic_data(reg, 0x5F);
+		} else if (vol == VOL_1_26) {	// (1.26 - 0.3) / 0.01 = 96 = 0x60
+			INFO("1.26V\n");
+			ret = ma35d1_write_pmic_data(reg, 0x60);
+		} else if (vol == VOL_1_27) {	// (1.27 - 0.3) / 0.01 = 97 = 0x61
+			INFO("1.27V\n");
+			ret = ma35d1_write_pmic_data(reg, 0x61);
+		} else if (vol == VOL_1_28) {	// (1.28 - 0.3) / 0.01 = 98 = 0x62
+			INFO("1.28V\n");
+			ret = ma35d1_write_pmic_data(reg, 0x62);
+		} else if (vol == VOL_1_29) {	// (1.29 - 0.3) / 0.01 = 99 = 0x63
+			INFO("1.29V\n");
+			ret = ma35d1_write_pmic_data(reg, 0x63);
+		} else if (vol == VOL_1_30) {	// (1.3 - 0.3) / 0.01 = 100 = 0x64
+			INFO("1.3V\n");
+			ret = ma35d1_write_pmic_data(reg, 0x64);
+		} else {
+			ERROR("Not support voltage!\n");
+			ret = -1;
+		}
 	} else if (type == VOL_SD) {
 		reg = 0x32;
+		if (vol == VOL_1_80) {
+			INFO("1.8V\n");
+			ret = ma35d1_write_pmic_data(reg, 0x80);
+		} else if (vol == VOL_3_30) {
+			INFO("3.3V\n");
+			ret = ma35d1_write_pmic_data(reg, 0x00);
+		} else {
+			ERROR("Not support voltage!\n");
+			ret = -1;
+		}
 	} else {
 		ERROR("Not support type!\n");
-	}
-
-	if (vol == VOL_1_10) {		// (1.1 - 0.3) / 0.01 = 80 = 0x50
-		INFO("1.1V\n");
-		ret = ma35d1_write_pmic_data(reg, 0x50);
-	} else if (vol == VOL_1_00) {	// (1.00 - 0.3) / 0.01 = 70 = 0x46
-		INFO("1.00V\n");
-		ret = ma35d1_write_pmic_data(reg, 0x46);
-	} else if (vol == VOL_1_15) {	// (1.15 - 0.3) / 0.01 = 85 = 0x55
-		INFO("1.15V\n");
-		ret = ma35d1_write_pmic_data(reg, 0x55);
-	} else if (vol == VOL_1_20) {	// (1.2 - 0.3) / 0.01 = 90 = 0x5A
-		INFO("1.20V\n");
-		ret = ma35d1_write_pmic_data(reg, 0x5A);
-	} else if (vol == VOL_1_25) {	// (1.25 - 0.3) / 0.01 = 95 = 0x5F
-		INFO("1.25V\n");
-		ret = ma35d1_write_pmic_data(reg, 0x5F);
-	} else if (vol == VOL_1_29) {	// (1.29 - 0.3) / 0.01 = 99 = 0x63
-		INFO("1.29V\n");
-		ret = ma35d1_write_pmic_data(reg, 0x63);
-	} else if (vol == VOL_1_30) {	// (1.3 - 0.3) / 0.01 = 100 = 0x64
-		INFO("1.3V\n");
-		ret = ma35d1_write_pmic_data(reg, 0x64);
-	} else if (vol == VOL_1_80) {
-		INFO("1.8V\n");
-		ret = ma35d1_write_pmic_data(reg, 0x80);
-	} else if (vol == VOL_3_30) {
-		INFO("3.3V\n");
-		ret = ma35d1_write_pmic_data(reg, 0x00);
-	} else {
-		ERROR("Not support voltage!\n");
-		ret = -1;
 	}
 
 	if (ret >= 0)
@@ -451,14 +517,36 @@ int ma35d1_set_pmic(int type, int vol)
 
 	switch (vol)
 	{
+	case VOL_1_10:
+		INFO("APW7704F 1.11V\n");
+		ret = ma35d1_write_pmic_data(reg, 0x32);
+		break;
+	case VOL_1_18:
+		INFO("APW7704F 1.17V\n");
+		ret = ma35d1_write_pmic_data(reg, 0x32);
+		break;
+	case VOL_1_19:
+	case VOL_1_20:
+	case VOL_1_21:
+	case VOL_1_22:
+		INFO("APW7704F 1.20V\n");
+		ret = ma35d1_write_pmic_data(reg, 0x33);
+		break;
+	case VOL_1_23:
+	case VOL_1_24:
+		INFO("APW7704F 1.23V\n");
+		ret = ma35d1_write_pmic_data(reg, 0x34);
+		break;
 	case VOL_1_25:
+	case VOL_1_26:
+	case VOL_1_27:
 		INFO("APW7704F 1.26V\n");
 		ret = ma35d1_write_pmic_data(reg, 0x35);
 		break;
-
-	case VOL_1_10:
-		INFO("APW7704F 1.1V\n");
-		ret = ma35d1_write_pmic_data(reg, 0x37);
+	case VOL_1_28:
+	case VOL_1_29:
+		INFO("APW7704F 1.29V\n");
+		ret = ma35d1_write_pmic_data(reg, 0x36);
 		break;
 
 	default:
@@ -466,7 +554,6 @@ int ma35d1_set_pmic(int type, int vol)
 		ret=-1;
 		break;
 	}
-	reg = 0x07;
 
 	if (ret >= 0)
 		pmic_state[type] = vol;
