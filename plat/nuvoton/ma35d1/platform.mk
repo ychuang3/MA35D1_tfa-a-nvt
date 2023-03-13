@@ -47,6 +47,9 @@ $(eval $(call add_define,MA35D1_DDR_MAX_SIZE))
 MA35D1_DRAM_S_BASE ?= 0x8f800000
 $(eval $(call add_define,MA35D1_DRAM_S_BASE))
 
+MA35D1_CPU_CORE ?= 125
+$(eval $(call add_define,MA35D1_CPU_CORE))
+
 # dump the state on crash console
 CRASH_REPORTING		:=	1
 $(eval $(call add_define,CRASH_REPORTING))
