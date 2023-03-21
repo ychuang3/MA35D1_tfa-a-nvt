@@ -16,7 +16,7 @@
 	};
 
 	ddr: ddr-controller {
-		compatible = "costom-ddr";
+		compatible = "custom-ddr";
 	};
 
 };
