@@ -27,17 +27,17 @@
 
 #define HSUSBD_TZS	8	0	0
 #define HSUSBD_TZNS	8	0	1
-#define MCAN0_TZNS	8	24	1
-#define MCAN0_SUBM	8	24	3
-#define MCAN1_TZNS	8	28	1
-#define MCAN1_SUBM	8	28	3
 
 #define CRYPTO_TZS	12	0	0
 #define CRYPTO_TZNS	12	0	1
-#define MCAN2_TZNS	12	24	1
-#define MCAN2_SUBM	12	24	3
-#define MCAN3_TZNS	12	28	1
-#define MCAN3_SUBM	12	28	3
+#define MCAN0_TZNS	12	24	1
+#define MCAN0_SUBM	12	24	3
+#define MCAN1_TZNS	12	26	1
+#define MCAN1_SUBM	12	26	3
+#define MCAN2_TZNS	12	28	1
+#define MCAN2_SUBM	12	28	3
+#define MCAN3_TZNS	12	30	1
+#define MCAN3_SUBM	12	30	3
 
 #define ADC0_TZNS	16	4	1
 #define ADC0_SUBM	16	4	3

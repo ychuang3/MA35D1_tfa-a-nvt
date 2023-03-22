@@ -270,7 +270,7 @@ void plat_ma35d1_init(void)
 {
 	int value_len = 0, i, count = 0;
 	int node;
-	unsigned int cells[70 * 3];
+	unsigned int cells[100 * 3];
 	unsigned int reg;
 
 	/* unlock */
