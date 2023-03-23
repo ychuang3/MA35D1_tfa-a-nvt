@@ -74,14 +74,14 @@ int32_t ma35d1_change_pll(int pll)
 		return 1;
 	};
 	/* set CA35 to E-PLL */
-	outp32((void *)CLK_CLKSEL0, (inp32((void *)CLK_CLKSEL0) & ~0x3) | 0x2);
+	mmio_write_32(CLK_CLKSEL0, (mmio_read_32(CLK_CLKSEL0) & ~0x3) | 0x2);
 
-	outp32((void *)CLK_PLL0CTL0, CAPLL_MODE[index]);
+	mmio_write_32(CLK_PLL0CTL0, CAPLL_MODE[index]);
 
 	timeout = timeout_init_us(12000);	/* 12 ms */
 	/* check PLL stable */
 	while (1) {
-		if ((inp32((void *)CLK_STATUS) & 0x40) == 0x40)
+		if ((mmio_read_32(CLK_STATUS) & 0x40) == 0x40)
 			break;
 
 		if (timeout_elapsed(timeout)) {
@@ -90,7 +90,7 @@ int32_t ma35d1_change_pll(int pll)
 		}
 	}
 	/* set CA35 to CA-PLL */
-	outp32((void *)CLK_CLKSEL0, (inp32((void *)CLK_CLKSEL0) & ~0x3) | 0x1);
+	mmio_write_32(CLK_CLKSEL0, (mmio_read_32(CLK_CLKSEL0) & ~0x3) | 0x1);
 
 	return 0;
 }

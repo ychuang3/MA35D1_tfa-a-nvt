@@ -200,10 +200,10 @@ extern "C"
 #define ECC_KSCTL_WSDST_MASK		(0x3 << 22)
 #define ECC_KSCTL_OWNER_OFFSET		24
 #define ECC_KSCTL_OWNER_MASK		(0x7 << 24)
-#define ECC_KSSTS		0xF44
+#define ECC_KSSTS		(CRYPTO_BASE+0xF44)
 #define ECC_KSSTS_NUM_OFFSET		0
 #define ECC_KSSTS_NUM_MASK		(0x1f << 0)
-#define ECC_KSXY			0xF48
+#define ECC_KSXY			(CRYPTO_BASE+0xF48)
 #define ECC_KSXY_NUMX_OFFSET		0
 #define ECC_KSXY_NUMX_MASK		(0x1f << 0)
 #define ECC_KSXY_RSRCXY			(0x1 << 5)

@@ -604,19 +604,20 @@ void ma35d1_ddr_setting(struct nvt_ddr_init_param ddrparam, int size)
 		ddr_reg_address = (uint32_t)nvt_ddr_init_setting[i].base + (uint32_t)nvt_ddr_init_setting[i].offset;
 		value =  *((uint32_t *)(((uintptr_t)&ddrparam) + nvt_ddr_init_setting[i].init_flow_offset));
 
-		*(volatile uint32_t *)((void *)ddr_reg_address) = value;
+		*(volatile uint32_t *)(ddr_reg_address) = value;
 
 		if (i == 84) // 0xf08 //DDRCTRL
 		{
 			//de-assert reset signals of DDR memory controller
-			outp32((void *)SYS_BA+0x20,(inp32((void *)SYS_BA+0x20) & 0x8fffffff));
-			while( (inp32((void *)SYS_BA+0x20) & 0x20000000) != 0x00000000);
+			mmio_write_32(SYS_BA+0x20, (mmio_read_32(SYS_BA+0x20) & 0x8fffffff));
+			while ((mmio_read_32(SYS_BA+0x20) & 0x20000000) != 0x00000000)
+				;
 		}
 
 		if (i == 100) // 0x184 //DDRPHY
 		{
 			//polling PGSR0 (addr=4) to 0x0000000f
-			while((inp32((void *)DDRPHY_BASE + 0x010) & 0x0000000f) != 0x0000000f)
+			while ((mmio_read_32(DDRPHY_BASE + 0x010) & 0x0000000f) != 0x0000000f)
 			{
 				u32TimeOut1++;
 			}
@@ -626,13 +627,13 @@ void ma35d1_ddr_setting(struct nvt_ddr_init_param ddrparam, int size)
 		{
 
 			//polling PGSR0 (addr=4) to 0xb0000f5f
-			while ((inp32((void *)DDRPHY_BASE + 0x010) & 0xffffff5f) != 0xb0000f5f)
+			while ((mmio_read_32(DDRPHY_BASE + 0x010) & 0xffffff5f) != 0xb0000f5f)
 			{
 				u32TimeOut2++;
 			}
 
 			//polling MCTL2 STAT to 0x00000001
-			while((inp32((void *)UMCTL2_BASE + 0x004) & 0x00000003) != 0x00000001)
+			while ((mmio_read_32(UMCTL2_BASE + 0x004) & 0x00000003) != 0x00000001)
 			{
 				u32TimeOut3++;
 			}
@@ -640,7 +641,8 @@ void ma35d1_ddr_setting(struct nvt_ddr_init_param ddrparam, int size)
 
 	}
 
-	while((inp32((void *)UMCTL2_BASE + 0x324) & 0x00000001) != 0x00000001);
+	while ((mmio_read_32(UMCTL2_BASE + 0x324) & 0x00000001) != 0x00000001)
+		;
 
 	INFO("\n DDR init Finish: 0x%x, 0x%x, 0x%x \n", u32TimeOut1, u32TimeOut2, u32TimeOut3);
 
@@ -655,22 +657,23 @@ void ma35d1_ddr_init(void)
 {
 	uint32_t clk_sel0;
 
-	clk_sel0 = inp32(CLK_BA + 0x18);
+	clk_sel0 = mmio_read_32(CLK_BA + 0x18);
 
 	/* Use SYS-PLL for SYS_CLK0, DCUltra and GFX during AXI setup. */
-	outp32(CLK_BA + 0x18, 0xd000015);
+	mmio_write_32(CLK_BA + 0x18, 0xd000015);
 
 	//Set TAHBCKEN,CM4CKEN,CA35CKEN,DDR6CKEN,GFXCKEN,VC8KCKEN,DCUCKEN,GMAC0CKEN,GMAC1CKEN,CAP0CKEN,CAP1CKEN
-	outp32(CLK_BA + 0x04, (inp32(CLK_BA + 0x04) | 0x7F000037));
-	outp32(CLK_BA + 0x0C, (inp32(CLK_BA + 0x0C) | 0x40000000));
+	mmio_write_32(CLK_BA + 0x04, (mmio_read_32(CLK_BA + 0x04) | 0x7F000037));
+	mmio_write_32(CLK_BA + 0x0C, (mmio_read_32(CLK_BA + 0x0C) | 0x40000000));
 
 	/* DDR control register clock gating disable */
-	outp32(SYS_BA + 0x70, (inp32(SYS_BA + 0x70) | 0x00800000));
+	mmio_write_32(SYS_BA + 0x70, (mmio_read_32(SYS_BA + 0x70) | 0x00800000));
 	/* de-assert presetn of MCTL2 */
-	outp32(SYS_BA + 0x20, (inp32(SYS_BA + 0x20) & 0xafffffff));
-	while((inp32(SYS_BA + 0x20) & 0x50000000) != 0x00000000);
+	mmio_write_32(SYS_BA + 0x20, (mmio_read_32(SYS_BA + 0x20) & 0xafffffff));
+	while ((mmio_read_32(SYS_BA + 0x20) & 0x50000000) != 0x00000000)
+		;
 	//set MCTLCRST to 1
-	outp32(SYS_BA + 0x20, (inp32(SYS_BA + 0x20) | 0x20000000));
+	mmio_write_32(SYS_BA + 0x20, (mmio_read_32(SYS_BA + 0x20) | 0x20000000));
 
 	/* read DTB */
 	/* get device tree information */
@@ -692,19 +695,21 @@ void ma35d1_ddr_init(void)
 		WARN("The compatible property ddr type not found\n");
 	}
 
-	outp32((void *)UMCTL2_BA+0x490, 0x1);
-	outp32((void *)UMCTL2_BA+0x8b0, 0x1);
-	outp32((void *)UMCTL2_BA+0x960, 0x1);
+	mmio_write_32(UMCTL2_BA+0x490, 0x1);
+	mmio_write_32(UMCTL2_BA+0x8b0, 0x1);
+	mmio_write_32(UMCTL2_BA+0x960, 0x1);
 
-	outp32((void *)UMCTL2_BA+0x540, 0x1);
-	outp32((void *)UMCTL2_BA+0x5f0, 0x1);
-	outp32((void *)UMCTL2_BA+0x6a0, 0x1);
-	outp32((void *)UMCTL2_BA+0x750, 0x1);
-	outp32((void *)UMCTL2_BA+0x800, 0x1);
+	mmio_write_32(UMCTL2_BA+0x540, 0x1);
+	mmio_write_32(UMCTL2_BA+0x5f0, 0x1);
+	mmio_write_32(UMCTL2_BA+0x6a0, 0x1);
+	mmio_write_32(UMCTL2_BA+0x750, 0x1);
+	mmio_write_32(UMCTL2_BA+0x800, 0x1);
 
-	outp32(SYS_BA + 0x70,(inp32(SYS_BA + 0x70) & ~0x00800000));	/* DDR control register clock gating enable */
-	outp32(CLK_BA + 0x04, 0x35);
+	/* DDR control register clock gating enable */
+	mmio_write_32(SYS_BA + 0x70,
+		      (mmio_read_32(SYS_BA + 0x70) & ~0x00800000));
+	mmio_write_32(CLK_BA + 0x04, 0x35);
 
 	/* Restore CLK_CLKSEL0. */
-	outp32(CLK_BA + 0x18, clk_sel0);
+	mmio_write_32(CLK_BA + 0x18, clk_sel0);
 }

@@ -90,14 +90,14 @@ static int32_t ma35d1_set_cpu_clock(int cpu_freq)
 		return 1;
 	};
 	/* set CA35 to DDRPLL */
-	outp32((void *)CLK_CLKSEL0, (inp32((void *)CLK_CLKSEL0) & ~0x3) | 0x2);
+	mmio_write_32(CLK_CLKSEL0, (mmio_read_32(CLK_CLKSEL0) & ~0x3) | 0x2);
 
-	outp32((void *)CLK_PLL0CTL0, CAPLL_MODE[index]);
+	mmio_write_32(CLK_PLL0CTL0, CAPLL_MODE[index]);
 
 	timeout = timeout_init_us(12000);	/* 1ms */
 	/* check PLL stable */
 	while (1) {
-		if ((inp32((void *)CLK_STATUS) & 0x40) == 0x40)
+		if ((mmio_read_32(CLK_STATUS) & 0x40) == 0x40)
 			break;
 
 		if (timeout_elapsed(timeout)) {
@@ -106,7 +106,7 @@ static int32_t ma35d1_set_cpu_clock(int cpu_freq)
 		}
 	}
 	/* set CA35 to CA-PLL */
-	outp32((void *)CLK_CLKSEL0, (inp32((void *)CLK_CLKSEL0) & ~0x3) | 0x1);
+	mmio_write_32(CLK_CLKSEL0, (mmio_read_32(CLK_CLKSEL0) & ~0x3) | 0x1);
 	return 0;
 }
 
@@ -128,9 +128,9 @@ uintptr_t sip_smc_handler(uint32_t smc_fid,
 	int cpu_clk = 0;
 
 	/* unlock */
-	outp32((void *)SYS_RLKTZS, 0x59);
-	outp32((void *)SYS_RLKTZS, 0x16);
-	outp32((void *)SYS_RLKTZS, 0x88);
+	mmio_write_32(SYS_RLKTZS, 0x59);
+	mmio_write_32(SYS_RLKTZS, 0x16);
+	mmio_write_32(SYS_RLKTZS, 0x88);
 
 
 	/* Determine which security state this SMC originated from */
@@ -147,7 +147,7 @@ uintptr_t sip_smc_handler(uint32_t smc_fid,
 			if (volt != ma35d1_get_pmic(x1))
 				ma35d1_set_pmic(x1, x2);
 		}
-		outp32((void *)SYS_RLKTZS, 0);
+		mmio_write_32(SYS_RLKTZS, 0);
 		SMC_RET1(handle, volt);
 
 	case SIP_CPU_CLK:
@@ -172,42 +172,42 @@ uintptr_t sip_smc_handler(uint32_t smc_fid,
 		if (ret == 1) {
 			WARN("Set CPU clock %ld Fail !!\n", x1);
 		}
-		outp32((void *)SYS_RLKTZS, 0);
+		mmio_write_32(SYS_RLKTZS, 0);
 		SMC_RET1(handle, ret);
 
 	case SIP_SET_EPLL:
 		if (eppl_div_restore == 0xFFFFFFFF)
-			eppl_div_restore = inp32((void *)CLK_PLL4CTL1);
+			eppl_div_restore = mmio_read_32(CLK_PLL4CTL1);
 		if ((uint32_t)x1 == NVT_SIP_SVC_EPLL_DIV_BY_2)
-			outp32((void *)CLK_PLL4CTL1, eppl_div_restore + 0x10);
+			mmio_write_32(CLK_PLL4CTL1, eppl_div_restore + 0x10);
 		else if ((uint32_t)x1 == NVT_SIP_SVC_EPLL_DIV_BY_4)
-			outp32((void *)CLK_PLL4CTL1, eppl_div_restore + 0x20);
+			mmio_write_32(CLK_PLL4CTL1, eppl_div_restore + 0x20);
 		else if ((uint32_t)x1 == NVT_SIP_SVC_EPLL_DIV_BY_8)
-			outp32((void *)CLK_PLL4CTL1, eppl_div_restore + 0x30);
+			mmio_write_32(CLK_PLL4CTL1, eppl_div_restore + 0x30);
 		else {
-			outp32((void *)CLK_PLL4CTL1, eppl_div_restore);
+			mmio_write_32(CLK_PLL4CTL1, eppl_div_restore);
 			eppl_div_restore = 0xFFFFFFFF;
 		}
-		outp32((void *)SYS_RLKTZS, 0);
-		SMC_RET2(handle, 0, inp32((void *)CLK_PLL4CTL1));
+		mmio_write_32(SYS_RLKTZS, 0);
+		SMC_RET2(handle, 0, mmio_read_32(CLK_PLL4CTL1));
 
 	case SIP_LOW_SPEED:
 		if ((uint32_t)x1 == 0) {
 			ma35d1_set_cpu_clock(CPU_PLL_500);
-			if ((inp32(SYS_CHIPCFG) & (1 << 8)) == 0)
+			if ((mmio_read_32(SYS_CHIPCFG) & (1 << 8)) == 0)
 				TSI_Set_Clock(0x80235A);
-			outp32((void *)CLK_PLL4CTL1, eppl_ctl1);
-			outp32((void *)CLK_PLL5CTL1, vppl_ctl1);
+			mmio_write_32(CLK_PLL4CTL1, eppl_ctl1);
+			mmio_write_32(CLK_PLL5CTL1, vppl_ctl1);
 		} else {
 			ma35d1_set_cpu_clock(CPU_PLL_125);
-			if ((inp32(SYS_CHIPCFG) & (1 << 8)) == 0)
+			if ((mmio_read_32(SYS_CHIPCFG) & (1 << 8)) == 0)
 				TSI_Set_Clock(0x802312);
-			eppl_ctl1 = inp32((void *)CLK_PLL4CTL1);
-			vppl_ctl1 = inp32((void *)CLK_PLL5CTL1);
-			outp32((void *)CLK_PLL4CTL1, eppl_ctl1 | 0x70);
-			outp32((void *)CLK_PLL5CTL1, vppl_ctl1 | 0x70);
+			eppl_ctl1 = mmio_read_32(CLK_PLL4CTL1);
+			vppl_ctl1 = mmio_read_32(CLK_PLL5CTL1);
+			mmio_write_32(CLK_PLL4CTL1, eppl_ctl1 | 0x70);
+			mmio_write_32(CLK_PLL5CTL1, vppl_ctl1 | 0x70);
 		}
-		outp32((void *)SYS_RLKTZS, 0);
+		mmio_write_32(SYS_RLKTZS, 0);
 		SMC_RET1(handle, 0);
 
 	case SIP_SVC_VERSION:
@@ -216,7 +216,7 @@ uintptr_t sip_smc_handler(uint32_t smc_fid,
 			NVT_SIP_SVC_VERSION_MINOR);
 
 	default:
-		outp32((void *)SYS_RLKTZS, 0);
+		mmio_write_32(SYS_RLKTZS, 0);
 		return ma35d1_plat_sip_handler(smc_fid, x1, x2, x3, x4,
 			cookie, handle, flags);
 	};

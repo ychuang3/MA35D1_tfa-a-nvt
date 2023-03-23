@@ -7,6 +7,7 @@
 #include <plat/arm/common/arm_config.h>
 #include <plat/arm/common/plat_arm.h>
 #include <common/debug.h>
+#include <lib/mmio.h>
 
 /*
  * We assume that all security programming is done by the primary core.
@@ -24,10 +25,10 @@ static void init_tzc400(void)
 #ifdef MA35D1_LOAD_BL32
 	unsigned long long ddr_s_size = MA35D1_DDR_MAX_SIZE - MA35D1_DRAM_SIZE;
 #endif
-	unsigned int reg = inp32((void *)0x40460204);
+	unsigned int reg = mmio_read_32(0x40460204);
 
 	/* SSMCC clock enable */
-	outp32((void *)0x40460204, inp32((void *)0x40460204) | 0x7f7f0000);
+	mmio_write_32(0x40460204, mmio_read_32(0x40460204) | 0x7f7f0000);
 
 	/* TZC2 */
 	tzc400_init(MA35D1_TZC2_BASE);
@@ -92,11 +93,11 @@ static void init_tzc400(void)
 	tzc400_set_action(TZC_ACTION_ERR);
 	tzc400_enable_filters();
 #endif
-	outp32((void *)0x40460204, (inp32((void *)0x40460204) &
+	mmio_write_32(0x40460204, (mmio_read_32(0x40460204) &
 			~0x7f7f0000) | reg);
 
 	/* Enable Cortex-M4 DDR access. */
-	outp32((void *)0x40460070, inp32((void *)0x40460070) | 0x4);
+	mmio_write_32(0x40460070, mmio_read_32(0x40460070) | 0x4);
 }
 
 
@@ -107,12 +108,12 @@ static void init_tzc400(void)
  ******************************************************************************/
 static void early_init_tzc400(void)
 {
-	unsigned int reg = inp32((void *)0x40460204);
+	unsigned int reg = mmio_read_32(0x40460204);
 
 	/* SSMCC clock enable */
-	outp32((void *)0x40460214, inp32((void *)0x40460214) | (1 << 2));
-	outp32((void *)0x40460218, inp32((void *)0x40460218) | (1 << 2));
-	outp32((void *)0x40460204, inp32((void *)0x40460204) | 0x7f7f0000);
+	mmio_write_32(0x40460214, mmio_read_32(0x40460214) | (1 << 2));
+	mmio_write_32(0x40460218, mmio_read_32(0x40460218) | (1 << 2));
+	mmio_write_32(0x40460204, mmio_read_32(0x40460204) | 0x7f7f0000);
 
 	/* TZC2 */
 	tzc400_init(MA35D1_TZC2_BASE);
@@ -130,11 +131,11 @@ static void early_init_tzc400(void)
 	/* Raise an exception if a NS device tries to access secure memory */
 	tzc400_set_action(TZC_ACTION_ERR);
 
-	outp32((void *)0x40460204, (inp32((void *)0x40460204) &
+	mmio_write_32(0x40460204, (mmio_read_32(0x40460204) &
 			~0x7f7f0000) | reg);
 
 	/* Enable Cortex-M4 DDR access. */
-	outp32((void *)0x40460070, inp32((void *)0x40460070) | 0x4);
+	mmio_write_32(0x40460070, mmio_read_32(0x40460070) | 0x4);
 }
 
 

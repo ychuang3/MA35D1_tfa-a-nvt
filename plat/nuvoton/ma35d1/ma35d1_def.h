@@ -235,8 +235,5 @@
 #define WHC0_BASE	U(0x403A0000)
 #define WHC1_BASE	U(0x503B0000)
 
-#define outp32(addr, data) (*(volatile uint32_t *)((uint64_t)(addr))) = (data)
-#define inp32(addr) (*(volatile uint32_t *)((uint64_t)(addr)))
-#define inp8(addr) (*(volatile uint8_t *)((uint64_t)(addr)))
 
 #endif /* MA35D1_DEF_H */

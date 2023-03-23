@@ -112,7 +112,7 @@ static void ma35d1_nand_read_oob(struct ma35d1_nand_info *nand, unsigned int pag
 
 	ptr = (unsigned char *)REG_NANDRA0;
 	for (i=0; i<nand->oob_size; i++)
-		*(unsigned char*) ptr++ = inp8(REG_NANDDATA);
+		*(unsigned char *)ptr++ = mmio_read_8(REG_NANDDATA);
 }
 
 

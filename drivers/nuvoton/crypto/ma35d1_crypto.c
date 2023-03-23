@@ -16,6 +16,7 @@
 
 #include <ma35d1_crypto.h>
 #include <tsi_cmd.h>
+#include <lib/mmio.h>
 //#include "../ma35d1_def.h"
 //#include "../include/ma35d1_crypto.h"
 //#include "../include/tsi_cmd.h"
@@ -102,11 +103,12 @@ static char  ch2hex(char ch)
 	return ch;
 }
 
-void Hex2Reg(char input[], unsigned int volatile *reg)
+void Hex2Reg(char input[], uintptr_t addr)
 {
 	char      hex;
 	int       si, ri;
-	unsigned int  i, val32;
+	uint32_t  i, val32;
+	volatile uint32_t *reg = (volatile uint32_t *)addr;
 
 	si = (int)strlen(input) - 1;
 	ri = 0;
@@ -117,7 +119,7 @@ void Hex2Reg(char input[], unsigned int volatile *reg)
 		for (i = 0UL; (i < 8UL) && (si >= 0); i++)
 		{
 			hex = ch2hex(input[si]);
-			val32 |= (unsigned int)hex << (i * 4UL);
+			val32 |= (uint32_t)hex << (i * 4UL);
 			si--;
 		}
 		reg[ri++] = val32;
@@ -147,35 +149,39 @@ static int ecc_init_curve(void)
 	{
 		for (i = 0; i < 18; i++)
 		{
-			outp32(ECC_A(i), 0UL);
-			outp32(ECC_B(i), 0UL);
-			outp32(ECC_X1(i), 0UL);
-			outp32(ECC_Y1(i), 0UL);
-			outp32(ECC_X2(i), 0UL);
-			outp32(ECC_Y2(i), 0UL);
-			outp32(ECC_N(i), 0UL);
+			mmio_write_32(ECC_A(i), 0UL);
+			mmio_write_32(ECC_B(i), 0UL);
+			mmio_write_32(ECC_X1(i), 0UL);
+			mmio_write_32(ECC_Y1(i), 0UL);
+			mmio_write_32(ECC_X2(i), 0UL);
+			mmio_write_32(ECC_Y2(i), 0UL);
+			mmio_write_32(ECC_N(i), 0UL);
 		}
 
-		Hex2Reg(pCurve->Ea, (void *)ECC_A(0));
-		Hex2Reg(pCurve->Eb, (void *)ECC_B(0));
-		Hex2Reg(pCurve->Px, (void *)ECC_X1(0));
-		Hex2Reg(pCurve->Py, (void *)ECC_Y1(0));
+		Hex2Reg(pCurve->Ea, ECC_A(0));
+		Hex2Reg(pCurve->Eb, ECC_B(0));
+		Hex2Reg(pCurve->Px, ECC_X1(0));
+		Hex2Reg(pCurve->Py, ECC_Y1(0));
 
 		if (pCurve->GF == (int)CURVE_GF_2M)
 		{
-			outp32(ECC_N(0), 0x1UL);
-			outp32(ECC_N((pCurve->key_len) / 32), \
-				inp32(ECC_N((pCurve->key_len) / 32)| (1UL << ((pCurve->key_len) % 32))));
-			outp32(ECC_N((pCurve->irreducible_k1) / 32), \
-				inp32(ECC_N((pCurve->irreducible_k1) / 32))|(1UL << ((pCurve->irreducible_k1) % 32)));
-			outp32(ECC_N((pCurve->irreducible_k2) / 32), \
-				inp32(ECC_N((pCurve->irreducible_k2) / 32))|(1UL << ((pCurve->irreducible_k2) % 32)));
-			outp32(ECC_N((pCurve->irreducible_k3) / 32),
-				inp32(ECC_N((pCurve->irreducible_k3) / 32))|(1UL << ((pCurve->irreducible_k3) % 32)));
+			mmio_write_32(ECC_N(0), 0x1UL);
+			mmio_write_32(ECC_N((pCurve->key_len) / 32),
+				mmio_read_32(ECC_N((pCurve->key_len) / 32) |
+				(1UL << ((pCurve->key_len) % 32))));
+			mmio_write_32(ECC_N((pCurve->irreducible_k1) / 32),
+				mmio_read_32(ECC_N((pCurve->irreducible_k1) / 32)) |
+				(1UL << ((pCurve->irreducible_k1) % 32)));
+			mmio_write_32(ECC_N((pCurve->irreducible_k2) / 32),
+				mmio_read_32(ECC_N((pCurve->irreducible_k2) / 32)) |
+				(1UL << ((pCurve->irreducible_k2) % 32)));
+			mmio_write_32(ECC_N((pCurve->irreducible_k3) / 32),
+				mmio_read_32(ECC_N((pCurve->irreducible_k3) / 32)) |
+				(1UL << ((pCurve->irreducible_k3) % 32)));
 		}
 		else
 		{
-			Hex2Reg(pCurve->Pp, (void *)ECC_N(0));
+			Hex2Reg(pCurve->Pp, ECC_N(0));
 		}
 	}
 	return ret;
@@ -210,15 +216,15 @@ int wait_ECC_complete()
 {
 	while (1)
 	{
-		if (inp32(INTSTS) & INTSTS_ECCEIF)
+		if (mmio_read_32(INTSTS) & INTSTS_ECCEIF)
 		{
-			outp32(INTSTS, INTSTS_ECCEIF);
+			mmio_write_32(INTSTS, INTSTS_ECCEIF);
 			return 1;
 		}
 
-		if (inp32(INTSTS) & INTSTS_ECCIF)
+		if (mmio_read_32(INTSTS) & INTSTS_ECCIF)
 		{
-			outp32(INTSTS, INTSTS_ECCIF);
+			mmio_write_32(INTSTS, INTSTS_ECCIF);
 			return 1;
 		}
 	}
@@ -229,23 +235,25 @@ static void run_ecc_codec(unsigned int mode)
 
 	if ((mode & ECC_CTL_ECCOP_MASK) == ECCOP_MODULE)
 	{
-		outp32(ECC_CTL ,ECC_CTL_FSEL);
+		mmio_write_32(ECC_CTL, ECC_CTL_FSEL);
 	}
 	else
 	{
 		if (pCurve->GF == (int)CURVE_GF_2M)
 		{
 			/* point */
-			outp32(ECC_CTL, 0UL);
+			mmio_write_32(ECC_CTL, 0UL);
 		}
 		else
 		{
 			/* CURVE_GF_P */
-			outp32(ECC_CTL, ECC_CTL_FSEL);
+			mmio_write_32(ECC_CTL, ECC_CTL_FSEL);
 		}
 	}
 
-	outp32(ECC_CTL, inp32(ECC_CTL)|((unsigned int)pCurve->key_len << ECC_CTL_CURVEM_OFFSET) | mode | ECC_CTL_START);
+	mmio_write_32(ECC_CTL, mmio_read_32(ECC_CTL) |
+		      ((unsigned int)pCurve->key_len << ECC_CTL_CURVEM_OFFSET) |
+		      mode | ECC_CTL_START);
 	wait_ECC_complete();
 }
 
@@ -290,10 +298,10 @@ void Reg2Hex(int count, unsigned int *reg, char output[])
   */
 void AES_SetInitVect(void)
 {
-	outp32((void *)AES_IV(0), 0);
-	outp32((void *)AES_IV(1), 0);
-	outp32((void *)AES_IV(2), 0);
-	outp32((void *)AES_IV(3), 0);
+	mmio_write_32(AES_IV(0), 0);
+	mmio_write_32(AES_IV(1), 0);
+	mmio_write_32(AES_IV(2), 0);
+	mmio_write_32(AES_IV(3), 0);
 }
 
 /**
@@ -315,13 +323,13 @@ void AES_SetInitVect(void)
   */
 void SHA_Open(unsigned int u32OpMode, unsigned int u32SwapType, unsigned int hmac_key_len)
 {
-	outp32((void *)HMAC_CTL, (u32OpMode << HMAC_CTL_OPMODE_OFFSET) |
+	mmio_write_32(HMAC_CTL, (u32OpMode << HMAC_CTL_OPMODE_OFFSET) |
 		(u32SwapType << HMAC_CTL_OUTSWAP_OFFFSET));
 
 	if (hmac_key_len != 0UL)
 	{
-		outp32(HMAC_KEYCNT, hmac_key_len);
-		outp32(HMAC_CTL, inp32(HMAC_CTL)|HMAC_CTL_HMACEN);
+		mmio_write_32(HMAC_KEYCNT, hmac_key_len);
+		mmio_write_32(HMAC_CTL, mmio_read_32(HMAC_CTL) | HMAC_CTL_HMACEN);
 	}
 }
 
@@ -336,8 +344,9 @@ void SHA_Open(unsigned int u32OpMode, unsigned int u32SwapType, unsigned int hma
   */
 void SHA_Start(unsigned int u32DMAMode)
 {
-	outp32(HMAC_CTL, inp32(HMAC_CTL)&~(0x7UL << HMAC_CTL_DMALAST_OFFSET));
-	outp32(HMAC_CTL, inp32(HMAC_CTL)|HMAC_CTL_START | (u32DMAMode << HMAC_CTL_DMALAST_OFFSET));
+	mmio_write_32(HMAC_CTL, mmio_read_32(HMAC_CTL)&~(0x7UL << HMAC_CTL_DMALAST_OFFSET));
+	mmio_write_32(HMAC_CTL, mmio_read_32(HMAC_CTL) | HMAC_CTL_START |
+		      (u32DMAMode << HMAC_CTL_DMALAST_OFFSET));
 }
 
 /**
@@ -349,8 +358,8 @@ void SHA_Start(unsigned int u32DMAMode)
   */
 void SHA_SetDMATransfer(unsigned int u32SrcAddr, unsigned int u32TransCnt)
 {
-	outp32(HMAC_SADDR, u32SrcAddr);
-	outp32(HMAC_DMACNT, u32TransCnt);
+	mmio_write_32(HMAC_SADDR, u32SrcAddr);
+	mmio_write_32(HMAC_DMACNT, u32TransCnt);
 }
 
 /**
@@ -362,17 +371,17 @@ void SHA_SetDMATransfer(unsigned int u32SrcAddr, unsigned int u32TransCnt)
 void SHA_Read(unsigned int u32Digest[])
 {
 	unsigned int  i, wcnt;
-	void *reg_addr;
+	uintptr_t reg_addr;
 
-	i = (inp32(HMAC_CTL) & HMAC_CTL_OPMODE_MASK ) >> HMAC_CTL_OPMODE_OFFSET;
+	i = (mmio_read_32(HMAC_CTL) & HMAC_CTL_OPMODE_MASK) >> HMAC_CTL_OPMODE_OFFSET;
 	//i = (CRPT->HMAC_CTL & CRPT_HMAC_CTL_OPMODE_Msk) >> CRPT_HMAC_CTL_OPMODE_Pos;
 	wcnt = 8UL;
 
-	reg_addr = (void *)((unsigned long)&inp32(HMAC_DGST(0)));
+	reg_addr = HMAC_DGST(0);
 	/* reg_addr = (void *)((unsigned long)&(CRPT->HMAC_DGST[0]));*/
 	for (i = 0UL; i < wcnt; i++)
 	{
-		u32Digest[i] = inp32(reg_addr);
+		u32Digest[i] = mmio_read_32(reg_addr);
 		reg_addr += 4UL;
 	}
 }
@@ -432,30 +441,30 @@ int ECC_VerifySignature_KS(char *message, int x_ksnum, int y_ksnum, char *R, cha
 		/*  3-(1) Write the curve order to N registers */
 		for (i = 0; i < 18; i++)
 		{
-			outp32(ECC_N(i), 0UL);
+			mmio_write_32(ECC_N(i), 0UL);
 		}
-		Hex2Reg(pCurve->Eorder, (unsigned int *)ECC_N(0));
+		Hex2Reg(pCurve->Eorder, ECC_N(0));
 
 		/*  3-(2) Write 0x1 to Y1 registers */
 		for (i = 0; i < 18; i++)
 		{
-			outp32(ECC_Y1(i), 0UL);
+			mmio_write_32(ECC_Y1(i), 0UL);
 		}
-		outp32(ECC_Y1(0), 0x1UL);
+		mmio_write_32(ECC_Y1(0), 0x1UL);
 
 		/*  3-(3) Write s to X1 registers */
 		for (i = 0; i < 18; i++)
 		{
-			outp32(ECC_X1(i), 0UL);
+			mmio_write_32(ECC_X1(i), 0UL);
 		}
-		Hex2Reg(S, (unsigned int *)ECC_X1(0));
+		Hex2Reg(S, ECC_X1(0));
 
 		run_ecc_codec(ECCOP_MODULE | MODOP_DIV);
 
 		/*  3-(9) Read X1 registers to get w */
 		for (i = 0; i < 18; i++)
 		{
-			temp_result2[i] = inp32(ECC_X1(i));
+			temp_result2[i] = mmio_read_32(ECC_X1(i));
 		}
 
 		/*
@@ -479,20 +488,20 @@ int ECC_VerifySignature_KS(char *message, int x_ksnum, int y_ksnum, char *R, cha
 		/*  4-(1) Write the curve order and curve length to N ,M registers */
 		for (i = 0; i < 18; i++)
 		{
-			outp32(ECC_N(i), 0UL);
+			mmio_write_32(ECC_N(i), 0UL);
 		}
-		Hex2Reg(pCurve->Eorder, (unsigned int *)ECC_N(0));
+		Hex2Reg(pCurve->Eorder, ECC_N(0));
 
 		/* 4-(2) Write e, w to X1, Y1 registers */
 		for (i = 0; i < 18; i++)
 		{
-			outp32(ECC_X1(i), 0UL);
+			mmio_write_32(ECC_X1(i), 0UL);
 		}
-		Hex2Reg(message, (unsigned int *)ECC_X1(0));
+		Hex2Reg(message, ECC_X1(0));
 
 		for (i = 0; i < 18; i++)
 		{
-			outp32(ECC_Y1(i), temp_result2[i]);
+			mmio_write_32(ECC_Y1(i), temp_result2[i]);
 		}
 
 		run_ecc_codec(ECCOP_MODULE | MODOP_MUL);
@@ -500,26 +509,26 @@ int ECC_VerifySignature_KS(char *message, int x_ksnum, int y_ksnum, char *R, cha
 		/*  4-(7) Read X1 registers to get u1 */
 		for (i = 0; i < 18; i++)
 		{
-			temp_result1[i] = inp32(ECC_X1(i));
+			temp_result1[i] = mmio_read_32(ECC_X1(i));
 		}
 
 		/*  4-(8) Write the curve order and curve length to N ,M registers */
 		for (i = 0; i < 18; i++)
 		{
-			outp32(ECC_N(i), 0UL);
+			mmio_write_32(ECC_N(i), 0UL);
 		}
-		Hex2Reg(pCurve->Eorder, (unsigned int *)ECC_N(0));
+		Hex2Reg(pCurve->Eorder, ECC_N(0));
 
 		/* 4-(9) Write r, w to X1, Y1 registers */
 		for (i = 0; i < 18; i++)
 		{
-			outp32(ECC_X1(i), 0UL);
+			mmio_write_32(ECC_X1(i), 0UL);
 		}
-		Hex2Reg(R, (unsigned int *)ECC_X1(0));
+		Hex2Reg(R, ECC_X1(0));
 
 		for (i = 0; i < 18; i++)
 		{
-			outp32(ECC_Y1(i), temp_result2[i]);
+			mmio_write_32(ECC_Y1(i), temp_result2[i]);
 		}
 
 		run_ecc_codec(ECCOP_MODULE | MODOP_MUL);
@@ -527,7 +536,7 @@ int ECC_VerifySignature_KS(char *message, int x_ksnum, int y_ksnum, char *R, cha
 		/*  4-(14) Read X1 registers to get u2 */
 		for (i = 0; i < 18; i++)
 		{
-			temp_result2[i] = inp32(ECC_X1(i));
+			temp_result2[i] = mmio_read_32(ECC_X1(i));
 		}
 
 		/*
@@ -572,7 +581,7 @@ int ECC_VerifySignature_KS(char *message, int x_ksnum, int y_ksnum, char *R, cha
 		/* (3) Write u1 to K registers */
 		for (i = 0; i < 18; i++)
 		{
-			outp32(ECC_K(i), temp_result1[i]);
+			mmio_write_32(ECC_K(i), temp_result1[i]);
 		}
 
 		run_ecc_codec(ECCOP_POINT_MUL);
@@ -580,8 +589,8 @@ int ECC_VerifySignature_KS(char *message, int x_ksnum, int y_ksnum, char *R, cha
 		/* (7) Read X1, Y1 registers to get u1*G */
 		for (i = 0; i < 18; i++)
 		{
-			temp_x[i] = inp32(ECC_X1(i));
-			temp_y[i] = inp32(ECC_Y1(i));
+			temp_x[i] = mmio_read_32(ECC_X1(i));
+			temp_y[i] = mmio_read_32(ECC_Y1(i));
 		}
 
 		/* (8) Write the curve parameter A, B, N, and curve length M to corresponding registers */
@@ -590,8 +599,8 @@ int ECC_VerifySignature_KS(char *message, int x_ksnum, int y_ksnum, char *R, cha
 		/* (9) Write the public key Q(x,y) to X1, Y1 registers */
 		for (i = 0; i < 18; i++)
 		{
-			outp32(ECC_X1(i), 0UL);
-			outp32(ECC_Y1(i), 0UL);
+			mmio_write_32(ECC_X1(i), 0UL);
+			mmio_write_32(ECC_Y1(i), 0UL);
 		}
 
 		//Hex2Reg(public_k1, CRPT->ECC_X1);
@@ -626,21 +635,21 @@ int ECC_VerifySignature_KS(char *message, int x_ksnum, int y_ksnum, char *R, cha
 			printf("--> 2\n");
 			return -3;
 		}
-		outp32(ECC_KSXY, ksxy);
+		mmio_write_32(ECC_KSXY, ksxy);
 
 		/* (10) Write u2 to K registers */
 		for (i = 0; i < 18; i++)
 		{
-			outp32(ECC_K(i), temp_result2[i]);
+			mmio_write_32(ECC_K(i), temp_result2[i]);
 		}
 
 		run_ecc_codec(ECCOP_POINT_MUL);
-		outp32(ECC_KSXY, 0);
+		mmio_write_32(ECC_KSXY, 0);
 
 		for (i = 0; i < 18; i++)
 		{
-			temp_result1[i] = inp32(ECC_X1(i));
-			temp_result2[i] = inp32(ECC_Y1(i));
+			temp_result1[i] = mmio_read_32(ECC_X1(i));
+			temp_result2[i] = mmio_read_32(ECC_Y1(i));
 		}
 
 		/* (14) Write the curve parameter A, B, N, and curve length M to corresponding registers */
@@ -649,15 +658,15 @@ int ECC_VerifySignature_KS(char *message, int x_ksnum, int y_ksnum, char *R, cha
 		/* Write the result data u2*Q to X1, Y1 registers */
 		for (i = 0; i < 18; i++)
 		{
-			outp32(ECC_X1(i),temp_result1[i]);
-			outp32(ECC_Y1(i),temp_result2[i]);
+			mmio_write_32(ECC_X1(i), temp_result1[i]);
+			mmio_write_32(ECC_Y1(i), temp_result2[i]);
 		}
 
 		/* (15) Write the result data u1*G to X2, Y2 registers */
 		for (i = 0; i < 18; i++)
 		{
-			outp32(ECC_X2(i),temp_x[i]);
-			outp32(ECC_Y2(i),temp_y[i]);
+			mmio_write_32(ECC_X2(i), temp_x[i]);
+			mmio_write_32(ECC_Y2(i), temp_y[i]);
 		}
 
 		run_ecc_codec(ECCOP_POINT_ADD);
@@ -665,16 +674,16 @@ int ECC_VerifySignature_KS(char *message, int x_ksnum, int y_ksnum, char *R, cha
 		/* (19) Read X1, Y1 registers to get X\A1\A6(x1\A1\A6, y1\A1\A6) */
 		for (i = 0; i < 18; i++)
 		{
-			temp_x[i] = inp32(ECC_X1(i));
-			temp_y[i] = inp32(ECC_Y1(i));
+			temp_x[i] = mmio_read_32(ECC_X1(i));
+			temp_y[i] = mmio_read_32(ECC_Y1(i));
 		}
 
 		/*  (20) Write the curve order and curve length to N ,M registers */
 		for (i = 0; i < 18; i++)
 		{
-			outp32(ECC_N(i),0UL);
+			mmio_write_32(ECC_N(i), 0UL);
 		}
-		Hex2Reg(pCurve->Eorder, (unsigned int *)ECC_N(0));
+		Hex2Reg(pCurve->Eorder, ECC_N(0));
 
 		/*
 		 *  (21) Write x1\A1\A6 to X1 registers
@@ -682,8 +691,8 @@ int ECC_VerifySignature_KS(char *message, int x_ksnum, int y_ksnum, char *R, cha
 		 */
 		for (i = 0; i < 18; i++)
 		{
-			outp32(ECC_X1(i),temp_x[i]);
-			outp32(ECC_Y1(i),0UL);
+			mmio_write_32(ECC_X1(i), temp_x[i]);
+			mmio_write_32(ECC_Y1(i), 0UL);
 		}
 
 		run_ecc_codec(ECCOP_MODULE | MODOP_ADD);

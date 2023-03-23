@@ -41,11 +41,11 @@ int ma35d1_fip_verify(uintptr_t base, size_t size) {
 
 	image_info = (IMAGE_INFO_T *)image;
 	memcpy(image,(unsigned char *)base+size-sizeof(IMAGE_INFO_T),sizeof(IMAGE_INFO_T));
-	u32SysCfg = inp32((void *)SYS_CHIPCFG);
+	u32SysCfg = mmio_read_32(SYS_CHIPCFG);
 	if ((u32SysCfg & 0x100) == 0x000)       /* 0: TSI; 1: crypto */
 	{
 		/* Enable whc0 clock */
-		outp32((void *)CLK_SYSCLK1, (inp32((void *)CLK_SYSCLK1) | 0x10));
+		mmio_write_32(CLK_SYSCLK1, (mmio_read_32(CLK_SYSCLK1) | 0x10));
 		/* connect with TSI */
 		while (1)
 		{
@@ -97,15 +97,15 @@ int ma35d1_fip_verify(uintptr_t base, size_t size) {
 	} else { /* crypto */
 
 		/* initial crypto engine and ks clock */
-                outp32((void *)(TSI_CLK_BASE+0x04),
-                            (inp32((void *)(TSI_CLK_BASE+0x04)) | 0x5000));
+		mmio_write_32((TSI_CLK_BASE+0x04),
+			    (mmio_read_32((TSI_CLK_BASE+0x04)) | 0x5000));
 
                 /* Init KeyStore */
                 /* KS INIT(KS_CTL[8]) + START(KS_CTL[0]) */
-                outp32((void *)(KS_BASE+0x00), 0x101);
-                while ((inp32((void *)(KS_BASE+0x08)) & 0x80) == 0)
+		mmio_write_32((KS_BASE+0x00), 0x101);
+		while ((mmio_read_32((KS_BASE+0x08)) & 0x80) == 0)
                         ;   /* wait for INITDONE(KS_STS[7]) set */
-                while (inp32((void *)(KS_BASE+0x08)) & 0x4)
+		while (mmio_read_32((KS_BASE+0x08)) & 0x4)
                         ;      /* wait for BUSY(KS_STS[2]) cleared */
 
 		/* enable SHA, AES, and ECC */
@@ -146,7 +146,7 @@ int ma35d1_fip_deaes(uintptr_t base, size_t size) {
 
 	if (size <= 0)
 		return 0;
-	u32SysCfg = inp32((void *)SYS_CHIPCFG);
+	u32SysCfg = mmio_read_32(SYS_CHIPCFG);
 	if ((u32SysCfg & 0x100) == 0x000)       /* 0: TSI; 1: crypto */
 	{
 
@@ -168,31 +168,31 @@ int ma35d1_fip_deaes(uintptr_t base, size_t size) {
 	} else { /* crypto */
 
 		/* AES, channel 0, AES decode, CFB mode, key 256, in/out swap */
-		outp32((void *)AES_IV(0), 0);
-		outp32((void *)AES_IV(1), 0);
-		outp32((void *)AES_IV(2), 0);
-		outp32((void *)AES_IV(3), 0);
+		mmio_write_32(AES_IV(0), 0);
+		mmio_write_32(AES_IV(1), 0);
+		mmio_write_32(AES_IV(2), 0);
+		mmio_write_32(AES_IV(3), 0);
 
 		/* AES decrypt */
-		outp32((void *)AES_SADDR, base);
-		outp32((void *)AES_DADDR, base);
-		outp32((void *)AES_CNT, base);
+		mmio_write_32(AES_SADDR, base);
+		mmio_write_32(AES_DADDR, base);
+		mmio_write_32(AES_CNT, base);
 
 		/* 0x2<<KSCTL_RSSRC_Pos | KSCTL_RSRC_Msk | 8 */
-		outp32((void *)AES_KSCTL,  (0x2<<6) | (0x1<<5) | 8); /* from KS_OTP */
+		mmio_write_32(AES_KSCTL,  (0x2<<6) | (0x1<<5) | 8); /* from KS_OTP */
 
 		/* ((AES_MODE_CFB << CRPT_AES_CTL_OPMODE_Pos) |
 		   (AES_KEY_SIZE_256 << CRPT_AES_CTL_KEYSZ_Pos)) |
 		   CRPT_AES_CTL_INSWAP_Msk | CRPT_AES_CTL_OUTSWAP_Msk |
 		   CRPT_AES_CTL_DMAEN_Msk | CRPT_AES_CTL_DMALAST_Msk | CRPT_AES_CTL_START_Msk  */
-		outp32((void *)AES_CTL, ((2<<8) | (2<<2)) | (1<<23) | (1<<22) |
+		mmio_write_32(AES_CTL, ((2<<8) | (2<<2)) | (1<<23) | (1<<22) |
 				(1<<7) | (1<<5) | (1<<0));
 		while (1)
 		{
 			/* CRPT_INTSTS_AESIF_Msk|CRPT_INTSTS_AESEIF_Msk */
-			if(inp32(INTSTS) & ((1<<0)|(1<<1)) )
+			if (mmio_read_32(INTSTS) & ((1<<0) | (1<<1)))
 			{
-				outp32(INTSTS,((1<<0)|(1<<1)));
+				mmio_write_32(INTSTS, ((1<<0) | (1<<1)));
 			}
 		}
 		inv_dcache_range(base, size);
@@ -244,12 +244,12 @@ int plat_ma35d1_bl2_handle_scp_bl2(image_info_t *scp_bl2_image_info)
 	}
 
 	/* unlock */
-	outp32((void *)SYS_RLKTZS, 0x59);
-	outp32((void *)SYS_RLKTZS, 0x16);
-	outp32((void *)SYS_RLKTZS, 0x88);
+	mmio_write_32(SYS_RLKTZS, 0x59);
+	mmio_write_32(SYS_RLKTZS, 0x16);
+	mmio_write_32(SYS_RLKTZS, 0x88);
 
 	/* Stop MCU - Enable M4 Core reset */
-	outp32((void *)SYS_IPRST0, inp32((void *)SYS_IPRST0) | 0x8);
+	mmio_write_32(SYS_IPRST0, mmio_read_32(SYS_IPRST0) | 0x8);
 
 	/* Load MCU binary into SRAM and DDR, depend on image size */
 	if (scp_bl2_image_info->image_size <= 0x20000) {	/* 128KB */
@@ -267,10 +267,10 @@ int plat_ma35d1_bl2_handle_scp_bl2(image_info_t *scp_bl2_image_info)
 	flush_dcache_range(0x24000000, scp_bl2_image_info->image_size);
 
 	/* Enable RTP clock */
-	outp32((void *)CLK_SYSCLK0, inp32((void *)CLK_SYSCLK0) | 0x2);
+	mmio_write_32(CLK_SYSCLK0, mmio_read_32(CLK_SYSCLK0) | 0x2);
 
 	/* lock */
-	outp32((void *)SYS_RLKTZS, 0);
+	mmio_write_32(SYS_RLKTZS, 0);
 
 	INFO("Load RTP M4\n");
 

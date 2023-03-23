@@ -102,13 +102,13 @@ static void ma35d1_clock_setup(void)
 	fdt_read_uint32_array(fdt, node, "assigned-clock-rates", 6, pllfreq);
 
 	/* E-PLL: 500MHz */
-	if ((inp32((void *)CLK_PLL4CTL1) & 0x1) == 0x1) {
-		outp32((void *)CLK_PLL4CTL0, 0x000060FA);
-		outp32((void *)CLK_PLL4CTL1, 0x00000020);
-		outp32((void *)CLK_PLL4CTL2, 0x0);
+	if ((mmio_read_32(CLK_PLL4CTL1) & 0x1) == 0x1) {
+		mmio_write_32(CLK_PLL4CTL0, 0x000060FA);
+		mmio_write_32(CLK_PLL4CTL1, 0x00000020);
+		mmio_write_32(CLK_PLL4CTL2, 0x0);
 		/* check PLL stable */
 		while (1) {
-			if ((inp32((void *)CLK_STATUS) & 0x200) == 0x200)
+			if ((mmio_read_32(CLK_STATUS) & 0x200) == 0x200)
 				break;
 		}
 	}
@@ -144,53 +144,53 @@ static void ma35d1_clock_setup(void)
 			return;
 	};
 	/* Program DDR-PLL for 266 MHz. */
-	outp32((void *)CLK_BA + 0x80, 0x0F04102C);
-	outp32((void *)CLK_BA + 0x84, 0x6B851E40);
-	outp32((void *)CLK_BA + 0x88, 0x000048A3);
-	while ((inp32((void *)CLK_BA + 0x50) & 0x00000100) != 0x00000100)
+	mmio_write_32(CLK_BA + 0x80, 0x0F04102C);
+	mmio_write_32(CLK_BA + 0x84, 0x6B851E40);
+	mmio_write_32(CLK_BA + 0x88, 0x000048A3);
+	while ((mmio_read_32(CLK_BA + 0x50) & 0x00000100) != 0x00000100)
 		;
 
 	/* set CA35 to E-PLL */
-	outp32((void *)CLK_CLKSEL0, (inp32((void *)CLK_CLKSEL0) & ~0x3) | 0x2);
+	mmio_write_32(CLK_CLKSEL0, (mmio_read_32(CLK_CLKSEL0) & ~0x3) | 0x2);
 
-	outp32((void *)CLK_PLL0CTL0, CAPLL_MODE0[index]);
+	mmio_write_32(CLK_PLL0CTL0, CAPLL_MODE0[index]);
 
 	/* check PLL stable */
 	while (1) {
-		if ((inp32((void *)CLK_STATUS) & 0x40) == 0x40)
+		if ((mmio_read_32(CLK_STATUS) & 0x40) == 0x40)
 			break;
 	}
 	/* set CA35 to CA-PLL */
-	outp32((void *)CLK_CLKSEL0, (inp32((void *)CLK_CLKSEL0) & ~0x3) | 0x1);
+	mmio_write_32(CLK_CLKSEL0, (mmio_read_32(CLK_CLKSEL0) & ~0x3) | 0x1);
 
 	/* check LXT */
 	if (fdt_read_uint32_default(fdt, node, "lxt-enable", 0) == 1) {
-		outp32((void *)CLK_PWRCTL, inp32((void *)CLK_PWRCTL) | 0x2);
+		mmio_write_32(CLK_PWRCTL, mmio_read_32(CLK_PWRCTL) | 0x2);
 	}
 
 	/* Enable RTC clock */
-	outp32((void *)CLK_APBCLK0, inp32((void *)CLK_APBCLK0) | (0x1 << 29));
+	mmio_write_32(CLK_APBCLK0, mmio_read_32(CLK_APBCLK0) | (0x1 << 29));
 	if (fdt_read_uint32_default(fdt, node, "rtc-pwrctl-enable", 1) == 1)
-		outp32((void *)(0x40410180),
-			inp32((void *)(0x40410180)) |
+		mmio_write_32((0x40410180),
+			mmio_read_32((0x40410180)) |
 			0x5aa50040);  /* power control enable */
 	else	/* power control disable */
-		outp32((void *)(0x40410180),
-			(inp32((void *)(0x40410180)) & ~0xffff0040) |
+		mmio_write_32((0x40410180),
+			(mmio_read_32((0x40410180)) & ~0xffff0040) |
 			0x5aa50000);
 
 	/* Set PH8/PH9 */
 	if (fdt_read_uint32_default(fdt, node, "set-ph8-ph9-hight", 1) == 1) {
-		outp32((void *)(0x40410100),
-			(inp32((void *)(0x40410100)) & ~0x00000100) |
+		mmio_write_32((0x40410100),
+			(mmio_read_32((0x40410100)) & ~0x00000100) |
 			0x00000100);  /* Enable IOCTLSEL */
 
-		outp32((void *)(0x40410104),
-			(inp32((void *)(0x40410104)) & ~0x00000707) |
+		mmio_write_32((0x40410104),
+			(mmio_read_32((0x40410104)) & ~0x00000707) |
 			0x00000505); /* Set PH8/PH9 output high */
 	} else {
-		outp32((void *)(0x40410100),
-			(inp32((void *)(0x40410100)) & ~0x00000100));  /* Disable IOCTLSEL */
+		mmio_write_32((0x40410100),
+			(mmio_read_32((0x40410100)) & ~0x00000100));  /* Disable IOCTLSEL */
 	}
 
 }
@@ -205,16 +205,16 @@ static void ma35d1_clock_setup(void)
 void __init ma35d1_config_setup(void)
 {
 	/* unlock */
-	outp32((void *)SYS_RLKTZS, 0x59);
-	outp32((void *)SYS_RLKTZS, 0x16);
-	outp32((void *)SYS_RLKTZS, 0x88);
+	mmio_write_32(SYS_RLKTZS, 0x59);
+	mmio_write_32(SYS_RLKTZS, 0x16);
+	mmio_write_32(SYS_RLKTZS, 0x88);
 
 	/* Enable UART0 clock */
-	outp32((void *)CLK_APBCLK0, inp32((void *)CLK_APBCLK0) | (1 << 12));
-	outp32((void *)CLK_CLKSEL2, inp32((void *)CLK_CLKSEL2) & ~(3 << 16));
-	outp32((void *)CLK_CLKDIV1, inp32((void *)CLK_CLKDIV1) & ~(0xf << 16));
+	mmio_write_32(CLK_APBCLK0, mmio_read_32(CLK_APBCLK0) | (1 << 12));
+	mmio_write_32(CLK_CLKSEL2, mmio_read_32(CLK_CLKSEL2) & ~(3 << 16));
+	mmio_write_32(CLK_CLKDIV1, mmio_read_32(CLK_CLKDIV1) & ~(0xf << 16));
 	/* UART0 multi-function */
-	outp32((void *)SYS_GPE_MFPH, (inp32((void *)SYS_GPE_MFPH) &
+	mmio_write_32(SYS_GPE_MFPH, (mmio_read_32(SYS_GPE_MFPH) &
 			~0xff000000) | 0x11000000);
 
 	console_ma35d1_register(PLAT_ARM_CRASH_UART_BASE,
@@ -274,9 +274,9 @@ void plat_ma35d1_init(void)
 	unsigned int reg;
 
 	/* unlock */
-	outp32((void *)SYS_RLKTZS, 0x59);
-	outp32((void *)SYS_RLKTZS, 0x16);
-	outp32((void *)SYS_RLKTZS, 0x88);
+	mmio_write_32(SYS_RLKTZS, 0x59);
+	mmio_write_32(SYS_RLKTZS, 0x16);
+	mmio_write_32(SYS_RLKTZS, 0x88);
 
 	/* get device tree information */
 	if (fdt_check_header(fdt) < 0) {
@@ -284,44 +284,44 @@ void plat_ma35d1_init(void)
 	}
 
 	/* enable CRYPTO */
-	if ((inp32((void *)SYS_CHIPCFG) & 0x100) == 0x100) {
+	if ((mmio_read_32(SYS_CHIPCFG) & 0x100) == 0x100) {
 		/* un-lock */
 		do {
-			outp32((void *)(TSI_SYS_BASE+0x100), 0x59);
-			outp32((void *)(TSI_SYS_BASE+0x100), 0x16);
-			outp32((void *)(TSI_SYS_BASE+0x100), 0x88);
-		} while (inp32((void *)(TSI_SYS_BASE+0x100)) == 0UL);
+			mmio_write_32((TSI_SYS_BASE+0x100), 0x59);
+			mmio_write_32((TSI_SYS_BASE+0x100), 0x16);
+			mmio_write_32((TSI_SYS_BASE+0x100), 0x88);
+		} while (mmio_read_32((TSI_SYS_BASE+0x100)) == 0UL);
 
 		/* set TSI-PLL to HIRC */
-		if ((inp32((void *)(TSI_CLK_BASE+0x10)) & 0x7) == 0x2) {
-			outp32((void *)(TSI_CLK_BASE+0x10),
-				inp32((void *)(TSI_CLK_BASE+0x10)) & ~0x7);
+		if ((mmio_read_32((TSI_CLK_BASE+0x10)) & 0x7) == 0x2) {
+			mmio_write_32((TSI_CLK_BASE+0x10),
+				mmio_read_32((TSI_CLK_BASE+0x10)) & ~0x7);
 		}
 		/* PLL to 200 MHz */
-		outp32((void *)(TSI_CLK_BASE+0x40), 0x808cc8);
+		mmio_write_32((TSI_CLK_BASE+0x40), 0x808cc8);
 		while (1) {
-			if ((inp32((void *)(TSI_CLK_BASE+0x50))
+			if ((mmio_read_32((TSI_CLK_BASE+0x50))
 				& 0x4) == 0x4) {
-				outp32((void *)(TSI_CLK_BASE+0x10),
-					(inp32((void *)(TSI_CLK_BASE+0x10)) &
+				mmio_write_32((TSI_CLK_BASE+0x10),
+					(mmio_read_32((TSI_CLK_BASE+0x10)) &
 					~0x7) | 0x2);
 				break;
 			}
 		}
 		/* initial crypto engine and ks clock */
-		outp32((void *)(TSI_CLK_BASE+0x04),
-			    (inp32((void *)(TSI_CLK_BASE+0x04)) | 0x5000));
+		mmio_write_32((TSI_CLK_BASE+0x04),
+			    (mmio_read_32((TSI_CLK_BASE+0x04)) | 0x5000));
 		/* initial trng clock */
-		outp32((void *)(TSI_CLK_BASE+0x0c),
-			    (inp32((void *)(TSI_CLK_BASE+0x0c)) |
+		mmio_write_32((TSI_CLK_BASE+0x0c),
+			    (mmio_read_32((TSI_CLK_BASE+0x0c)) |
 			    0x2000000));
 
 		/* Init KeyStore */
 		/* KS INIT(KS_CTL[8]) + START(KS_CTL[0]) */
-		outp32((void *)(KS_BASE+0x00), 0x101);
-		while ((inp32((void *)(KS_BASE+0x08)) & 0x80) == 0)
+		mmio_write_32((KS_BASE+0x00), 0x101);
+		while ((mmio_read_32((KS_BASE+0x08)) & 0x80) == 0)
 			;   /* wait for INITDONE(KS_STS[7]) set */
-		while (inp32((void *)(KS_BASE+0x08)) & 0x4)
+		while (mmio_read_32((KS_BASE+0x08)) & 0x4)
 			;      /* wait for BUSY(KS_STS[2]) cleared */
 	}
 
@@ -330,13 +330,13 @@ void plat_ma35d1_init(void)
 		WARN("The compatible property `nuvoton,ma35d1-sspcc` not found\n");
 	}
 	/* Enable RTP clock */
-	outp32((void *)CLK_SYSCLK0, inp32((void *)CLK_SYSCLK0) | 0x2);
+	mmio_write_32(CLK_SYSCLK0, mmio_read_32(CLK_SYSCLK0) | 0x2);
 	/* enable SSPCC/GPIO clock */
-	outp32((void *)CLK_APBCLK2, inp32((void *)CLK_APBCLK2) | 0x8);
-	outp32((void *)CLK_SYSCLK1, inp32((void *)CLK_SYSCLK1) | 0x3FFF0000);
+	mmio_write_32(CLK_APBCLK2, mmio_read_32(CLK_APBCLK2) | 0x8);
+	mmio_write_32(CLK_SYSCLK1, mmio_read_32(CLK_SYSCLK1) | 0x3FFF0000);
 	/* set GPIO to TZNS */
 	for (i = 0; i < 0x38; i += 4)
-		outp32(SSPCC_BASE+0x60+i, 0x55555555);
+		mmio_write_32(SSPCC_BASE+0x60+i, 0x55555555);
 
 	/* get peripheral attribution from DTB */
 	if (fdt_getprop(fdt, node, "config", &value_len) != 0) {
@@ -344,9 +344,9 @@ void plat_ma35d1_init(void)
 		fdt_read_uint32_array(fdt, node, "config", count, cells);
 
 		for (i = 0; i < count; i += 3) {
-			reg = inp32(SSPCC_BASE+cells[i]) &
+			reg = mmio_read_32(SSPCC_BASE+cells[i]) &
 					    ~(0x3 << cells[i+1]);
-			outp32(SSPCC_BASE+cells[i], reg |
+			mmio_write_32(SSPCC_BASE+cells[i], reg |
 				    cells[i+2] << cells[i+1]);
 		}
 	}
@@ -356,19 +356,19 @@ void plat_ma35d1_init(void)
 		fdt_read_uint32_array(fdt, node, "gpio_s", count, cells);
 
 		for (i = 0; i < count; i += 3) {
-			reg = inp32(SSPCC_BASE+cells[i]) &
+			reg = mmio_read_32(SSPCC_BASE+cells[i]) &
 					    ~(0x3 << cells[i+1]);
-			outp32(SSPCC_BASE+cells[i],  reg | cells[i+2] <<
+			mmio_write_32(SSPCC_BASE+cells[i],  reg | cells[i+2] <<
 				    cells[i+1]);
 		}
 	}
 
 	/* enable WDT1/WDT2 reset */
-	outp32((void *)(SYS_BA+0x14), 0x70000);
+	mmio_write_32((SYS_BA+0x14), 0x70000);
 
 	/* Start M4 after configuring peripheral attribution. */
-	outp32((void *)SYS_IPRST0, inp32((void *)SYS_IPRST0) & ~0x8);
+	mmio_write_32(SYS_IPRST0, mmio_read_32(SYS_IPRST0) & ~0x8);
 
 	/* lock */
-	outp32((void *)SYS_RLKTZS, 0);
+	mmio_write_32(SYS_RLKTZS, 0);
 }

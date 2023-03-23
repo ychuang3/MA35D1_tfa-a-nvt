@@ -272,16 +272,16 @@ void ma35d1_i2c0_init(unsigned int sys_clk)
 	unsigned long clk_rate;
 	unsigned int u32Div, speed;
 
-	outp32((void *)0X40460208, inp32((void *)0X40460208) |
+	mmio_write_32(0X40460208, mmio_read_32(0X40460208) |
 		    (0x3fff << 16)); // enable GPIO clock
-	outp32((void *)0X40460210, inp32((void *)0X40460210) |
+	mmio_write_32(0X40460210, mmio_read_32(0X40460210) |
 		    (0x1 << 0));  // I2C0 CLK
 
-	outp32(0x40460098, ((inp32(0x40460098) & ~0x0f000000) |
+	mmio_write_32(0x40460098, ((mmio_read_32(0x40460098) & ~0x0f000000) |
 		    (0x6<<24))); // PD.6 I2C0_SDA
-	outp32(0x40460098, ((inp32(0x40460098) & ~0xf0000000) |
+	mmio_write_32(0x40460098, ((mmio_read_32(0x40460098) & ~0xf0000000) |
 		    (0x6<<28))); // PD.7 I2C0_CLK
-	outp32(0x400400F0, 0x5 << 12); // pull high
+	mmio_write_32(0x400400F0, 0x5 << 12); // pull high
 
 	/* i2c_clk = 100KHz */
 	clk_rate = sys_clk;
