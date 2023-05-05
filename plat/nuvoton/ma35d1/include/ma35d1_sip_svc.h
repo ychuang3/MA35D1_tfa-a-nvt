@@ -12,6 +12,7 @@
 #define SIP_CPU_CLK			0xC2000009
 #define SIP_SET_EPLL			0xC200000A
 #define SIP_LOW_SPEED			0xC200000B
+#define SIP_CHIP_RESET			0xC200000D
 #define SIP_SVC_VERSION			0xC200000F
 
 /* MA35D1 SiP Service Calls PLL setting */
