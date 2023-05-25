@@ -50,6 +50,9 @@ $(eval $(call add_define,MA35D1_DRAM_S_BASE))
 MA35D1_CPU_CORE ?= 125
 $(eval $(call add_define,MA35D1_CPU_CORE))
 
+MA35D1_SCPBL2_BASE ?= 0x24000000
+$(eval $(call add_define,MA35D1_SCPBL2_BASE))
+
 # dump the state on crash console
 CRASH_REPORTING		:=	1
 $(eval $(call add_define,CRASH_REPORTING))

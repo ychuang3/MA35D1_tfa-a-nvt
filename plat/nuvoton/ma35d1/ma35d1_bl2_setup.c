@@ -235,7 +235,7 @@ void bl2_plat_arch_setup(void)
 	ma35d1_io_setup();
 }
 
-/* Load the M4 image into SRAM0 and, if needed, DDR while holding reset. */
+/* Load SCP_BL2 for the M4 or A35 while holding M4 reset. */
 int plat_ma35d1_bl2_handle_scp_bl2(image_info_t *scp_bl2_image_info)
 {
 	if (scp_bl2_image_info->image_size > 0x80000) {	/* 512KB */
@@ -251,28 +251,35 @@ int plat_ma35d1_bl2_handle_scp_bl2(image_info_t *scp_bl2_image_info)
 	/* Stop MCU - Enable M4 Core reset */
 	mmio_write_32(SYS_IPRST0, mmio_read_32(SYS_IPRST0) | 0x8);
 
-	/* Load MCU binary into SRAM and DDR, depend on image size */
-	if (scp_bl2_image_info->image_size <= 0x20000) {	/* 128KB */
-		memcpy((void *)0x24000000,
+	/* Load the SCP image for the selected core. */
+	INFO("Load SCP_BL2\n");
+	if (SCPBL2_BASE == 0x24000000) {
+		if (scp_bl2_image_info->image_size <= 0x20000) {	/* 128KB */
+			memcpy((void *)0x24000000,
+			       (const void *)scp_bl2_image_info->image_base,
+			       scp_bl2_image_info->image_size);
+		} else {
+			memcpy((void *)0x24000000,
+			       (const void *)scp_bl2_image_info->image_base, 0x20000);
+			memcpy((void *)0x80020000,
+			       (const uint8_t *)scp_bl2_image_info->image_base + 0x20000,
+			       scp_bl2_image_info->image_size - 0x20000);
+		}
+
+		flush_dcache_range(0x24000000, scp_bl2_image_info->image_size);
+	} else {
+		memcpy((void *)SCPBL2_BASE,
 		       (const void *)scp_bl2_image_info->image_base,
 		       scp_bl2_image_info->image_size);
-	} else {
-		memcpy((void *)0x24000000,
-		       (const void *)scp_bl2_image_info->image_base, 0x20000);
-		memcpy((void *)0x80020000,
-		       (const uint8_t *)scp_bl2_image_info->image_base + 0x20000,
-		       scp_bl2_image_info->image_size - 0x20000);
+		flush_dcache_range(SCPBL2_BASE, scp_bl2_image_info->image_size);
+		mmio_write_32(SYS_BA + 0x48, SCPBL2_BASE);
 	}
-
-	flush_dcache_range(0x24000000, scp_bl2_image_info->image_size);
 
 	/* Enable RTP clock */
 	mmio_write_32(CLK_SYSCLK0, mmio_read_32(CLK_SYSCLK0) | 0x2);
 
 	/* lock */
 	mmio_write_32(SYS_RLKTZS, 0);
-
-	INFO("Load RTP M4\n");
 
 	return 0;
 }

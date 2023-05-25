@@ -72,6 +72,7 @@
 
 #define SCP_BL2_BASE			U(0x85000000)	/* Staging address */
 #define SCP_BL2_SIZE			U(0x00080000)	/* 512 KiB */
+#define SCPBL2_BASE			MA35D1_SCPBL2_BASE
 
 #define MA35D1_FIP_SIZE			0x00200000
 #define MA35D1_FIP_BASE			U(0x86000000)	//(MA35D1_DDR_BASE)
