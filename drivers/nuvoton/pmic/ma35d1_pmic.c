@@ -155,7 +155,7 @@ void I2C_MasterTx(unsigned int u32Status)
 
 unsigned int ma35d1_write_i2c_data(unsigned int u32Addr, unsigned int u32Data)
 {
-	unsigned int I2C_TIME_OUT_COUNT = 0x20000;
+	unsigned int I2C_TIME_OUT_COUNT = 0x200000;
 	unsigned int u32Status;
 	unsigned int u32time_out = 0;
 
@@ -174,7 +174,6 @@ unsigned int ma35d1_write_i2c_data(unsigned int u32Addr, unsigned int u32Data)
 
 	while (1) {
 		if (mmio_read_32(REG_I2C0_CTL) & I2C_CTL_SI) {
-			u32time_out = 0;
 			u32Status = mmio_read_32(REG_I2C0_STATUS);
 			I2C_MasterTx(u32Status);
 		}
@@ -210,7 +209,6 @@ unsigned int ma35d1_read_i2c_data(unsigned int u32Addr, unsigned int *u32Data)
 
 	while (1) {
 		if (mmio_read_32(REG_I2C0_CTL) & I2C_CTL_SI) {
-			u32time_out = 0;
 			u32Status = mmio_read_32(REG_I2C0_STATUS);
 			I2C_MasterRx(u32Status);
 		}
@@ -303,9 +301,15 @@ void ma35d1_i2c0_init(unsigned int sys_clk)
 
 
 #if MA35D1_PMIC == PMIC_IP6103
+#define VOL_LDO4 0x03
+#define VOL_LDO5 0x04
+#define VOL_LDO6 0x05
+
 int ma35d1_set_pmic(int type, int vol)
 {
 	unsigned int reg0 = 0xff;
+	unsigned int reg1 = 0x41;
+	unsigned int temp = 0;
 	int ret = 0;
 
 	if (pmicIsInit == 0) {
@@ -405,6 +409,76 @@ int ma35d1_set_pmic(int type, int vol)
 			ret = ma35d1_write_pmic_data(reg0, 0x68);
 			break;
 		default:
+			ERROR("Not support voltage!\n");
+			ret = -1;
+			break;
+		}
+	} else if (type == VOL_LDO5) {
+		reg0 = 0x4C;
+		ma35d1_read_pmic_data(reg1, &temp);
+		switch (vol) {
+		case VOL_1_00:
+			INFO("IP6103 LDO5 1.00V\n");
+			ret = ma35d1_write_pmic_data(reg0, 0x0C);
+			ma35d1_write_pmic_data(reg1, temp|0x20);
+			break;
+		case VOL_1_20:
+			INFO("IP6103 LDO5 1.20V\n");
+			ret = ma35d1_write_pmic_data(reg0, 0x14);
+			ma35d1_write_pmic_data(reg1, temp|0x20);
+			break;
+		case VOL_1_80:
+			INFO("IP6103 LDO5 1.80V\n");
+			ret = ma35d1_write_pmic_data(reg0, 0x2c);
+			ma35d1_write_pmic_data(reg1, temp|0x20);
+			break;
+		case VOL_2_50:
+			INFO("IP6103 LDO5 2.50V\n");
+			ret = ma35d1_write_pmic_data(reg0, 0x48);
+			ma35d1_write_pmic_data(reg1, temp|0x20);
+			break;
+		case VOL_3_30:
+			INFO("IP6103 LDO5 3.30V\n");
+			ret = ma35d1_write_pmic_data(reg0, 0x68);
+			ma35d1_write_pmic_data(reg1, temp|0x20);
+			break;
+		default:
+			ma35d1_write_pmic_data(reg1, temp&~0x20);
+			ERROR("Not support voltage!\n");
+			ret = -1;
+			break;
+		}
+	} else if (type == VOL_LDO6) {
+		reg0 = 0x4E;
+		ma35d1_read_pmic_data(reg1, &temp);
+		switch (vol) {
+		case VOL_1_00:
+			INFO("IP6103 LDO6 1.00V\n");
+			ret = ma35d1_write_pmic_data(reg0, 0x0C);
+			ma35d1_write_pmic_data(reg1, temp|0x40);
+			break;
+		case VOL_1_20:
+			INFO("IP6103 LDO6 1.20V\n");
+			ret = ma35d1_write_pmic_data(reg0, 0x14);
+			ma35d1_write_pmic_data(reg1, temp|0x40);
+			break;
+		case VOL_1_80:
+			INFO("IP6103 LDO6 1.80V\n");
+			ret = ma35d1_write_pmic_data(reg0, 0x2c);
+			ma35d1_write_pmic_data(reg1, temp|0x40);
+			break;
+		case VOL_2_50:
+			INFO("IP6103 LDO6 2.50V\n");
+			ret = ma35d1_write_pmic_data(reg0, 0x48);
+			ma35d1_write_pmic_data(reg1, temp|0x40);
+			break;
+		case VOL_3_30:
+			INFO("IP6103 LDO6 3.30V\n");
+			ret = ma35d1_write_pmic_data(reg0, 0x68);
+			ma35d1_write_pmic_data(reg1, temp|0x40);
+			break;
+		default:
+			ma35d1_write_pmic_data(reg1, temp&~0x40);
 			ERROR("Not support voltage!\n");
 			ret = -1;
 			break;
