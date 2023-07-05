@@ -50,7 +50,7 @@
 		compatible = "nuvoton,ma35d1-qspi";
 
 		/* spi information */
-		spi-image-offset = <0x100000>;
+		spinor-image-offset = <0x40000>;
 		spi-quad-read-cmd = <0x6B>;
 		spi-status-read-cmd = <0x05>;
 		spi-status-write-cmd = <0x01>;
@@ -60,6 +60,7 @@
 		spi-suspend-interval = <0x01>;
 
 		/* spi-nand information */
+		spinand-image-offset = <0x100000>;
 		spinand-page-size = <2048>;
 		spinand-oob-size = <64>;
 		spinand-page-count = <64>;

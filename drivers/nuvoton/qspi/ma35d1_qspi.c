@@ -405,7 +405,7 @@ static void ma35d1_spinand_setup(struct ma35d1_qspi_info *spinand)
 	spinand->pages_per_block = fdt_read_uint32_default(fdt, node, "spinand-page-count", 64);
 	spinand->oob_size = fdt_read_uint32_default(fdt, node, "spinand-oob-size", 0);
 	spinand->size = spinand->page_size * spinand->pages_per_block * fdt_read_uint32_default(fdt, node, "spinand-block-count", 256);
-	spinand->offset = fdt_read_uint32_default(fdt, node, "spi-image-offset", 0);
+	spinand->offset = fdt_read_uint32_default(fdt, node, "spinand-image-offset", 0);
 
 	spinand->QuadReadCmd = fdt_read_uint32_default(fdt, node, "spi-quad-read-cmd", 0);
 	spinand->dummybyte1 = fdt_read_uint32_default(fdt, node, "spi-dummy1", 0);
@@ -650,7 +650,7 @@ static void ma35d1_spinor_setup(struct ma35d1_qspi_info *spinor)
 		WARN("The compatible property `nuvoton,ma35d1-qspi` not found\n");
 	}
 
-	spinor->offset = fdt_read_uint32_default(fdt, node, "spi-image-offset", 0);
+	spinor->offset = fdt_read_uint32_default(fdt, node, "spinor-image-offset", 0);
 	spinor->QuadReadCmd = fdt_read_uint32_default(fdt, node, "spi-quad-read-cmd", 0);
 	spinor->ReadStatusCmd = fdt_read_uint32_default(fdt, node, "spi-status-read-cmd", 0);
 	spinor->WriteStatusCmd = fdt_read_uint32_default(fdt, node, "spi-status-write-cmd", 0);
@@ -708,7 +708,6 @@ static size_t ma35d1_spinor_read(int lba, uintptr_t buf, size_t size)
 	inv_dcache_range(buf, size);
 
 	count = parse_spinor_read(&ma35d1_qspi, lba, buf, size);
-printf("lba 0x%x, buf 0x%lx, size 0x%lx, cnt 0x%lx\n", lba, buf, size, count);
 
 	inv_dcache_range(buf, size);
 
