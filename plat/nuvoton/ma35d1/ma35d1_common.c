@@ -80,6 +80,48 @@ static unsigned int CAPLL_MODE0[3] = {
 
 static void *fdt = (void *)(uintptr_t)MA35D1_DTB_BASE;
 
+static void ma35d1_clkopin_setup(void)
+{
+	int node;
+	unsigned int ClkoFreqDiv, ClkoSrc;
+
+	/* get device tree information */
+	if (fdt_check_header(fdt) < 0) {
+		WARN("device tree header check error.\n");
+	}
+
+	node = fdt_node_offset_by_compatible(fdt, -1, "nuvoton,ma35d1-clk");
+	if (node < 0) {
+		WARN("The compatible property `nuvoton,ma35d1-clk` not found\n");
+	}
+
+	/* CLKO multi-function */
+	if (fdt_read_uint32_default(fdt, node, "set-clko-pin", 1) == 1)
+		mmio_write_32(SYS_GPN_MFPH, (mmio_read_32(SYS_GPN_MFPH) &
+				~0xf0000000) | 0xa0000000); /* Set PN15 */
+	else
+		mmio_write_32(SYS_GPK_MFPL, (mmio_read_32(SYS_GPK_MFPL) &
+			~0xf0000000) | 0x90000000); /* Set PK7 */
+
+	/* set CLKO clock source */
+	ClkoSrc = fdt_read_uint32_default(fdt, node, "clko-src", 1);
+	mmio_write_32(CLK_CLKSEL4,
+		      (mmio_read_32(CLK_CLKSEL4) & ~(0xF << 24)) |
+		      (ClkoSrc << 24));
+
+	/* Set CLKOCTL */
+	if (fdt_read_uint32_default(fdt, node, "clko-div1-en", 1) == 1) {
+		mmio_write_32((CLK_CLKOCTL),
+			(mmio_read_32((CLK_CLKOCTL)) & ~0x00000020) |
+			0x00000020);  /* Enable CLKO Div1 */
+	} else {
+		ClkoFreqDiv = fdt_read_uint32_default(fdt, node, "clko-freqdiv", 1);
+		mmio_write_32((CLK_CLKOCTL),
+			(mmio_read_32((CLK_CLKOCTL)) & ~0x0000000F) |
+			ClkoFreqDiv); /* Enable FREQSEL */
+	}
+}
+
 static void ma35d1_clock_setup(void)
 {
 	unsigned int pllmode[6] = { 0, 0, 0, 0, 0, 0 };
@@ -191,6 +233,18 @@ static void ma35d1_clock_setup(void)
 	} else {
 		mmio_write_32((0x40410100),
 			(mmio_read_32((0x40410100)) & ~0x00000100));  /* Disable IOCTLSEL */
+	}
+
+	/* Set CLKO pin function */
+	if (fdt_read_uint32_default(fdt, node, "clko-en", 1) == 1) {
+		/* set CKO enable */
+		mmio_write_32(CLK_SYSCLK1,
+			      mmio_read_32(CLK_SYSCLK1) | (0x1 << 13));
+		mmio_write_32((CLK_CLKOCTL),
+			(mmio_read_32((CLK_CLKOCTL)) & ~0x00000010) |
+			0x00000010);  /* Enable CLKO pin Enable */
+		INFO("ma35d1 CLKO enable. 0x%08x\n", mmio_read_32(CLK_CLKOCTL));
+		ma35d1_clkopin_setup();
 	}
 
 }

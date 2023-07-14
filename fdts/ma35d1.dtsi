@@ -35,6 +35,15 @@
 		rtc-pwrctl-enable = <1>;
 		/* Set PH8/PH9 output high */
 		set-ph8-ph9-hight = <0>;
+		/* Set CLKO pin function. */
+		clko-en = <1>;
+		clko-div1-en = <1>;
+		clko-freqdiv = <0>;
+		/* 0:HXT, 1:LXT, 2:HIRC, 3:LIRC, 4:CAPLL/4, 5:SYSPLL,
+		 * 6:DDRPLL, 7:EPLL/2, 8:APLL, 9:VPLL
+		 */
+		clko-src = <1>;
+		set-clko-pin = <1>; /* 0:PK7, 1:PN15 */
 	};
 
 	qspi0: qspi@40680000 {
