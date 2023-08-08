@@ -176,6 +176,7 @@ static void ma35d1_clock_setup(void)
 			else
 				WARN("CA-PLL is %d Hz without PSCI setting.\n",
 					clock);
+			index = 1;
 			break;
 	case 700000000:
 			index = 2;
