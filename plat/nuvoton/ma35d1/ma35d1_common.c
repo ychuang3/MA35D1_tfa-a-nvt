@@ -71,11 +71,11 @@ static console_t ma35d1_console = {
 
 void ma35d1_i2c0_init(unsigned int sys_clk);
 
-/* CPU-PLL: 1000MHz 800MHz 700MHz */
+/* CPU-PLL: 1000MHz 800MHz 600MHz */
 static unsigned int CAPLL_MODE0[3] = {
 	0x000006FA,	/* 1000 MHz */
 	0x00000364,	/* 800 MHz */
-	0x000006AF,	/* 700 MHz */
+	0x00000119,	/* 600 MHz */
 };
 
 static void *fdt = (void *)(uintptr_t)MA35D1_DTB_BASE;
@@ -162,7 +162,7 @@ static void ma35d1_clock_setup(void)
 	switch (clock) {
 	case 1000000000: /* 1.302V */
 		/* set the voltage VDD_CPU first */
-		if (ma35d1_set_pmic(VOL_CPU, VOL_1_30))
+		if (ma35d1_set_pmic(VOL_CPU, VOL_1_34))
 			INFO("CA-PLL is %d Hz\n", clock);
 		else
 			WARN("CA-PLL is %d Hz without PSCI setting.\n",
@@ -178,7 +178,7 @@ static void ma35d1_clock_setup(void)
 					clock);
 			index = 1;
 			break;
-	case 700000000:
+	case 600000000:
 			index = 2;
 			INFO("CA-PLL is %d Hz\n", clock);
 			break;
