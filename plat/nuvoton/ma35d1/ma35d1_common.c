@@ -75,7 +75,7 @@ void ma35d1_i2c0_init(unsigned int sys_clk);
 static unsigned int CAPLL_MODE0[3] = {
 	0x000006FA,	/* 1000 MHz */
 	0x00000364,	/* 800 MHz */
-	0x00000119,	/* 600 MHz */
+	0x000006a2,	/* 648 MHz */
 };
 
 static void *fdt = (void *)(uintptr_t)MA35D1_DTB_BASE;
@@ -178,7 +178,7 @@ static void ma35d1_clock_setup(void)
 					clock);
 			index = 1;
 			break;
-	case 600000000:
+	case 650000000:
 			index = 2;
 			INFO("CA-PLL is %d Hz\n", clock);
 			break;
