@@ -71,7 +71,7 @@ static console_t ma35d1_console = {
 
 void ma35d1_i2c0_init(unsigned int sys_clk);
 
-/* CPU-PLL: 1000MHz 800MHz 600MHz */
+/* CPU-PLL: 1000MHz 800MHz 650MHz */
 static unsigned int CAPLL_MODE0[3] = {
 	0x000006FA,	/* 1000 MHz */
 	0x00000364,	/* 800 MHz */
@@ -327,6 +327,7 @@ void plat_ma35d1_init(void)
 	int node;
 	unsigned int cells[100 * 3];
 	unsigned int reg;
+	volatile int loop_delay;
 
 	/* unlock */
 	mmio_write_32(SYS_RLKTZS, 0x59);
@@ -342,40 +343,42 @@ void plat_ma35d1_init(void)
 	if ((mmio_read_32(SYS_CHIPCFG) & 0x100) == 0x100) {
 		/* un-lock */
 		do {
-			mmio_write_32((TSI_SYS_BASE+0x100), 0x59);
-			mmio_write_32((TSI_SYS_BASE+0x100), 0x16);
-			mmio_write_32((TSI_SYS_BASE+0x100), 0x88);
-		} while (mmio_read_32((TSI_SYS_BASE+0x100)) == 0UL);
+			mmio_write_32((TSI_SYS_BASE + 0x100), 0x59);
+			mmio_write_32((TSI_SYS_BASE + 0x100), 0x16);
+			mmio_write_32((TSI_SYS_BASE + 0x100), 0x88);
+		} while (mmio_read_32((TSI_SYS_BASE + 0x100)) == 0UL);
 
-		/* set TSI-PLL to HIRC */
-		if ((mmio_read_32((TSI_CLK_BASE+0x10)) & 0x7) == 0x2) {
-			mmio_write_32((TSI_CLK_BASE+0x10),
-				mmio_read_32((TSI_CLK_BASE+0x10)) & ~0x7);
-		}
-		/* PLL to 200 MHz */
-		mmio_write_32((TSI_CLK_BASE+0x40), 0x808cc8);
-		while (1) {
-			if ((mmio_read_32((TSI_CLK_BASE+0x50))
-				& 0x4) == 0x4) {
-				mmio_write_32((TSI_CLK_BASE+0x10),
-					(mmio_read_32((TSI_CLK_BASE+0x10)) &
-					~0x7) | 0x2);
-				break;
-			}
-		}
+		/* set HCLK from HIRC */
+		mmio_write_32(TSI_CLK_CLKSEL0,
+			      mmio_read_32(TSI_CLK_CLKSEL0) | 0x7);
+
+		for (loop_delay = 0; loop_delay < 1000; loop_delay++)
+			;
+
+		/* PLL to 180 MHz */
+		mmio_write_32(TSI_CLK_PLLCTL, 0x80235a);
+
+		for (loop_delay = 0; loop_delay < 5000; loop_delay++)
+			;
+
+		/* Select HCLK from PLL */
+		mmio_write_32(TSI_CLK_CLKSEL0,
+			      (mmio_read_32(TSI_CLK_CLKSEL0) & ~0x7) | 0x2);
+
 		/* initial crypto engine and ks clock */
-		mmio_write_32((TSI_CLK_BASE+0x04),
-			    (mmio_read_32((TSI_CLK_BASE+0x04)) | 0x5000));
+		mmio_write_32(TSI_CLK_AHBCLK,
+			      mmio_read_32(TSI_CLK_AHBCLK) | 0x5000);
+
 		/* initial trng clock */
-		mmio_write_32((TSI_CLK_BASE+0x0c),
-			    (mmio_read_32((TSI_CLK_BASE+0x0c)) |
-			    0x2000000));
+		mmio_write_32(TSI_CLK_APBCLK1,
+			      mmio_read_32(TSI_CLK_APBCLK1) | 0x2000000);
 
 		/* Init KeyStore */
-		/* KS INIT(KS_CTL[8]) + START(KS_CTL[0]) */
 		mmio_write_32((KS_BASE+0x00), 0x101);
+
 		while ((mmio_read_32((KS_BASE+0x08)) & 0x80) == 0)
 			;   /* wait for INITDONE(KS_STS[7]) set */
+
 		while (mmio_read_32((KS_BASE+0x08)) & 0x4)
 			;      /* wait for BUSY(KS_STS[2]) cleared */
 	}
