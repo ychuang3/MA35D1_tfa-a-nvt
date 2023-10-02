@@ -553,6 +553,9 @@ int ma35d1_set_pmic(int type, int vol)
 		} else if (vol == VOL_1_30) {	// (1.3 - 0.3) / 0.01 = 100 = 0x64
 			INFO("1.3V\n");
 			ret = ma35d1_write_pmic_data(reg, 0x64);
+		} else if (vol == VOL_1_34) { /* (1.34 - 0.3) / 0.01 = 104 */
+			INFO("1.34V\n");
+			ret = ma35d1_write_pmic_data(reg, 0x68);
 		} else {
 			ERROR("Not support voltage!\n");
 			ret = -1;
