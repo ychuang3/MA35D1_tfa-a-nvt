@@ -165,6 +165,7 @@ int ma35d1_fip_deaes(uintptr_t base, size_t size) {
 			return 1;
 		TSI_Close_Session(C_CODE_AES, sid);
 		inv_dcache_range(base, size);
+		TSI_Reset();
 	} else { /* crypto */
 
 		/* AES, channel 0, AES decode, CFB mode, key 256, in/out swap */
