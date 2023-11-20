@@ -1,0 +1,133 @@
+NUVOTON ma35h0
+=================
+
+Trusted Firmware-A supports Nuvoton ARM SoC AARCH64 fields.
+ma35h0: dual-core Cortex-A35
+
+
+Memory mapping
+~~~~~~~~~~~~~~
+
+::
+
+    0x00000000 +-----------------+
+               |                 |
+    0x20000000 +-----------------+
+               |                 |
+    0x24000000 +-----------------+
+               |                 | |
+               |                 | |
+    0x28000000 +-----------------+ |
+               |       BL2       | | Embedded SRAM
+    0x28025000 +-----------------+ |
+               |       BL31      | |
+    0x30000000 +-----------------+ /
+               |                 |
+               |                 |
+    0x40000000 +-----------------+
+               |                 |
+               |                 |   Peripheral
+               |                 |
+    0x50000000 +-----------------+
+               |                 |
+               |                 |   BootRom, GIC
+               |                 |
+    0x60000000 +-----------------+
+               |                 |
+               |                 |
+    0x80000000 +-----------------+ \
+               |                 | |
+               |       BL33      | | Non-secure RAM (DDR)
+               |       ...       | |
+               |                 | |
+    0x8F800000 +-----------------+ /\
+               |                 |  |
+               |       BL32      |  | Secure RAM (DDR)
+    0x8FFFFFFF +-----------------+  /
+
+
+Boot Sequence
+-------------
+
+Bootrom -> BL2 (compiled with RESET_TO_BL2) -> BL31 -> OP-TEE -> BL31 --> BL33(u-boot)
+
+How to build
+------------
+
+Build Procedure
+~~~~~~~~~~~~~~~
+
+-  Prepare AARCH64 toolchain.
+
+-  Build optee (BL32) and u-boot (BL33) firstly, and get binary images: tee-pager_v2.bin and u-boot.bin
+
+-  Build TF-A
+
+   Build bl2 and bl31:
+
+   .. code:: shell
+
+   normal built command:
+
+       CROSS_COMPILE=aarch64-linux-gnu- make PLAT=ma35h0  (bl2, bl31, DTB)
+
+	CROSS_COMPILE=aarch64-linux-gnu- make PLAT=ma35h0 \
+		NEED_BL31=yes bl31 NEED_BL32=yes BL32=fiptool_images/tee-header_v2.bin \
+		BL32_EXTRA1=fiptool_images/tee-pager_v2.bin BL33=fiptool_images/u-boot.bin \
+		all fip
+
+
+
+
+   enable TRUSTED_BOARD_BOOT=1
+
+	CROSS_COMPILE=aarch64-linux-gnu- make PLAT=ma35h0 TRUSTED_BOARD_BOOT=1 \
+		NEED_BL31=yes bl31 NEED_BL32=yes BL32=fiptool_images/tee-header_v2.bin \
+		BL32_EXTRA1=fiptool_images/tee-pager_v2.bin BL33=fiptool_images/u-boot.bin \
+		certificates all fip
+
+   tools:
+	./tools/cert_create/cert_create -n --rot-key "build/ma35h0/release/rot_key.pem" \
+		--tfw-nvctr 0 \
+		--ntfw-nvctr 0 \
+		--trusted-key-cert fiptool_images/trusted-key-cert.key-crt \
+		--soc-fw=build/ma35h0/release/bl31.bin \
+		--soc-fw-cert fiptool_images/trusted-boot-fw.crt \
+		--soc-fw-key-cert fiptool_images/trusted-boot-fw.key-crt \
+		--tos-fw fiptool_images/tee-header_v2.bin \
+		--tos-fw-cert fiptool_images/tee-header_v2.bin.crt \
+		--tos-fw-key-cert fiptool_images/tee-header_v2.bin.key-crt \
+		--tos-fw-extra1 fiptool_images/tee-pager_v2.bin \
+		--nt-fw fiptool_images/u-boot.bin \
+		--nt-fw-cert fiptool_images/u-boot.bin.crt \
+		--nt-fw-key-cert fiptool_images/u-boot.bin.key-crt
+
+       CROSS_COMPILE=aarch64-linux-gnu- make PLAT=ma35h0 fiptool
+
+	./tools/fiptool/fiptool create \
+		--soc-fw build/ma35h0/release/bl31.bin \
+		--tos-fw fiptool_images/tee-header_v2.bin \
+		--tos-fw-extra1 fiptool_images/tee-pager_v2.bin \
+		--nt-fw fiptool_images/u-boot.bin \
+		fip.bin
+
+	./tools/fiptool/fiptool create \
+		--soc-fw build/ma35h0/release/bl31.bin \
+		--tos-fw fiptool_images/tee-header_v2.bin \
+		--tos-fw-extra1 fiptool_images/tee-pager_v2.bin \
+		--nt-fw fiptool_images/u-boot.bin \
+		--soc-fw-key-cert fiptool_images/trusted-boot-fw.key-crt \
+		--tos-fw-cert fiptool_images/tee-header_v2.bin.crt \
+		--tos-fw-key-cert fiptool_images/tee-header_v2.bin.key-crt \
+		--nt-fw-cert fiptool_images/u-boot.bin.crt \
+		--nt-fw-key-cert fiptool_images/u-boot.bin.key-crt \
+		--trusted-key-cert fiptool_images/trusted-key-cert.key-crt \
+		fip.bin
+
+How to deploy
+-------------
+
+Both upstream U-Boot and OPTEE projects contain instructions on where
+to put the built images during their respective build process.
+So after successfully building TF-A just follow their build instructions
+to continue.
