@@ -282,6 +282,21 @@ void __init ma35d1_config_setup(void)
 	/* Set the PLL */
 	ma35d1_clock_setup();
 
+	/* Get the BL2 metadata word. */
+	{
+		unsigned int *ptr, *p;
+
+		p = (unsigned int *)0x2803FFF0;
+		ptr = (unsigned int *)(MA35D1_BL2_BASE + 0xC800);
+		while ((unsigned long)ptr <
+		       (MA35D1_BL2_BASE + MA35D1_BL2_SIZE)) {
+			if (*ptr == 0x4E565420) {
+				*p = *(ptr + 1);
+				break;
+			}
+			ptr += 1;
+		}
+	}
 }
 
 

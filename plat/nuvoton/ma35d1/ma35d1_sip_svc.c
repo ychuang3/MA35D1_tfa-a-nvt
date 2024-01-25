@@ -226,6 +226,9 @@ uintptr_t sip_smc_handler(uint32_t smc_fid,
 		WARN("SIP_CHIP_RESET not work!\n");
 		SMC_RET1(handle, 0);
 
+	case SIP_BL2_OFFSET:
+		SMC_RET1(handle, mmio_read_32(0x2803FFF0));
+
 	case SIP_SVC_VERSION:
 		/* Return the version of current implementation */
 		SMC_RET3(handle, 0, NVT_SIP_SVC_VERSION_MAJOR,
