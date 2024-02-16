@@ -315,10 +315,10 @@ int ma35d1_set_pmic(int type, int vol)
 	if (pmicIsInit == 0) {
 		ma35d1_i2c0_init(pmic_clk);
 		pmicIsInit = 1;
-		ma35d1_write_pmic_data(0x27, 0x40);
-		ma35d1_write_pmic_data(0x2e, 0x40);
-		ma35d1_write_pmic_data(0x35, 0x40);
-		ma35d1_write_pmic_data(0x3c, 0x40);
+		ma35d1_write_pmic_data(0x27, 0xF0);
+		ma35d1_write_pmic_data(0x2e, 0xF0);
+		ma35d1_write_pmic_data(0x35, 0xF0);
+		ma35d1_write_pmic_data(0x3c, 0xF0);
 	}
 
 	if (type == VOL_CPU) {
