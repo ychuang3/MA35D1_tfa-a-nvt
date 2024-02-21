@@ -184,7 +184,7 @@ static void ma35d0_clock_setup(void)
 			0x5aa50000);
 
 	/* Set PH8/PH9 */
-	if (fdt_read_uint32_default(fdt, node, "set-ph8-ph9-hight", 1) == 1) {
+	if (fdt_read_uint32_default(fdt, node, "set-ph8-ph9-high", 1) == 1) {
 		mmio_write_32((0x40410100),
 			(mmio_read_32((0x40410100)) & ~0x00000100) |
 			0x00000100);  /* Enable IOCTLSET */
