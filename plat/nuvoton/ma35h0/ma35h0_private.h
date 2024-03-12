@@ -56,4 +56,10 @@ void ma35h0_ddr_init(void);
 void ma35h0_arch_security_setup(void);
 int32_t ma35h0_change_pll(int pll);
 
+typedef struct tsi_image_info {
+	uint8_t reserved[56];
+	uint8_t signatureR[32];
+	uint8_t signatureS[32];
+} IMAGE_INFO_T;
+
 #endif /* MA35H0_PRIVATE_H */

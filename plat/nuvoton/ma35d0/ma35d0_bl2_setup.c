@@ -21,13 +21,6 @@
 #include <ma35d0_crypto.h>
 
 #if FIP_DE_AES
-/* Image trailer shared with the MA35 secure-boot image format. */
-typedef struct {
-	uint8_t reserved[56];
-	uint8_t signatureR[32];
-	uint8_t signatureS[32];
-} IMAGE_INFO_T;
-
 static __inline unsigned int Swap32(unsigned int val)
 {
 	return (val<<24) | ((val<<8)&0xff0000) | ((val>>8)&0xff00) | (val>>24);
@@ -66,6 +59,14 @@ int ma35d0_fip_verify(uintptr_t base, size_t size) {
 	SHA_SetDMATransfer(base, size-sizeof(IMAGE_INFO_T));
 	SHA_Start(CRYPTO_DMA_ONE_SHOT);
 
+	/* Wait for SHA completion or error before reading the digest. */
+	while (1) {
+		if (mmio_read_32(INTSTS) & ((1 << 24) | (1 << 25))) {
+			mmio_write_32(INTSTS, ((1 << 24) | (1 << 25)));
+			break;
+		}
+	}
+
 	SHA_Read(shaDigest);
 	for (j=7, k=0; j>=0; j--, k++)
 		tmpbuf[j] = Swap32(shaDigest[k]);
@@ -102,7 +103,7 @@ int ma35d0_fip_deaes(uintptr_t base, size_t size) {
 	/* AES decrypt */
 	mmio_write_32(AES_SADDR, base);
 	mmio_write_32(AES_DADDR, base);
-	mmio_write_32(AES_CNT, base);
+	mmio_write_32(AES_CNT, (size - sizeof(IMAGE_INFO_T)));
 
 	/* 0x2<<KSCTL_RSSRC_Pos | KSCTL_RSRC_Msk | 8 */
 	mmio_write_32(AES_KSCTL, (0x2<<6) | (0x1<<5) | 8);	/* from KS_OTP */
@@ -118,6 +119,7 @@ int ma35d0_fip_deaes(uintptr_t base, size_t size) {
 		if(mmio_read_32(INTSTS) & ((1<<0)|(1<<1)) )
 		{
 			mmio_write_32(INTSTS,((1<<0)|(1<<1)));
+			break;
 		}
 	}
 	inv_dcache_range(base, size);
