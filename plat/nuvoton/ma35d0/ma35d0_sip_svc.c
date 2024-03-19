@@ -238,6 +238,18 @@ uintptr_t sip_smc_handler(uint32_t smc_fid,
 		mmio_write_32(SYS_RLKTZS, 0);
 		SMC_RET1(handle, 0);
 
+	case SIP_DDR_SELFREF:
+		if ((uint32_t)x1 == 0) {
+			/* Disable automatic SDRAM self-refresh. */
+			mmio_write_32(UMCTL2_BA + 0x30,
+				      mmio_read_32(UMCTL2_BA + 0x30) & ~0x1);
+		} else {
+			/* Enable automatic SDRAM self-refresh. */
+			mmio_write_32(UMCTL2_BA + 0x30,
+				      mmio_read_32(UMCTL2_BA + 0x30) | 0x1);
+		}
+		SMC_RET1(handle, 0);
+
 	case SIP_CHIP_RESET:
 		ma35d0_UnlockReg();
 		mmio_write_32(SYS_IPRST0, 0x1);

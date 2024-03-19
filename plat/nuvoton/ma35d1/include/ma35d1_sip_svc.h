@@ -12,6 +12,7 @@
 #define SIP_CPU_CLK			0xC2000009
 #define SIP_SET_EPLL			0xC200000A
 #define SIP_LOW_SPEED			0xC200000B
+#define SIP_DDR_SELFREF			0xC200000C
 #define SIP_CHIP_RESET			0xC200000D
 #define SIP_BL2_OFFSET			0xC200000E
 #define SIP_SVC_VERSION			0xC200000F
@@ -24,7 +25,7 @@
 
 /* MA35D1 SiP Service Calls version numbers */
 #define NVT_SIP_SVC_VERSION_MAJOR	0x0
-#define NVT_SIP_SVC_VERSION_MINOR	0x1
+#define NVT_SIP_SVC_VERSION_MINOR	0x2
 
 /* Number of MA35D1 SiP Calls implemented */
 #define NVT_COMMON_SIP_NUM_CALLS	0x3
