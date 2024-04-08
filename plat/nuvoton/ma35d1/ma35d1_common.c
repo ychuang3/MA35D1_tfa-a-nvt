@@ -127,7 +127,7 @@ static void ma35d1_clock_setup(void)
 	unsigned int pllmode[6] = { 0, 0, 0, 0, 0, 0 };
 	unsigned int pllfreq[6] = { 0, 0, 0, 0, 0, 0 };
 	unsigned int speed = 500000000;
-	unsigned int clock, index = 2;
+	unsigned int reg, clock, index = 2;
 	int node;
 
 	/* get device tree information */
@@ -157,8 +157,12 @@ static void ma35d1_clock_setup(void)
 
 	pmic_clk = pllfreq[1]; /* I2C0 clock for PMIC */
 
-	/* CA-PLL */
-	clock = (pllfreq[0] < speed) ? speed : pllfreq[0];
+	reg = (mmio_read_32(SYS_BA) >> 16) & 0xff;
+	if (reg == 0xa1 || reg == 0x81 || reg == 0x82)
+		clock = 650000000;
+	else
+		clock = (pllfreq[0] < speed) ? speed : pllfreq[0];
+
 	switch (clock) {
 	case 1000000000: /* 1.302V */
 		/* set the voltage VDD_CPU first */
@@ -192,6 +196,10 @@ static void ma35d1_clock_setup(void)
 	mmio_write_32(CLK_BA + 0x88, 0x000048A3);
 	while ((mmio_read_32(CLK_BA + 0x50) & 0x00000100) != 0x00000100)
 		;
+
+	reg = (mmio_read_32(SYS_BA) >> 16) & 0xff;
+	if (reg == 0xa1 || reg == 0x81 || reg == 0x82)
+		index = 2;
 
 	/* set CA35 to E-PLL */
 	mmio_write_32(CLK_CLKSEL0, (mmio_read_32(CLK_CLKSEL0) & ~0x3) | 0x2);
@@ -259,6 +267,8 @@ static void ma35d1_clock_setup(void)
  ******************************************************************************/
 void __init ma35d1_config_setup(void)
 {
+	unsigned int reg;
+
 	/* unlock */
 	mmio_write_32(SYS_RLKTZS, 0x59);
 	mmio_write_32(SYS_RLKTZS, 0x16);
@@ -276,6 +286,11 @@ void __init ma35d1_config_setup(void)
 				PLAT_ARM_CRASH_UART_CLK_IN_HZ,
 				ARM_CONSOLE_BAUDRATE,
 				&ma35d1_console);
+
+	reg = (mmio_read_32(SYS_BA) >> 16) & 0xff;
+	if (reg == 0xa1 || reg == 0x81 || reg == 0x82)
+		mmio_write_32(SYS_GPE_MFPH,
+			      mmio_read_32(SYS_GPE_MFPH) & ~0xff000000);
 
 	INFO("ma35d1 config setup\n");
 
