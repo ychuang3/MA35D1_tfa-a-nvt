@@ -21,9 +21,9 @@
 
 #include <drivers/nuvoton/ma35d1_pmic.h>
 
-#define RETRY_COUNT 3
+#define RETRY_COUNT	3
 
-#define PMIC_NO			0
+#define PMIC_NO		0
 #define PMIC_DIALOG		1
 #define PMIC_IP6103		2
 #define PMIC_APW7704F	3
@@ -498,6 +498,7 @@ int ma35d1_set_pmic(int type, int vol)
 int ma35d1_set_pmic(int type, int vol)
 {
 	unsigned int reg = 0xff;
+	char str[32] = { 0 };
 	int ret = 0;
 
 	if (pmicIsInit == 0) {
@@ -505,58 +506,68 @@ int ma35d1_set_pmic(int type, int vol)
 		pmicIsInit = 1;
 	}
 
-	if (type == VOL_CPU) {
-		reg = 0xA4;
-		if (vol == VOL_1_10) {		// (1.1 - 0.3) / 0.01 = 80 = 0x50
-			INFO("1.1V\n");
+	if (type == VOL_CPU || type == VOL_CORE) {
+		if (type == VOL_CPU) {
+			reg = 0xA4;
+			memcpy(str, "CPU Power:", 10);
+		} else {
+			reg = 0xA3;
+			memcpy(str, "CORE Power:", 11);
+		}
+
+		if (vol == VOL_1_10) {		/* (1.1 - 0.3) / 0.01 = 80 = 0x50 */
+			INFO("%s 1.1V\n", str);
 			ret = ma35d1_write_pmic_data(reg, 0x50);
-		} else if (vol == VOL_1_00) {	// (1.00 - 0.3) / 0.01 = 70 = 0x46
-			INFO("1.00V\n");
+		} else if (vol == VOL_1_00) {	/* (1.00 - 0.3) / 0.01 = 70 = 0x46 */
+			INFO("%s 1.00V\n", str);
 			ret = ma35d1_write_pmic_data(reg, 0x46);
-		} else if (vol == VOL_1_15) {	// (1.15 - 0.3) / 0.01 = 85 = 0x55
-			INFO("1.15V\n");
+		} else if (vol == VOL_1_15) {	/* (1.15 - 0.3) / 0.01 = 85 = 0x55 */
+			INFO("%s 1.15V\n", str);
 			ret = ma35d1_write_pmic_data(reg, 0x55);
-		} else if (vol == VOL_1_18) {	// (1.18 - 0.3) / 0.01 = 88 = 0x58
-			INFO("1.18V\n");
+		} else if (vol == VOL_1_18) {	/* (1.18 - 0.3) / 0.01 = 88 = 0x58 */
+			INFO("%s 1.18V\n", str);
 			ret = ma35d1_write_pmic_data(reg, 0x58);
-		} else if (vol == VOL_1_19) {	// (1.19 - 0.3) / 0.01 = 89 = 0x59
-			INFO("1.19V\n");
+		} else if (vol == VOL_1_19) {	/* (1.19 - 0.3) / 0.01 = 89 = 0x59 */
+			INFO("%s 1.19V\n", str);
 			ret = ma35d1_write_pmic_data(reg, 0x59);
-		} else if (vol == VOL_1_20) {	// (1.2 - 0.3) / 0.01 = 90 = 0x5A
-			INFO("1.20V\n");
+		} else if (vol == VOL_1_20) {	/* (1.2 - 0.3) / 0.01 = 90 = 0x5A */
+			INFO("%s 1.20V\n", str);
 			ret = ma35d1_write_pmic_data(reg, 0x5A);
-		} else if (vol == VOL_1_21) {	// (1.21 - 0.3) / 0.01 = 91 = 0x5B
-			INFO("1.21V\n");
+		} else if (vol == VOL_1_21) {	/* (1.21 - 0.3) / 0.01 = 91 = 0x5B */
+			INFO("%s 1.21V\n", str);
 			ret = ma35d1_write_pmic_data(reg, 0x5B);
-		} else if (vol == VOL_1_22) {	// (1.22 - 0.3) / 0.01 = 92 = 0x5C
-			INFO("1.22V\n");
+		} else if (vol == VOL_1_22) {	/* (1.22 - 0.3) / 0.01 = 92 = 0x5C */
+			INFO("%s 1.22V\n", str);
 			ret = ma35d1_write_pmic_data(reg, 0x5C);
-		} else if (vol == VOL_1_23) {	// (1.23 - 0.3) / 0.01 = 93 = 0x5D
-			INFO("1.23V\n");
+		} else if (vol == VOL_1_23) {	/* (1.23 - 0.3) / 0.01 = 93 = 0x5D */
+			INFO("%s 1.23V\n", str);
 			ret = ma35d1_write_pmic_data(reg, 0x5D);
-		} else if (vol == VOL_1_24) {	// (1.24 - 0.3) / 0.01 = 94 = 0x5E
-			INFO("1.24V\n");
+		} else if (vol == VOL_1_24) {	/* (1.24 - 0.3) / 0.01 = 94 = 0x5E */
+			INFO("%s 1.24V\n", str);
 			ret = ma35d1_write_pmic_data(reg, 0x5E);
-		} else if (vol == VOL_1_25) {	// (1.25 - 0.3) / 0.01 = 95 = 0x5F
-			INFO("1.25V\n");
+		} else if (vol == VOL_1_25) {	/* (1.25 - 0.3) / 0.01 = 95 = 0x5F */
+			INFO("%s 1.25V\n", str);
 			ret = ma35d1_write_pmic_data(reg, 0x5F);
-		} else if (vol == VOL_1_26) {	// (1.26 - 0.3) / 0.01 = 96 = 0x60
-			INFO("1.26V\n");
+		} else if (vol == VOL_1_26) {	/* (1.26 - 0.3) / 0.01 = 96 = 0x60 */
+			INFO("%s 1.26V\n", str);
 			ret = ma35d1_write_pmic_data(reg, 0x60);
-		} else if (vol == VOL_1_27) {	// (1.27 - 0.3) / 0.01 = 97 = 0x61
-			INFO("1.27V\n");
+		} else if (vol == VOL_1_27) {	/* (1.27 - 0.3) / 0.01 = 97 = 0x61 */
+			INFO("%s 1.27V\n", str);
 			ret = ma35d1_write_pmic_data(reg, 0x61);
-		} else if (vol == VOL_1_28) {	// (1.28 - 0.3) / 0.01 = 98 = 0x62
-			INFO("1.28V\n");
+		} else if (vol == VOL_1_28) {	/* (1.28 - 0.3) / 0.01 = 98 = 0x62 */
+			INFO("%s 1.28V\n", str);
 			ret = ma35d1_write_pmic_data(reg, 0x62);
-		} else if (vol == VOL_1_29) {	// (1.29 - 0.3) / 0.01 = 99 = 0x63
-			INFO("1.29V\n");
+		} else if (vol == VOL_1_29) {	/* (1.29 - 0.3) / 0.01 = 99 = 0x63 */
+			INFO("%s 1.29V\n", str);
 			ret = ma35d1_write_pmic_data(reg, 0x63);
-		} else if (vol == VOL_1_30) {	// (1.3 - 0.3) / 0.01 = 100 = 0x64
-			INFO("1.3V\n");
+		} else if (vol == VOL_1_30) {	/* (1.3 - 0.3) / 0.01 = 100 = 0x64 */
+			INFO("%s 1.30V\n", str);
 			ret = ma35d1_write_pmic_data(reg, 0x64);
-		} else if (vol == VOL_1_34) { /* (1.34 - 0.3) / 0.01 = 104 */
-			INFO("1.34V\n");
+		} else if (vol == VOL_1_32) {	/* (1.32 - 0.3) / 0.01 = 102 = 0x66 */
+			INFO("%s 1.32V\n", str);
+			ret = ma35d1_write_pmic_data(reg, 0x66);
+		} else if (vol == VOL_1_34) {   /* (1.34 - 0.3) / 0.01 = 104 = 0x68 */
+			INFO("%s 1.34V\n", str);
 			ret = ma35d1_write_pmic_data(reg, 0x68);
 		} else {
 			ERROR("Not support voltage!\n");
@@ -565,17 +576,17 @@ int ma35d1_set_pmic(int type, int vol)
 	} else if (type == VOL_SD) {
 		reg = 0x32;
 		if (vol == VOL_1_80) {
-			INFO("1.8V\n");
+			INFO("SD 1.8V\n");
 			ret = ma35d1_write_pmic_data(reg, 0x80);
 		} else if (vol == VOL_3_30) {
-			INFO("3.3V\n");
+			INFO("SD 3.3V\n");
 			ret = ma35d1_write_pmic_data(reg, 0x00);
 		} else {
-			ERROR("Not support voltage!\n");
+			ERROR("SD - Not support voltage!\n");
 			ret = -1;
 		}
 	} else {
-		ERROR("Not support type!\n");
+		ERROR("SD - Not support type!\n");
 	}
 
 	if (ret >= 0)

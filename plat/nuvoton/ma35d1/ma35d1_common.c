@@ -172,23 +172,25 @@ static void ma35d1_clock_setup(void)
 			WARN("CA-PLL is %d Hz without PSCI setting.\n",
 				clock);
 		index = 0;
+		ma35d1_set_pmic(VOL_CORE, VOL_1_25);
 		break;
 	case 800000000: /* 1.248V */
-			/* set the voltage VDD_CPU first */
-			if (ma35d1_set_pmic(VOL_CPU, MA35D1_CPU_CORE))
-				INFO("CA-PLL is %d Hz\n", clock);
-			else
-				WARN("CA-PLL is %d Hz without PSCI setting.\n",
-					clock);
-			index = 1;
-			break;
+		/* set the voltage VDD_CPU first */
+		if (ma35d1_set_pmic(VOL_CPU, MA35D1_CPU_CORE))
+			INFO("CA-PLL is %d Hz\n", clock);
+		else
+			WARN("CA-PLL is %d Hz without PSCI setting.\n",
+				clock);
+		index = 1;
+		ma35d1_set_pmic(VOL_CORE, VOL_1_25);
+		break;
 	case 650000000:
-			index = 2;
-			INFO("CA-PLL is %d Hz\n", clock);
-			break;
+		index = 2;
+		INFO("CA-PLL is %d Hz\n", clock);
+		break;
 	default:
-			INFO("CA-PLL is %d Hz\n", clock);
-			return;
+		INFO("CA-PLL is %d Hz\n", clock);
+		return;
 	};
 	/* Program DDR-PLL for 266 MHz. */
 	mmio_write_32(CLK_BA + 0x80, 0x0F04102C);
@@ -224,7 +226,7 @@ static void ma35d1_clock_setup(void)
 	if (fdt_read_uint32_default(fdt, node, "rtc-pwrctl-enable", 1) == 1)
 		mmio_write_32((0x40410180),
 			mmio_read_32((0x40410180)) |
-			0x5aa50040);  /* power control enable */
+			0x5aa53044);  /* power control enable */
 	else	/* power control disable */
 		mmio_write_32((0x40410180),
 			(mmio_read_32((0x40410180)) & ~0xffff0040) |
