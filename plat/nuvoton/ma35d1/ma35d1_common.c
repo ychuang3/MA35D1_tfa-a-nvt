@@ -226,7 +226,7 @@ static void ma35d1_clock_setup(void)
 	if (fdt_read_uint32_default(fdt, node, "rtc-pwrctl-enable", 1) == 1)
 		mmio_write_32((0x40410180),
 			mmio_read_32((0x40410180)) |
-			0x5aa53044);  /* power control enable */
+			0x5aa50040);  /* power control enable */
 	else	/* power control disable */
 		mmio_write_32((0x40410180),
 			(mmio_read_32((0x40410180)) & ~0xffff0040) |
