@@ -192,11 +192,12 @@ static void ma35d1_clock_setup(void)
 		INFO("CA-PLL is %d Hz\n", clock);
 		return;
 	};
-	/* Program DDR-PLL for 266 MHz. */
-	mmio_write_32(CLK_BA + 0x80, 0x0F04102C);
-	mmio_write_32(CLK_BA + 0x84, 0x6B851E40);
-	mmio_write_32(CLK_BA + 0x88, 0x000048A3);
-	while ((mmio_read_32(CLK_BA + 0x50) & 0x00000100) != 0x00000100)
+	/* DDR-PLL */
+	INFO("DDR-PLL is 266000000 Hz.\n");
+	mmio_write_32(CLK_PLL2CTL0, 0x0F04102C); /* 266 MHz */
+	mmio_write_32(CLK_PLL2CTL1, 0x6B851E40);
+	mmio_write_32(CLK_PLL2CTL2, 0x000048A3);
+	while ((mmio_read_32(CLK_STATUS) & 0x00000100) != 0x00000100)
 		;
 
 	reg = (mmio_read_32(SYS_BA) >> 16) & 0xff;
