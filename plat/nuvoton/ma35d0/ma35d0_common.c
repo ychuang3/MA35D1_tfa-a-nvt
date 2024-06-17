@@ -111,10 +111,16 @@ static void ma35d0_clkopin_setup(void)
 	}
 }
 
+static int ma35d0_pll_find_closest(unsigned long rate, unsigned long parent_rate,
+				   uint32_t pll_mode, uint32_t *reg_ctl,
+				   uint32_t *freq);
+
 static void ma35d0_clock_setup(void)
 {
 	unsigned int pllmode[6] = { 0, 0, 0, 0, 0, 0 };
 	unsigned int pllfreq[6] = { 0, 0, 0, 0, 0, 0 };
+	uint32_t reg_ctl[3];
+	uint32_t freq;
 	int node;
 
 	/* get device tree information */
@@ -205,6 +211,31 @@ static void ma35d0_clock_setup(void)
 			0x00000010);  /* Enable CLKO pin Enable */
 		INFO("ma35d0 CLKO enable. 0x%08x\n", mmio_read_32(CLK_CLKOCTL));
 		ma35d0_clkopin_setup();
+	}
+	/*
+	 *  Configure APLL
+	 */
+	if ((pllmode[3] == 0) || (pllmode[3] == 1)) {
+		if (ma35d0_pll_find_closest(pllfreq[3], 24000000,
+					   pllmode[3], reg_ctl, &freq) == 0) {
+			mmio_write_32(CLK_PLL3CTL0, reg_ctl[0]);
+			mmio_write_32(CLK_PLL3CTL1, reg_ctl[1]);
+		} else {
+			INFO("Failed to set APLL %d Hz!!\n", pllfreq[3]);
+		}
+	}
+
+	/*
+	 *  Configure VPLL
+	 */
+	if ((pllmode[5] == 0) || (pllmode[5] == 1)) {
+		if (ma35d0_pll_find_closest(pllfreq[5], 24000000,
+					   pllmode[5], reg_ctl, &freq) == 0) {
+			mmio_write_32(CLK_PLL5CTL0, reg_ctl[0]);
+			mmio_write_32(CLK_PLL5CTL1, reg_ctl[1]);
+		} else {
+			INFO("Failed to set VPLL %d Hz!!\n", pllfreq[5]);
+		}
 	}
 }
 
@@ -355,4 +386,104 @@ void plat_ma35d0_init(void)
 
 	/* lock */
 	mmio_write_32(SYS_RLKTZS, 0);
+}
+
+/* PLL frequency limits */
+#define HZ_PER_MHZ		U(1000000)
+#define PLL_FREF_MAX_FREQ	(200 * HZ_PER_MHZ)
+#define PLL_FREF_MIN_FREQ	(1 * HZ_PER_MHZ)
+#define PLL_FREF_M_MAX_FREQ	(40 * HZ_PER_MHZ)
+#define PLL_FREF_M_MIN_FREQ	(10 * HZ_PER_MHZ)
+#define PLL_FCLK_MAX_FREQ	(2400 * HZ_PER_MHZ)
+#define PLL_FCLK_MIN_FREQ	(600 * HZ_PER_MHZ)
+#define PLL_FCLKO_MAX_FREQ	(2400 * HZ_PER_MHZ)
+#define PLL_FCLKO_MIN_FREQ	(85700000)
+#define PLL_SS_RATE		0x77
+#define PLL_SLOPE		0x58CFA
+
+/* bit fields for REG_CLK_PLLxCTL0 ~ REG_CLK_PLLxCTL2, where x = 2 ~ 5 */
+#define PLL_CTL0_FBDIV_POS	0
+#define PLL_CTL0_INDIV_POS	12
+#define PLL_CTL0_MODE		GENMASK(19, 18)
+#define PLL_CTL0_SSRATE		GENMASK(30, 20)
+#define PLL_CTL1_PD		BIT(0)
+#define PLL_CTL1_BP		BIT(1)
+#define PLL_CTL1_OUTDIV_POS	4
+#define PLL_CTL1_FRAC		GENMASK(31, 24)
+#define PLL_CTL2_SLOPE		GENMASK(23, 0)
+
+#define INDIV_MIN		1
+#define INDIV_MAX		63
+#define FBDIV_MIN		16
+#define FBDIV_MAX		2047
+#define FBDIV_FRAC_MIN		1600
+#define FBDIV_FRAC_MAX		204700
+#define OUTDIV_MIN		1
+#define OUTDIV_MAX		7
+
+#define PLL_MODE_INT		0
+#define PLL_MODE_FRAC		1
+#define PLL_MODE_SS		2
+
+static int ma35d0_pll_find_closest(unsigned long rate, unsigned long parent_rate,
+				   uint32_t pll_mode, uint32_t *reg_ctl,
+				   uint32_t *freq)
+{
+	unsigned long min_diff = U(0xffffffff);
+	int fbdiv_min, fbdiv_max;
+	int p, m, n;
+
+	*freq = 0;
+	if (rate < PLL_FCLKO_MIN_FREQ || rate > PLL_FCLKO_MAX_FREQ)
+		return -1;
+
+	if (pll_mode == PLL_MODE_INT) {
+		fbdiv_min = FBDIV_MIN;
+		fbdiv_max = FBDIV_MAX;
+	} else {
+		fbdiv_min = FBDIV_FRAC_MIN;
+		fbdiv_max = FBDIV_FRAC_MAX;
+	}
+
+	for (m = INDIV_MIN; m <= INDIV_MAX; m++) {
+		for (n = fbdiv_min; n <= fbdiv_max; n++) {
+			for (p = OUTDIV_MIN; p <= OUTDIV_MAX; p++) {
+				unsigned long tmp, fout, fclk, diff;
+
+				tmp = parent_rate / m;
+				if (tmp < PLL_FREF_M_MIN_FREQ ||
+				    tmp > PLL_FREF_M_MAX_FREQ)
+					continue; /* constrain */
+
+				fclk = parent_rate * n / m;
+				/* for 2 decimal places */
+				if (pll_mode != PLL_MODE_INT)
+					fclk = fclk / 100;
+
+				if (fclk < PLL_FCLK_MIN_FREQ ||
+				    fclk > PLL_FCLK_MAX_FREQ)
+					continue; /* constrain */
+
+				fout = fclk / p;
+				if (fout < PLL_FCLKO_MIN_FREQ ||
+				    fout > PLL_FCLKO_MAX_FREQ)
+					continue; /* constrain */
+
+				diff = (rate > fout) ? (rate - fout) : (fout - rate);
+				if (diff < min_diff) {
+					reg_ctl[0] = (m << PLL_CTL0_INDIV_POS) |
+					     (n << PLL_CTL0_FBDIV_POS);
+					reg_ctl[1] = p << PLL_CTL1_OUTDIV_POS;
+					*freq = fout;
+					min_diff = diff;
+					if (min_diff == 0)
+						goto out;
+				}
+			}
+		}
+	}
+out:
+	if (*freq == 0)
+		return -1; /* cannot find even one valid setting */
+	return 0;
 }

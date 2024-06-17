@@ -29,7 +29,8 @@
 		assigned-clock-rates =<650000000>, <180000000>,
 				<266000000>, <200000000>,
 				<500000000>, <150000000>;
-		clock-pll-mode = <0>, <0>, <1>, <0>, <0>, <0>;
+		/* APLL/VPLL: 0 = integer, 1 = fractional, 2 = keep unchanged. */
+		clock-pll-mode = <0>, <0>, <1>, <2>, <0>, <2>;
 		lxt-enable = <1>;
 		/* rtc power control */
 		rtc-pwrctl-enable = <1>;
