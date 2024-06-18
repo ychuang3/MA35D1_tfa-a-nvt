@@ -20,11 +20,10 @@
 
 #pragma weak ma35d1_plat_sip_handler
 
-/* CPU-PLL: 1000MHz 700MHz */
-static unsigned int CAPLL_MODE[7] = {
-	0x000006FA,	/* 1000 MHz */
+static unsigned int CAPLL_MODE[8] = {
 	0x00000364,	/* 800 MHz */
 	0x000006AF,	/* 700 MHz */
+	0x000006A2,	/* 650 MHz */
 	0x00001396,	/* 600 MHz */
 	0x0000137D,	/* 500 MHz */
 	0x0000237D,	/* 250 MHz */
@@ -62,21 +61,21 @@ uintptr_t ma35d1_plat_sip_handler(uint32_t smc_fid,
 static int32_t ma35d1_set_cpu_clock(int cpu_freq)
 {
 	uint64_t timeout;
-	uint32_t reg, index = 2; /* 500 MHz */
+	uint32_t reg, index;
 
 	/* CA-PLL */
 	switch (cpu_freq) {
-	case CPU_PLL_1G:
+	case CPU_PLL_800:
 		index = 0;
-		INFO("CA-PLL is 1000 MHz\n");
-		break;
-	case CPU_PLL_800: /* 1.248V */
-		index = 1;
 		INFO("CA-PLL is 800 MHz\n");
 		break;
 	case CPU_PLL_700:
-		index = 2;
+		index = 1;
 		INFO("CA-PLL is 700 MHz\n");
+		break;
+	case CPU_PLL_650:
+		index = 2;
+		INFO("CA-PLL is 650 MHz\n");
 		break;
 	case CPU_PLL_600:
 		index = 3;
@@ -164,12 +163,12 @@ uintptr_t sip_smc_handler(uint32_t smc_fid,
 		SMC_RET1(handle, volt);
 
 	case SIP_CPU_CLK:
-		if ((uint32_t)x1 == 1000)
-			cpu_clk = CPU_PLL_1G;
-		else if ((uint32_t)x1 == 800)
+		if ((uint32_t)x1 == 800)
 			cpu_clk = CPU_PLL_800;
 		else if ((uint32_t)x1 == 700)
 			cpu_clk = CPU_PLL_700;
+		else if ((uint32_t)x1 == 650)
+			cpu_clk = CPU_PLL_650;
 		else if ((uint32_t)x1 == 600)
 			cpu_clk = CPU_PLL_600;
 		else if ((uint32_t)x1 == 500)
@@ -178,8 +177,10 @@ uintptr_t sip_smc_handler(uint32_t smc_fid,
 			cpu_clk = CPU_PLL_250;
 		else if ((uint32_t)x1 == 125)
 			cpu_clk = CPU_PLL_125;
-		else
-			cpu_clk = CPU_PLL_500;
+		else {
+			WARN("Set CPU clock %ld Fail !!\n", x1);
+			SMC_RET1(handle, 1);
+		}
 
 		reg = (mmio_read_32(SYS_BA) >> 16) & 0xff;
 		if (reg == 0xa1 || reg == 0x81 || reg == 0x82)

@@ -34,6 +34,7 @@
 #define CPU_PLL_1G          (0x00001000)
 #define CPU_PLL_800         (0x00000800)
 #define CPU_PLL_700         (0x00000700)
+#define CPU_PLL_650         (0x00000650)
 #define CPU_PLL_600         (0x00000600)
 #define CPU_PLL_500         (0x00000500)
 #define CPU_PLL_250         (0x00000250)

@@ -5,7 +5,6 @@
  */
 
 #include <assert.h>
-#include <errno.h>
 
 #include <common/debug.h>
 #include <drivers/arm/cci.h>
@@ -15,7 +14,6 @@
 #include <drivers/generic_delay_timer.h>
 #include <lib/mmio.h>
 #include <libfdt.h>
-#include <lib/utils.h>
 #include <lib/xlat_tables/xlat_tables_compat.h>
 #include <plat/arm/common/arm_config.h>
 #include <plat/arm/common/plat_arm.h>
@@ -75,11 +73,12 @@ static int ma35d1_pll_find_closest(unsigned long rate, unsigned long parent_rate
 				   uint32_t pll_mode, uint32_t *reg_ctl,
 				   uint32_t *freq);
 
-/* CPU-PLL: 1000MHz 800MHz 650MHz */
-static unsigned int CAPLL_MODE0[3] = {
-	0x000006FA,	/* 1000 MHz */
+static unsigned int CAPLL_MODE0[5] = {
 	0x00000364,	/* 800 MHz */
-	0x000006a2,	/* 648 MHz */
+	0x000006AF,	/* 700 MHz */
+	0x000006A2,	/* 650 MHz */
+	0x00001396,	/* 600 MHz */
+	0x0000137D,	/* 500 MHz */
 };
 
 static void *fdt = (void *)(uintptr_t)MA35D1_DTB_BASE;
@@ -130,8 +129,7 @@ static void ma35d1_clock_setup(void)
 {
 	unsigned int pllmode[6] = { 0, 0, 0, 0, 0, 0 };
 	unsigned int pllfreq[6] = { 0, 0, 0, 0, 0, 0 };
-	unsigned int speed = 500000000;
-	unsigned int reg, clock, index = 2;
+	unsigned int reg, clock, index;
 	uint32_t reg_ctl[3];
 	uint32_t freq;
 	int node;
@@ -167,36 +165,55 @@ static void ma35d1_clock_setup(void)
 	if (reg == 0xa1 || reg == 0x81 || reg == 0x82)
 		clock = 650000000;
 	else
-		clock = (pllfreq[0] < speed) ? speed : pllfreq[0];
+		clock = pllfreq[0];
 
 	switch (clock) {
-	case 1000000000: /* 1.302V */
-		/* set the voltage VDD_CPU first */
-		if (ma35d1_set_pmic(VOL_CPU, VOL_1_34))
-			INFO("CA-PLL is %d Hz\n", clock);
-		else
-			WARN("CA-PLL is %d Hz without PSCI setting.\n",
-				clock);
-		index = 0;
-		ma35d1_set_pmic(VOL_CORE, VOL_1_25);
-		break;
-	case 800000000: /* 1.248V */
+	case 800000000:
 		/* set the voltage VDD_CPU first */
 		if (ma35d1_set_pmic(VOL_CPU, MA35D1_CPU_CORE))
-			INFO("CA-PLL is %d Hz\n", clock);
+			INFO("CA-PLL is 800 MHz\n");
 		else
-			WARN("CA-PLL is %d Hz without PSCI setting.\n",
-				clock);
+			WARN("CA-PLL is 800 MHz without PSCI setting.\n");
+		index = 0;
+		break;
+
+	case 700000000:
+		/* set the voltage VDD_CPU first */
+		if (ma35d1_set_pmic(VOL_CPU, MA35D1_CPU_CORE))
+			INFO("CA-PLL is 700 MHz\n");
+		else
+			WARN("CA-PLL is 700 MHz without PSCI setting.\n");
 		index = 1;
-		ma35d1_set_pmic(VOL_CORE, VOL_1_25);
 		break;
+
 	case 650000000:
+		/* set the voltage VDD_CPU first */
+		if (ma35d1_set_pmic(VOL_CPU, MA35D1_CPU_CORE))
+			INFO("CA-PLL is 650 MHz\n");
+		else
+			WARN("CA-PLL is 650 MHz without PSCI setting.\n");
 		index = 2;
-		INFO("CA-PLL is %d Hz\n", clock);
 		break;
+
+	case 600000000:
+		/* set the voltage VDD_CPU first */
+		if (ma35d1_set_pmic(VOL_CPU, MA35D1_CPU_CORE))
+			INFO("CA-PLL is 600 MHz\n");
+		else
+			WARN("CA-PLL is 600 MHz without PSCI setting.\n");
+		index = 3;
+		break;
+
+	case 500000000:
+		index = 4;
+		INFO("CA-PLL is 500 MHz\n");
+		break;
+
 	default:
-		INFO("CA-PLL is %d Hz\n", clock);
-		return;
+		WARN("CA-PLL is %d Hz is not supported, set as 500 MHz\n",
+		     clock);
+		index = 4;
+		break;
 	};
 	/* DDR-PLL */
 	INFO("DDR-PLL is 266000000 Hz.\n");
