@@ -178,14 +178,24 @@ static void ma35h0_clock_setup(void)
 
 	/* Enable RTC clock */
 	mmio_write_32(CLK_APBCLK0, mmio_read_32(CLK_APBCLK0) | (0x1 << 29));
-	if (fdt_read_uint32_default(fdt, node, "rtc-pwrctl-enable", 1) == 1)
-		mmio_write_32((0x40410180),
-			mmio_read_32((0x40410180)) |
-			0x5aa50040);  /* power control enable */
-	else	/* power control disable */
-		mmio_write_32((0x40410180),
-			(mmio_read_32((0x40410180)) & ~0xffff0040) |
-			0x5aa50000);
+	if (fdt_read_uint32_default(fdt, node, "rtc-pwrctl-enable", 1) == 1) {
+		uint32_t pwr_off_t;
+		int ret;
+
+		ret = fdt_read_uint32(fdt, node, "rtc-power-off-time", &pwr_off_t);
+		if (ret == 0 && pwr_off_t >= 4 && pwr_off_t <= 7) {
+			mmio_write_32(0x40410180,
+				      (mmio_read_32(0x40410180) & ~(0x3 << 12)) |
+				      ((pwr_off_t - 4) << 12) |
+				      0x5aa50044);
+		} else {
+			mmio_write_32(0x40410180,
+				      mmio_read_32(0x40410180) | 0x5aa50040);
+		}
+	} else {
+		mmio_write_32(0x40410180,
+			      (mmio_read_32(0x40410180) & ~0xffff0040) | 0x5aa50000);
+	}
 
 	/* Set PH8/PH9 */
 	if (fdt_read_uint32_default(fdt, node, "set-ph8-ph9-high", 1) == 1) {
