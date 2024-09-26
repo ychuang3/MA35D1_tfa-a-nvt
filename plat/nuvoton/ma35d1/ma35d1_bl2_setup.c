@@ -259,15 +259,20 @@ int plat_ma35d1_bl2_handle_scp_bl2(image_info_t *scp_bl2_image_info)
 			memcpy((void *)0x24000000,
 			       (const void *)scp_bl2_image_info->image_base,
 			       scp_bl2_image_info->image_size);
+
+			flush_dcache_range(0x24000000,
+					   scp_bl2_image_info->image_size);
 		} else {
 			memcpy((void *)0x24000000,
 			       (const void *)scp_bl2_image_info->image_base, 0x20000);
 			memcpy((void *)0x80020000,
 			       (const uint8_t *)scp_bl2_image_info->image_base + 0x20000,
 			       scp_bl2_image_info->image_size - 0x20000);
-		}
 
-		flush_dcache_range(0x24000000, scp_bl2_image_info->image_size);
+			flush_dcache_range(0x24000000, 0x20000);
+			flush_dcache_range(0x80020000,
+					   scp_bl2_image_info->image_size - 0x20000);
+		}
 	} else {
 		memcpy((void *)SCPBL2_BASE,
 		       (const void *)scp_bl2_image_info->image_base,
