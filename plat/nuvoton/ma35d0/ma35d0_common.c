@@ -337,6 +337,17 @@ void plat_ma35d0_init(void)
 		WARN("device tree header check error.\n");
 	}
 
+	/* Unlock the TSI register domain. */
+	do {
+		mmio_write_32((TSI_SYS_BASE + 0x100), 0x59);
+		mmio_write_32((TSI_SYS_BASE + 0x100), 0x16);
+		mmio_write_32((TSI_SYS_BASE + 0x100), 0x88);
+	} while (mmio_read_32((TSI_SYS_BASE + 0x100)) == 0UL);
+
+	/* Set PCLK0 to HCLK/2. */
+	mmio_write_32(TSI_CLK_PCLKDIV,
+		      (mmio_read_32(TSI_CLK_PCLKDIV) & ~0x7) | 0x1);
+
 	/* enable CRYPTO */
 	/* initial crypto engine and ks clock */
 	mmio_write_32(TSI_CLK_AHBCLK, mmio_read_32(TSI_CLK_AHBCLK) | 0x5000);

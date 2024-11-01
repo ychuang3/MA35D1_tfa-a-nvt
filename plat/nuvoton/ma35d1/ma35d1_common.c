@@ -456,6 +456,10 @@ void plat_ma35d1_init(void)
 		mmio_write_32(TSI_CLK_CLKSEL0,
 			      (mmio_read_32(TSI_CLK_CLKSEL0) & ~0x7) | 0x2);
 
+		/* Set PCLK0 to HCLK/2. */
+		mmio_write_32(TSI_CLK_PCLKDIV,
+			      (mmio_read_32(TSI_CLK_PCLKDIV) & ~0x7) | 0x1);
+
 		/* initial crypto engine and ks clock */
 		mmio_write_32(TSI_CLK_AHBCLK,
 			      mmio_read_32(TSI_CLK_AHBCLK) | 0x5000);
