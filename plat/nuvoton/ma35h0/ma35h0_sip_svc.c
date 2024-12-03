@@ -17,6 +17,10 @@
 #include "ma35h0_private.h"
 #include "include/ma35h0_crypto.h"
 
+/* RTC power registers exposed by the read-only SiP service. */
+#define RTC_PWRCTL	U(0x40410180)
+#define RTC_PWRSTS	U(0x40410184)
+
 #pragma weak ma35h0_plat_sip_handler
 
 /* CPU-PLL */
@@ -125,6 +129,20 @@ uintptr_t sip_smc_handler(uint32_t smc_fid,
 	int ret;
 	int CPU_CLK = 0;
 	volatile int loop_delay;
+
+	/* Handle this read-only request before the legacy register unlock. */
+	if (smc_fid == SIP_SVC_GET_REGISTER) {
+		if (!is_caller_non_secure(flags))
+			SMC_RET1(handle, SMC_UNK);
+
+		if ((x1 != RTC_PWRCTL) && (x1 != RTC_PWRSTS)) {
+			WARN("SIP_SVC_GET_REGISTER: unsupported register 0x%lx\n",
+			     x1);
+			SMC_RET1(handle, 1);
+		}
+
+		SMC_RET1(handle, mmio_read_32((uintptr_t)x1));
+	}
 
 	/* unlock */
 	mmio_write_32(SYS_RLKTZS, 0x59);

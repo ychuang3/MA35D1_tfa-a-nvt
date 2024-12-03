@@ -18,6 +18,10 @@
 #include "include/ma35d1_crypto.h"
 #include "include/tsi_cmd.h"
 
+/* RTC power registers exposed by the read-only SiP service. */
+#define RTC_PWRCTL	U(0x40410180)
+#define RTC_PWRSTS	U(0x40410184)
+
 #pragma weak ma35d1_plat_sip_handler
 
 static unsigned int CAPLL_MODE[8] = {
@@ -138,6 +142,20 @@ uintptr_t sip_smc_handler(uint32_t smc_fid,
 	uint32_t volt;
 	int ret;
 	int cpu_clk = 0;
+
+	/* Handle this read-only request before the legacy register unlock. */
+	if (smc_fid == SIP_SVC_GET_REGISTER) {
+		if (!is_caller_non_secure(flags))
+			SMC_RET1(handle, SMC_UNK);
+
+		if ((x1 != RTC_PWRCTL) && (x1 != RTC_PWRSTS)) {
+			WARN("SIP_SVC_GET_REGISTER: unsupported register 0x%lx\n",
+			     x1);
+			SMC_RET1(handle, 1);
+		}
+
+		SMC_RET1(handle, mmio_read_32((uintptr_t)x1));
+	}
 
 	/* unlock */
 	mmio_write_32(SYS_RLKTZS, 0x59);

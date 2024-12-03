@@ -8,6 +8,7 @@
 #define MA35D1_SIP_SVC_H
 
 /* SMC function IDs for SiP Service queries */
+#define SIP_SVC_GET_REGISTER		0xC2000007
 #define SIP_SVC_PMIC			0xC2000008
 #define SIP_CPU_CLK			0xC2000009
 #define SIP_SET_EPLL			0xC200000A
