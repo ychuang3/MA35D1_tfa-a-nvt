@@ -54,6 +54,7 @@ void ma35d0_io_setup(void);
 void configure_mmu(void);
 void ma35d0_ddr_init(void);
 void ma35d0_arch_security_setup(void);
+void ma35d0_security_setup(void);
 int32_t ma35d0_change_pll(int pll);
 
 typedef struct tsi_image_info {

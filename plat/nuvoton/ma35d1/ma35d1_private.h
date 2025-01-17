@@ -57,6 +57,7 @@ void ma35d1_io_setup(void);
 void configure_mmu(void);
 void ma35d1_ddr_init(void);
 void ma35d1_arch_security_setup(void);
+void ma35d1_security_setup(void);
 int32_t ma35d1_change_pll(int pll);
 
 #endif /* MA35D1_PRIVATE_H */

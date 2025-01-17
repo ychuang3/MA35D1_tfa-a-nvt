@@ -115,7 +115,8 @@
 /* NSAIDs used by devices in TZC filter	0 on MA35H0	*/
 #define	MA35H0_NSAID_TZNS	U(0)
 
-#define	MA35H0_FILTER_BIT_ALL	U(7)
+#define MA35H0_TZC0_FILTER		U(0xf)
+#define MA35H0_TZC2_FILTER		U(0x7)
 
 /*******************************************************************************
  * Memprotect definitions

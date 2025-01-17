@@ -135,6 +135,15 @@ int ma35h0_fip_deaes(uintptr_t base, size_t size) {
  */
 void bl2_platform_setup(void)
 {
+	unsigned long size;
+
+	/* Compare the controller's DDR window with the configuration. */
+	size = (mmio_read_32(UMCTL2_BA + 0xf08) + 1) * 0x10000000;
+	if (size != MA35H0_DDR_MAX_SIZE)
+		WARN("Wrong DDR size [0x%lx/0x%x]\n", size,
+		     MA35H0_DDR_MAX_SIZE);
+
+	ma35h0_security_setup();
 }
 
 

@@ -288,6 +288,10 @@ void tzc400_enable_filters(void)
 
 	assert(tzc400.base != 0U);
 
+	/* MA35 TZC2 has three wired filters despite its BUILD_CONFIG value. */
+	if (tzc400.base == U(0x404e3000))
+		tzc400.num_filters = 3U;
+
 	for (filter = 0U; filter < tzc400.num_filters; filter++) {
 		state = _tzc400_get_gate_keeper(tzc400.base, filter);
 		if (state != 0U) {

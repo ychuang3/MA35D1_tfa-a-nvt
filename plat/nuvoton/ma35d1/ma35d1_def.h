@@ -156,7 +156,8 @@
 #define MA35D1_NSAID_TZNS		U(0)
 #define MA35D1_NSAID_SUBM		U(1)
 
-#define MA35D1_FILTER_BIT_ALL		U(7)
+#define MA35D1_TZC0_FILTER		U(0xf)
+#define MA35D1_TZC2_FILTER		U(0x7)
 
 /*******************************************************************************
  * Memprotect definitions
