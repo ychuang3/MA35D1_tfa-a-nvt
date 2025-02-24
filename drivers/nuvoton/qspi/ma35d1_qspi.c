@@ -317,25 +317,38 @@ static int ma35d1_spinand_block_isbad(struct ma35d1_qspi_info *spinand, unsigned
 }
 
 
+static uint32_t prio_badblock_count(struct ma35d1_qspi_info *spinand,
+				    uint32_t block)
+{
+	int i = 0;
+	int bad_block_count = 0;
+
+	do {
+		if (ma35d1_spinand_block_isbad(spinand, i))
+			bad_block_count++;
+		i++;
+	} while (i <= block);
+
+	return bad_block_count;
+}
+
 static size_t parse_spinand_read(struct ma35d1_qspi_info *spinand, int lba, uintptr_t buf, size_t size)
 {
 	int pages_per_block = spinand->pages_per_block;
 	int page_size = spinand->page_size;
 	int pages_to_read = div_round_up(size, page_size);
-	int block_count = div_round_up(pages_to_read, pages_per_block);
 	int page = lba % pages_per_block;
 	int block = lba / pages_per_block;
 	uintptr_t p = buf;
 	int page_count, ret;
 
+	block += prio_badblock_count(spinand, block);
+
 	while (pages_to_read) {
 		ret = ma35d1_spinand_block_isbad(spinand, block);
 		if (ret) {
 			block++;
-			if ((--block_count) <= 0)
-				goto out;
-			else
-				continue;
+			continue;
 		}
 
 		page_count = MIN(pages_per_block - page, pages_to_read);
