@@ -386,25 +386,38 @@ static int ma35h0_block_isbad(struct ma35h0_nand_info *nand, unsigned int pba)
 }
 
 
+static uint32_t prio_badblock_count(struct ma35h0_nand_info *nand,
+				    uint32_t block)
+{
+	int i = 5;
+	int bad_block_count = 0;
+
+	do {
+		if (ma35h0_block_isbad(nand, i))
+			bad_block_count++;
+		i++;
+	} while (i <= block);
+
+	return bad_block_count;
+}
+
 static size_t parse_nand_read(struct ma35h0_nand_info *nand, int lba, uintptr_t buf, size_t size)
 {
 	int pages_per_block = nand->pages_per_block;
 	int page_size = nand->page_size;
 	int pages_to_read = div_round_up(size, page_size);
-	int block_count = div_round_up(pages_to_read, pages_per_block);
 	int page = lba % pages_per_block;
 	int block = lba / pages_per_block;
 	uintptr_t p = buf;
 	int page_count, ret;
 
+	block += prio_badblock_count(nand, block);
+
 	while (pages_to_read) {
 		ret = ma35h0_block_isbad(nand, block);
 		if (ret) {
 			block++;
-			if ((--block_count) <= 0)
-				goto out;
-			else
-				continue;
+			continue;
 		}
 
 		page_count = MIN(pages_per_block - page, pages_to_read);
