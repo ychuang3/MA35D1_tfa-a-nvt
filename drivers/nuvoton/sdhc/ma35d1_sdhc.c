@@ -401,57 +401,9 @@ int sdh_read_blocks(struct mmc *mmc,
 	return 0;
 }
 
-#define SD_CMD_APP_SET_CLR_CARD_DETECT  42
-static int sd_set_clear_card_detect(struct mmc *mmc)
-{
-	int err;
-	struct mmc_cmd cmd;
-
-	cmd.cmdidx = MMC_CMD_APP_CMD;
-	cmd.resp_type = MMC_RSP_R1;
-	cmd.cmdarg = mmc->rca;
-	//cmd.cmdarg = 0;
-	err = sdh_send_command(mmc, &cmd, 0);
-	if (err)
-		return err;
-
-	cmd.cmdidx = SD_CMD_APP_SET_CLR_CARD_DETECT;
-	cmd.resp_type = MMC_RSP_R1;
-	cmd.cmdarg = 0; //0 or 1
-	err = sdh_send_command(mmc, &cmd, 0);
-	if (err)
-		return err;
-	return 0;
-}
-
-static int sd_switch(struct mmc *mmc, int mode,
-				 int group, unsigned char value,
-				 unsigned char *resp)
-{
-	struct mmc_cmd cmd;
-	struct mmc_data data;
-
-	/* Switch the frequency */
-	cmd.cmdidx = SD_CMD_SWITCH_FUNC;
-	cmd.resp_type = MMC_RSP_R1;
-	cmd.cmdarg = (mode << 31) | 0xffffff;
-	cmd.cmdarg &= ~(0xf << (group * 4));
-	cmd.cmdarg |= value << (group * 4);
-
-	data.dest = (char *)resp;
-	data.blocksize = 64;
-	data.blocks = 1;
-	data.flags = MMC_DATA_READ;
-
-	return sdh_send_command(mmc, &cmd, &data);
-}
-
-
 static int ma35d1_sdhc_hw_init(struct mmc *mmc)
 {
 	struct mmc_cmd cmd;
-	int err;
-
 	volatile int timeout;
 
 	sdh_reset(mmc, SDH_RESET_ALL);
@@ -615,19 +567,6 @@ static int ma35d1_sdhc_hw_init(struct mmc *mmc)
 		mmc->rca = cmd.response[0] & 0xffff0000;
 
 	sdh_select_card(mmc);
-	if (mmc->version == SD_VERSION_2) {
-		sd_set_clear_card_detect(mmc);
-		{
-			unsigned char *switch_status[64];
-
-			err = sd_switch(mmc, 1, 0, 0,
-					(unsigned char *)switch_status);
-			if (err) {
-				ERROR("sd_switch failed\n");
-				return err;
-			}
-		}
-	}
 	/* 12MHz */
 	sdh_set_clock(mmc, 20000000);
 
