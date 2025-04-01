@@ -47,6 +47,7 @@ static void nus3500_spi_sendcmd(unsigned char *cmd, unsigned int cmdlen, unsigne
 {
 	int volatile i;
 
+	udelay(1);
 	mmio_write_32(REG_QSPI0_SSCTL, 0x01);   // CS0 low
 
 	for (i=0; i<cmdlen; i++)
@@ -66,6 +67,7 @@ static void nus3500_spi_sendcmd(unsigned char *cmd, unsigned int cmdlen, unsigne
 		*data++ = mmio_read_32(REG_QSPI0_RX);
 	}
 	mmio_write_32(REG_QSPI0_SSCTL, 0x05);   // CS0 high
+	udelay(1);
 }
 
 /***************************************************************/
@@ -128,6 +130,7 @@ static int ma35d1_spinand_singleread(struct ma35d1_qspi_info *spinand, unsigned 
 	unsigned char cmd[4];
 	int volatile i;
 
+	udelay(1);
 	cmd[0] = 0x13;  /* page read */
 	cmd[1] = (addr >> 16) & 0xFF;
 	cmd[2] = (addr >> 8) & 0xFF;
@@ -140,6 +143,7 @@ static int ma35d1_spinand_singleread(struct ma35d1_qspi_info *spinand, unsigned 
 		return 1;
 	}
 
+	udelay(1);
 	mmio_write_32(REG_QSPI0_SSCTL, 0x01);   // CS0 low
 
 	mmio_write_32(REG_QSPI0_TX, 0x03);
@@ -166,6 +170,7 @@ static int ma35d1_spinand_singleread(struct ma35d1_qspi_info *spinand, unsigned 
 	mmio_write_32(REG_QSPI0_SSCTL, 0x05);   // CS0 high
 	// set DWIDTH to 8 bit and disable byte reorder
 	mmio_write_32(REG_QSPI0_CTL, (mmio_read_32(REG_QSPI0_CTL) & ~0x80000) | (8<<8));
+	udelay(1);
 
 
 	return 0;
@@ -384,9 +389,9 @@ int ma35d1_qspi_init(void)
 
 	/* QSPI0 clock source: PCLK0 (SYSCLK1, SYSCLK1 is SYSPLL) */
 	if (mmio_read_32(SYS_PWRONOTP) & 0x2)	/* SYS_PWRONOTP[1] */
-		mmio_write_32(REG_QSPI0_CLKDIV, 2);	/* Set SPI0 clock to 60 MHz => PCLK(180)/(n+1) */
+		mmio_write_32(REG_QSPI0_CLKDIV, 3);	/* Set SPI0 clock to 45 MHz => PCLK(180)/(n+1) */
 	else
-		mmio_write_32(REG_QSPI0_CLKDIV, 4);	/* Set SPI0 clock to 36 MHz => PCLK(180)/(n+1) */
+		mmio_write_32(REG_QSPI0_CLKDIV, 5);	/* Set SPI0 clock to 30 MHz => PCLK(180)/(n+1) */
 
 	/* Default setting: slave selection signal is active low; disable automatic slave selection function. */
 	mmio_write_32(REG_QSPI0_SSCTL, 0);
