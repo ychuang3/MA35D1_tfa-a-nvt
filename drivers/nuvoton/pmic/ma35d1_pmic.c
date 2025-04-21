@@ -560,15 +560,24 @@ int ma35d1_set_pmic(int type, int vol)
 		} else if (vol == VOL_1_29) {	/* (1.29 - 0.3) / 0.01 = 99 = 0x63 */
 			INFO("%s 1.29V\n", str);
 			ret = ma35d1_write_pmic_data(reg, 0x63);
-		} else if (vol == VOL_1_30) {	/* (1.3 - 0.3) / 0.01 = 100 = 0x64 */
+		} else if (vol == VOL_1_30) {	/* (1.30 - 0.3) / 0.01 = 100 = 0x64 */
 			INFO("%s 1.30V\n", str);
 			ret = ma35d1_write_pmic_data(reg, 0x64);
+		} else if (vol == VOL_1_31) {	/* (1.31 - 0.3) / 0.01 = 101 = 0x65 */
+			INFO("%s 1.31V\n", str);
+			ret = ma35d1_write_pmic_data(reg, 0x65);
 		} else if (vol == VOL_1_32) {	/* (1.32 - 0.3) / 0.01 = 102 = 0x66 */
 			INFO("%s 1.32V\n", str);
 			ret = ma35d1_write_pmic_data(reg, 0x66);
+		} else if (vol == VOL_1_33) {	/* (1.33 - 0.3) / 0.01 = 103 = 0x67 */
+			INFO("%s 1.33V\n", str);
+			ret = ma35d1_write_pmic_data(reg, 0x67);
 		} else if (vol == VOL_1_34) {   /* (1.34 - 0.3) / 0.01 = 104 = 0x68 */
 			INFO("%s 1.34V\n", str);
 			ret = ma35d1_write_pmic_data(reg, 0x68);
+		} else if (vol == VOL_1_35) {   /* (1.35 - 0.3) / 0.01 = 105 = 0x69 */
+			INFO("%s 1.35V\n", str);
+			ret = ma35d1_write_pmic_data(reg, 0x69);
 		} else {
 			ERROR("Not support voltage!\n");
 			ret = -1;
@@ -636,6 +645,12 @@ int ma35d1_set_pmic(int type, int vol)
 	case VOL_1_28:
 	case VOL_1_29:
 		INFO("APW7704F 1.29V\n");
+		ret = ma35d1_write_pmic_data(reg, 0x36);
+		break;
+
+	case VOL_1_34:
+		INFO("APW7704F 1.34V\n");
+		/* The same value 0x36 as VOL_1_28, but different board circuit. */
 		ret = ma35d1_write_pmic_data(reg, 0x36);
 		break;
 
