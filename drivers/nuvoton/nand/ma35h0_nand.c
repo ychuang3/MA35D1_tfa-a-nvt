@@ -237,7 +237,7 @@ static void ma35h0_correct_data(unsigned char ucFieidIndex, unsigned char ucErro
 
 static int ma35h0_nand_read_page(struct ma35h0_nand_info *nand, unsigned int page, uintptr_t buffer)
 {
-	unsigned int volatile uStatus, uErrorCnt;
+	unsigned int volatile uECC_UErr, uErrorCnt;
 	unsigned int volatile uF1_status;
 	unsigned char volatile i, j, uLoop;
 
@@ -268,7 +268,7 @@ static int ma35h0_nand_read_page(struct ma35h0_nand_info *nand, unsigned int pag
 	ma35h0_nand_wait_ready(1);
 
 	uF1_status = 0;
-	uStatus = 0;
+	uECC_UErr = 0;
 	/* begin DMA read transfer */
 	mmio_write_32(REG_NANDINTSTS, 0x5);     /* clear DMA and ECC_Field flag */
 	mmio_write_32(REG_NANDCTL, mmio_read_32(REG_NANDCTL) | 0x2);    /* READ enable */
@@ -277,44 +277,47 @@ static int ma35h0_nand_read_page(struct ma35h0_nand_info *nand, unsigned int pag
 		if (nand->max_bit_corr) {
 			if (mmio_read_32(REG_NANDINTSTS) & 0x4) {
 				switch (mmio_read_32(REG_NANDCTL) & PSIZE) {
-					case PSIZE_2K:
+				case PSIZE_2K:
+					uLoop = 1;
+					break;
+				case PSIZE_4K:
+					if ((mmio_read_32(REG_NANDCTL) & BCH_TSEL) == BCH_24)
 						uLoop = 1;
-						break;
-					case PSIZE_4K:
-						if ((mmio_read_32(REG_NANDCTL) & BCH_TSEL) == BCH_24)
-							uLoop = 1;
-						else
-							uLoop = 2;
-						break;
-					case PSIZE_8K:
-						if ((mmio_read_32(REG_NANDCTL) & BCH_TSEL) == BCH_24)
-							uLoop = 2;
-						else
-							uLoop = 4;
-						break;
+					else
+						uLoop = 2;
+					break;
+				case PSIZE_8K:
+					if ((mmio_read_32(REG_NANDCTL) & BCH_TSEL) == BCH_24)
+						uLoop = 2;
+					else
+						uLoop = 4;
+					break;
 				}
 
-				for (j=0; j<uLoop; j++) {
-					uF1_status = mmio_read_32(REG_NANDECCES0+j*4);
+				for (j = 0; j < uLoop; j++) {
+					uF1_status = mmio_read_32(REG_NANDECCES0 + j * 4);
 					if (!uF1_status)
 						continue;   // no error on this register for 4 fields
-					for (i=1; i<5; i++) {
+
+					for (i = 1; i < 5; i++) {
 						if (!(uF1_status & 0x3)) {     // no error for this field
 							uF1_status >>= 8;  // next field
 							continue;
 						}
 
-						if ((uF1_status & 0x3)==0x01) {
+						if ((uF1_status & 0x3) == 0x01) {
 							/* correctable error in field (j*4+i) */
 							uErrorCnt = (uF1_status >> 2) & 0x1F;
+							INFO("NAND page %u ECC field %u correction "
+							     "(status 0x%x)\n", page,
+							     (unsigned int)(j * 4 + i), uF1_status);
 							ma35h0_correct_data(j*4+i, uErrorCnt, (unsigned char*)(long)buffer);
-							break;
 						} else if (((uF1_status & 0x3) == 0x02) || ((uF1_status & 0x3) == 0x03)) {
 							/* uncorrectable error or ECC error in 1st field */
-							uStatus = 1;
+							uECC_UErr = j * 4 + i;
 							break;
 						}
-						uStatus >>= 8;  // next field
+						uF1_status >>= 8;  // next field
 					}
 				}
 				mmio_write_32(REG_NANDINTSTS, 0x4);     // clear ECC_FLD_Error
@@ -332,8 +335,10 @@ static int ma35h0_nand_read_page(struct ma35h0_nand_info *nand, unsigned int pag
 
 	mmio_write_32(REG_NANDINTSTS, 0x5); /* clear DMA and ECC flag */
 
-	if (uStatus) {
-		ERROR("Err-ECC 0x%x / 0x%x\n", uStatus, uF1_status);
+	if (uECC_UErr) {
+		ERROR("NAND page %u ECC field %u uncorrectable "
+		      "(last status 0x%x)\n", page,
+		      uECC_UErr, uF1_status);
 		return 1;
 	}
 
