@@ -714,14 +714,19 @@ void ma35d1_ddr_init(void)
 	}
 
 	if (fdt_node_offset_by_compatible(fdt, -1, "wb-ddr3-256mb") >= 0) {
+		INFO("Current ddr setting: internal-ddr3-256mb\n");
 		ma35d1_ddr_setting(ma35d1_wb_ddr3_256mb, sizeof(ma35d1_wb_ddr3_256mb)/sizeof(uint32_t));
 	} else if (fdt_node_offset_by_compatible(fdt, -1, "wb-ddr3-512mb") >= 0) {
+		INFO("Current ddr setting: internal-ddr3-512mb\n");
 		ma35d1_ddr_setting(ma35d1_wb_ddr3_512mb, sizeof(ma35d1_wb_ddr3_512mb)/sizeof(uint32_t));
 	} else if (fdt_node_offset_by_compatible(fdt, -1, "mt-ddr3-1gb") >= 0) {
+		INFO("Current ddr setting: internal-ddr3-1gb\n");
 		ma35d1_ddr_setting(ma35d1_mt_ddr3_1gb, sizeof(ma35d1_mt_ddr3_1gb)/sizeof(uint32_t));
 	} else if (fdt_node_offset_by_compatible(fdt, -1, "wb-ddr2-128mb") >= 0) {
+		INFO("Current ddr setting: internal-ddr2-128mb\n");
 		ma35d1_ddr_setting(ma35d1_wb_ddr2_128mb, sizeof(ma35d1_wb_ddr2_128mb)/sizeof(uint32_t));
 	} else if (fdt_node_offset_by_compatible(fdt, -1, "custom-ddr") >= 0) {
+		INFO("Current ddr setting: custom-ddr\n");
 		ma35d1_ddr_setting(custom_ddr, sizeof(custom_ddr)/sizeof(uint32_t));
 	} else {
 		WARN("The compatible property ddr type not found\n");

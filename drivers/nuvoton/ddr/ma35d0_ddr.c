@@ -370,8 +370,10 @@ void ma35d0_ddr_init(void)
 	}
 
 	if (fdt_node_offset_by_compatible(fdt, -1, "wb-ddr3-256mb") >= 0) {
+		INFO("Current ddr setting: wb-ddr3-256mb\n");
 		ma35d0_ddr_setting(ma35d0_wb_ddr3_256mb, sizeof(ma35d0_wb_ddr3_256mb)/sizeof(uint32_t));
 	} else if (fdt_node_offset_by_compatible(fdt, -1, "custom-ddr") >= 0) {
+		INFO("Current ddr setting: custom-ddr\n");
 		ma35d0_ddr_setting(custom_ddr, sizeof(custom_ddr)/sizeof(uint32_t));
 	} else {
 		WARN("The compatible property ddr type not found\n");

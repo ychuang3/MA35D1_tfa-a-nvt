@@ -520,7 +520,10 @@ void plat_ma35d1_init(void)
 	mmio_write_32((SYS_BA+0x14), 0x70000);
 
 	/* Start M4 after configuring peripheral attribution. */
-	mmio_write_32(SYS_IPRST0, mmio_read_32(SYS_IPRST0) & ~0x8);
+#ifdef MA35D1_LOAD_SCP_BL2
+	if (SCPBL2_BASE == 0x24000000)
+		mmio_write_32(SYS_IPRST0, mmio_read_32(SYS_IPRST0) & ~0x8);
+#endif
 
 	/* Release core 1 when its SCP image address is ready. */
 	if (mmio_read_32(SYS_BA + 0x48) == SCPBL2_BASE)
