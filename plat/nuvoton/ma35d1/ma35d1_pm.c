@@ -427,8 +427,8 @@ static void __dead2 ma35d1_system_off(void)
 static void __dead2 ma35d1_system_reset(void)
 {
 	ma35d1_UnlockReg();
-	mmio_write_32(SYS_IPRST0, 0x1);
-	mmio_write_32(SYS_IPRST0, 0x0);
+	mmio_clrsetbits_32(SYS_IPRST0, ~U(0x8), 0x1);
+	mmio_clrsetbits_32(SYS_IPRST0, ~U(0x8), 0x0);
 
 	while (1)
 		;

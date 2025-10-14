@@ -452,8 +452,8 @@ int ma35h0_nand_ctrl_init(void)
 	mmio_write_32(SYS_GPA_MFPH, 0x06666666);
 
 	// reset FMI
-	mmio_write_32(SYS_IPRST0, 0x4000000);
-	mmio_write_32(SYS_IPRST0, 0x0000000);
+	mmio_clrsetbits_32(SYS_IPRST0, ~U(0x8), 0x4000000);
+	mmio_clrsetbits_32(SYS_IPRST0, ~U(0x8), 0x0000000);
 
 	// DMAC Initial
 	mmio_write_32(REG_FMI_DMACTL, 0x00000001);

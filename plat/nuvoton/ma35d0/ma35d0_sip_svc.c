@@ -270,8 +270,8 @@ uintptr_t sip_smc_handler(uint32_t smc_fid,
 
 	case SIP_CHIP_RESET:
 		ma35d0_UnlockReg();
-		mmio_write_32(SYS_IPRST0, 0x1);
-		mmio_write_32(SYS_IPRST0, 0x0);
+		mmio_clrsetbits_32(SYS_IPRST0, ~U(0x8), 0x1);
+		mmio_clrsetbits_32(SYS_IPRST0, ~U(0x8), 0x0);
 		WARN("SIP_CHIP_RESET not work!\n");
 		SMC_RET1(handle, 0);
 
