@@ -375,6 +375,9 @@ void ma35h0_ddr_init(void)
 		ma35h0_ddr_setting(ma35h0_wb_ddr2_128mb, sizeof(ma35h0_wb_ddr2_128mb)/sizeof(uint32_t));
 	} else if (fdt_node_offset_by_compatible(fdt, -1, "custom-ddr") >= 0) {
 		INFO("Current ddr setting: custom-ddr\n");
+		if (PID_CHECK != 0xFFFFFFFF)
+			if ((mmio_read_32(SYS_BA) & 0xffff0000) != PID_CHECK)
+				WARN("The DDR parameters used may not be compatible with the IC model\n");
 		ma35h0_ddr_setting(custom_ddr, sizeof(custom_ddr)/sizeof(uint32_t));
 	} else {
 		WARN("The compatible property ddr type not found\n");

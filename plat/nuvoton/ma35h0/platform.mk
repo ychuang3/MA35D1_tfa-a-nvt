@@ -50,6 +50,9 @@ $(eval $(call add_define,MA35H0_DRAM_S_BASE))
 MA35H0_SCPBL2_BASE ?= 0x24000000
 $(eval $(call add_define,MA35H0_SCPBL2_BASE))
 
+PID_CHECK ?= 0xFFFFFFFF
+$(eval $(call add_define,PID_CHECK))
+
 # dump the state on crash console
 CRASH_REPORTING		:=	1
 $(eval $(call add_define,CRASH_REPORTING))
