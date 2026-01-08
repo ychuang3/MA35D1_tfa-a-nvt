@@ -65,6 +65,9 @@
 #define CMD_KS_REMAIN_SIZE      0x0A15
 #define CMD_KS_GET_STATUS       0x0A20
 
+/* OTP commands supported after B version */
+#define CMD_OTP_PROGRAM         0x0B05
+
 /*------------------------------------------------------------------*/
 /*  TSI command ACK status                                          */
 /*------------------------------------------------------------------*/
@@ -123,39 +126,39 @@ enum {
 };
 
 typedef enum {
-       CURVE_P_192  = 0x01,
-       CURVE_P_224  = 0x02,
-       CURVE_P_256  = 0x03,
-       CURVE_P_384  = 0x04,
-       CURVE_P_521  = 0x05,
-       CURVE_K_163  = 0x11,
-       CURVE_K_233  = 0x12,
-       CURVE_K_283  = 0x13,
-       CURVE_K_409  = 0x14,
-       CURVE_K_571  = 0x15,
-       CURVE_B_163  = 0x21,
-       CURVE_B_233  = 0x22,
-       CURVE_B_283  = 0x23,
-       CURVE_B_409  = 0x24,
-       CURVE_B_571  = 0x25,
-       CURVE_KO_192 = 0x31,
-       CURVE_KO_224 = 0x32,
-       CURVE_KO_256 = 0x33,
-       CURVE_BP_256 = 0x41,
-       CURVE_BP_384 = 0x42,
-       CURVE_BP_512 = 0x43,
-       CURVE_SM2_256 = 0x50,
-       CURVE_25519  = 0x51,
-       CURVE_UNDEF,
+	CURVE_P_192  = 0x01,
+	CURVE_P_224  = 0x02,
+	CURVE_P_256  = 0x03,
+	CURVE_P_384  = 0x04,
+	CURVE_P_521  = 0x05,
+	CURVE_K_163  = 0x11,
+	CURVE_K_233  = 0x12,
+	CURVE_K_283  = 0x13,
+	CURVE_K_409  = 0x14,
+	CURVE_K_571  = 0x15,
+	CURVE_B_163  = 0x21,
+	CURVE_B_233  = 0x22,
+	CURVE_B_283  = 0x23,
+	CURVE_B_409  = 0x24,
+	CURVE_B_571  = 0x25,
+	CURVE_KO_192 = 0x31,
+	CURVE_KO_224 = 0x32,
+	CURVE_KO_256 = 0x33,
+	CURVE_BP_256 = 0x41,
+	CURVE_BP_384 = 0x42,
+	CURVE_BP_512 = 0x43,
+	CURVE_SM2_256 = 0x50,
+	CURVE_25519  = 0x51,
+	CURVE_UNDEF,
 } E_ECC_CURVE;
 
 #define TC_GET_CLASS_CODE(r)	((((r)->cmd[0])>>24)&0xff)
 #define TC_GET_SUB_CODE(r)	((((r)->cmd[0])>>16)&0xff)
 #define TC_GET_COMMAND(r)	((((r)->cmd[0])>>16)&0xffff)
 #define TC_GET_SESSION_ID(r)	(((r)->cmd[0])&0xff)
-#define TC_SET_CLASS_CODE(r, c)	(r)->cmd[0] = (((r)->cmd[0])&0x00ffffff)|((c&0xff)<<24)
-#define TC_SET_SUB_CODE(r, c)	(r)->cmd[0] = (((r)->cmd[0])&0xff00ffff)|((c&0xff)<<16)
-#define TC_SET_SESSION_ID(r, s)	(r)->cmd[0] = (((r)->cmd[0])&0xffffff00)|(s&0xff)
+#define TC_SET_CLASS_CODE(r, c) ((r)->cmd[0] = (((r)->cmd[0]) & 0x00ffffff) | (((c) & 0xff) << 24))
+#define TC_SET_SUB_CODE(r, c)	((r)->cmd[0] = (((r)->cmd[0])&0xff00ffff)|((c&0xff)<<16))
+#define TC_SET_SESSION_ID(r, s)	((r)->cmd[0] = (((r)->cmd[0])&0xffffff00)|(s&0xff))
 #define TA_GET_CLASS_CODE(a)	((((a)->ack[0])>>24)&0xff)
 #define TA_GET_SESSION_ID(a)	(((a)->ack[0])&0xff)
 #define TA_GET_STATUS(a)	((((a)->ack[0])>>8)&0xff)
@@ -219,5 +222,6 @@ int TSI_ECC_Multiply(E_ECC_CURVE curve_id, int type, int msel, int sps, int m_kn
 int TSI_run_sha(int inswap, int outswap, int mode_sel, int hmac,
 		int mode, int keylen, int ks, int ks_num,
 		int wcnt, int data_cnt, unsigned int src_addr, unsigned int dest_addr);
+int TSI_OTP_Program(uint32_t u32Addr, uint32_t u32Data);
 
 #endif	/* __TSI_CMD_H__ */

@@ -32,6 +32,16 @@ $(eval $(call add_define,MA35D1_INTERCONNECT_DRIVER))
 FIP_DE_AES ?= 0
 $(eval $(call add_define,FIP_DE_AES))
 
+# RMA changes OTP lifecycle state; enable only for the intended service image.
+MA35D1_ENABLE_RMA ?= 0
+$(eval $(call assert_boolean,MA35D1_ENABLE_RMA))
+$(eval $(call add_define,MA35D1_ENABLE_RMA))
+ifeq ($(MA35D1_ENABLE_RMA),1)
+ifneq ($(FIP_DE_AES),1)
+$(error MA35D1_ENABLE_RMA requires FIP_DE_AES=1)
+endif
+endif
+
 MA35D1_PMIC ?= 1
 $(eval $(call add_define,MA35D1_PMIC))
 
