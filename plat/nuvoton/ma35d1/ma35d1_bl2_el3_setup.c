@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+#include <endian.h>
 #include <errno.h>
 
 #include <arch_helpers.h>
@@ -18,11 +19,13 @@
 
 #include "ma35d1_private.h"
 
-#if FIP_DE_AES && MA35D1_ENABLE_RMA
+#if MA35D1_ENABLE_RMA
 #define RMA_UART_BASE		U(0x40700000)
 #define RMA_VERSION_REG		(SYS_BA + U(0x1f0))
 #define RMA_PLM_STAGE		(SSPCC_BASE + U(0x704))
 #define RMA_GPE_PUSEL		U(0x40040130)
+#define RMA_DEPLOYED_PASSWORD	(SYS_BA + U(0x1b0))
+#define RMA_PASSWORD_DIGITS	8U
 #define RMA_HEX_DIGITS		64U
 #define RMA_WORDS		8U
 #define RMA_ENTRY_US		200000U
@@ -30,8 +33,10 @@
 #define RMA_INPUT_US		30000000U
 #define RMA_FIFO_US		10000U
 
+#if FIP_DE_AES
 static uint32_t rma_plain[RMA_WORDS] __aligned(CACHE_WRITEBACK_GRANULE);
 static uint32_t rma_cipher[RMA_WORDS] __aligned(CACHE_WRITEBACK_GRANULE);
+#endif
 
 static bool rma_supported(void)
 {
@@ -86,13 +91,15 @@ static int rma_puts(const char *text)
 	return 0;
 }
 
-static int rma_read_hex(uint32_t words[RMA_WORDS])
+static int rma_read_hex(uint32_t *words, unsigned int digits)
 {
 	uint64_t deadline = timeout_init_us(RMA_INPUT_US);
 	unsigned int ch, count = 0U, digit;
 	int ret;
 
-	for (unsigned int i = 0U; i < RMA_WORDS; i++)
+	if ((digits != RMA_HEX_DIGITS) && (digits != RMA_PASSWORD_DIGITS))
+		return -EINVAL;
+	for (unsigned int i = 0U; i < digits / 8U; i++)
 		words[i] = 0U;
 	for (;;) {
 		ret = rma_getc(deadline, &ch);
@@ -101,8 +108,8 @@ static int rma_read_hex(uint32_t words[RMA_WORDS])
 		if ((ch == '\n') && (count == 0U))
 			continue;
 		if (ch == '\r')
-			return (count == RMA_HEX_DIGITS) ? 0 : -EINVAL;
-		if (count >= RMA_HEX_DIGITS)
+			return (count == digits) ? 0 : -EINVAL;
+		if (count >= digits)
 			return -E2BIG;
 		if ((ch >= '0') && (ch <= '9'))
 			digit = ch - '0';
@@ -117,6 +124,7 @@ static int rma_read_hex(uint32_t words[RMA_WORDS])
 	}
 }
 
+#if FIP_DE_AES
 static void rma_clear_buffers(bool output_used)
 {
 	volatile uint32_t *plain = rma_plain;
@@ -131,15 +139,34 @@ static void rma_clear_buffers(bool output_used)
 	}
 	dsbsy();
 }
+#endif
+
+static int rma_sync_tsi(void)
+{
+	int ret = ST_CMD_ACK_TIME_OUT;
+
+	mmio_setbits_32(CLK_SYSCLK1, U(0x10));
+	for (unsigned int i = 0U; i < 3U; i++) {
+		ret = TSI_Sync();
+		if (ret == 0)
+			return 0;
+	}
+	return ret;
+}
 
 static int enter_rma_state(void)
 {
+#if FIP_DE_AES
 	volatile uint32_t *output = (volatile uint32_t *)TSI_PARAM_BASE;
 	bool output_used = false;
+	uint32_t diff = 0U;
+	int close_ret, sid;
+#else
+	uint32_t password = 0U;
+#endif
 	uint64_t deadline;
 	unsigned int ch;
-	uint32_t diff = 0U;
-	int ret, close_ret, sid;
+	int ret;
 
 	ret = rma_puts("please press the 'Esc' first\r\n");
 	if (ret != 0)
@@ -154,25 +181,21 @@ static int enter_rma_state(void)
 			goto out;
 	} while (ch != U(0x1b));
 
+#if FIP_DE_AES
 	ret = rma_puts("please input 64 char raw data\r\n");
 	if (ret != 0)
 		goto out;
-	ret = rma_read_hex(rma_plain);
+	ret = rma_read_hex(rma_plain, RMA_HEX_DIGITS);
 	if (ret != 0)
 		goto out;
 	ret = rma_puts("done\r\nplease input 64 char encrypt data\r\n");
 	if (ret != 0)
 		goto out;
-	ret = rma_read_hex(rma_cipher);
+	ret = rma_read_hex(rma_cipher, RMA_HEX_DIGITS);
 	if (ret != 0)
 		goto out;
 
-	mmio_setbits_32(CLK_SYSCLK1, U(0x10));
-	for (unsigned int i = 0U; i < 3U; i++) {
-		ret = TSI_Sync();
-		if (ret == 0)
-			break;
-	}
+	ret = rma_sync_tsi();
 	if (ret != 0)
 		goto out;
 	ret = TSI_Open_Session(C_CODE_AES, &sid);
@@ -205,12 +228,33 @@ close_session:
 	dsbsy();
 	for (unsigned int i = 0U; i < RMA_WORDS; i++)
 		diff |= output[i] ^ rma_plain[i];
-	if ((diff != 0U) || !rma_supported()) {
+	if (diff != 0U) {
 		ret = -EPERM;
 		goto out;
 	}
 
 	rma_clear_buffers(output_used);
+#else
+	ret = rma_puts("please input the deployed password\r\n");
+	if (ret != 0)
+		goto out;
+	ret = rma_read_hex(&password, RMA_PASSWORD_DIGITS);
+	if (ret != 0)
+		goto out;
+	ret = rma_sync_tsi();
+	if (ret != 0)
+		goto out;
+	/* Match the source eight-digit, byte-swapped password representation. */
+	if (mmio_read_32(RMA_DEPLOYED_PASSWORD) != bswap32(password)) {
+		ret = -EPERM;
+		goto out;
+	}
+	*(volatile uint32_t *)&password = 0U;
+#endif
+	if (!rma_supported()) {
+		ret = -EPERM;
+		goto out;
+	}
 	/* A programming timeout can leave fuse state uncertain: never resume boot. */
 	ret = TSI_OTP_Program(U(0x108), U(0x7));
 	if (ret != 0) {
@@ -225,7 +269,11 @@ close_session:
 	/* PLM shadow state must be reloaded by reset before any further boot. */
 	panic();
 out:
+#if FIP_DE_AES
 	rma_clear_buffers(output_used);
+#else
+	*(volatile uint32_t *)&password = 0U;
+#endif
 	return ret;
 }
 
@@ -275,7 +323,7 @@ void bl2_early_platform_setup2(u_register_t arg0 __unused,
 	/* Initialize the platform config for future decision making */
 	ma35d1_config_setup();
 
-#if FIP_DE_AES && MA35D1_ENABLE_RMA
+#if MA35D1_ENABLE_RMA
 	ma35d1_try_enter_rma();
 #endif
 
