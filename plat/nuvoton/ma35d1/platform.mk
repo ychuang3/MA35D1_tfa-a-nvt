@@ -107,6 +107,7 @@ DTB_FILE_NAME		?=	\
 				\
 				ma35d1-cpu800-mc-1g.dtb \
 				ma35d1-cpu800-custom-ddr.dtb \
+				ma35d1-cpu650-custom-ddr.dtb
 
 FDT_SOURCES		:=	$(addprefix fdts/, $(patsubst %.dtb,%.dts,$(DTB_FILE_NAME)))
 DTC_FLAGS		+=	-Wno-unit_address_vs_reg
