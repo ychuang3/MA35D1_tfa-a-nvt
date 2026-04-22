@@ -133,6 +133,12 @@ struct nvt_ddr_init_param ma35h0_wb_ddr2_128mb = {
 };
 
 
+static const uint32_t pid_list[] = {
+	0x10A20000,
+	0x10A30000,
+	0x10A40000,
+};
+
 struct DDR_Setting nvt_ddr_init_setting[] = {
 	DDR_CTL_REG(DBG1_1),     // 0
 	DDR_CTL_REG(PWRCTL_1),   // 1
@@ -249,17 +255,36 @@ struct DDR_Setting nvt_ddr_init_setting[] = {
 };
 
 
+static inline int pid_requires_20nm(uint32_t pid)
+{
+	uint32_t k;
+	for (k = 0; k < (sizeof(pid_list) / sizeof(pid_list[0])); k++) {
+		if (pid == pid_list[k])
+			return 1;
+	}
+	return 0;
+}
+
 void ma35h0_ddr_setting(struct nvt_ddr_init_param ddrparam, int size)
 {
 	uint32_t i;
 	uint64_t ddr_reg_address;
 	uint32_t value;
 	uint32_t u32TimeOut1 = 0, u32TimeOut2 = 0, u32TimeOut3 = 0;
+	uint32_t pid, is_20nm;
+
+	pid = mmio_read_32(SYS_BA) & 0xffff0000;
+	is_20nm = pid_requires_20nm(pid);
 
 	for(i = 0; i < size; i++)
 	{
 		ddr_reg_address = (uint32_t)nvt_ddr_init_setting[i].base + (uint32_t)nvt_ddr_init_setting[i].offset;
 		value =  *((uint32_t *)(((uintptr_t)&ddrparam) + nvt_ddr_init_setting[i].init_flow_offset));
+
+		if (i == 100 && is_20nm && ((value & 0xF0) != 0x50)) {
+			INFO("DDR process check: 20 nm target (pid=0x%08x). "
+			     "Consider verifying the register value.\n", pid);
+		}
 
 		*(volatile uint32_t *)(ddr_reg_address) = value;
 
